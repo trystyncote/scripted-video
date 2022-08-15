@@ -24,13 +24,7 @@ class Scripter:
         # separator...
           break  # leave the while loop.
       except:
-        # This sequence will forcefully crash the program, but give a more helpful message first.
-        # Because of this, the sequence will display text that will say what this program did 
-        # wrong.
-        print("")
-        print("Error A01: No header found or already dissected.")
-        print("")
-        print("")
+        # This sequence will forcefully crash the program if it does not have a header.
         h = int("CRASH")
 
       h += 1  # if not, increase the counter and go back to the start.
@@ -57,7 +51,7 @@ class Scripter:
     '''
     Polishes the body of the script into usable chunks. Returns the polished version of the script.
     '''
-    for i in range(len(self.script)):
+    for i in range(len(self.script)-1):
       self.script[i] = self.script[i][:-1]
 
     return self.script
