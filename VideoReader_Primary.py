@@ -8,12 +8,15 @@ def primary():
   # This will have a file collecting class in the final ver.
   
   y = File(x).read()
+  
   print(y)
   
   z1, z2 = Scripter(y).dissector()
-  Scripter(z2).polishBody()
+  z3 = Scripter(z2).polishBody()
+  
   print(z1)
   print(z2)
+  print(z3)
   
   # !!! /temp trait
 
