@@ -45,7 +45,20 @@ class Scripter:
     Polishes the header of the script into a readable variable. Returns the polished version of the
     header.
     '''
-    pass
+    header_info = []
+
+    for iar in range(len(self.script)):
+      self.script[iar] = self.script[iar][:-1]
+      self.script[iar] = self.script[iar].split(" ")
+
+      while True:
+        header_info.append(self.script[iar][0])
+        self.script[iar].remove(self.script[iar][0])
+        
+        if self.script[iar] == []:
+          break
+    
+    return tuple(header_info)
 
   def polishBody(self):
     '''
