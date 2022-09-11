@@ -1,36 +1,24 @@
-# !!! may just place this in the __init__() function
-def dissector(script: list):  # *
-  '''
-  Dissects the header of the script, separated by the line '---', off of the rest of the script.
-  It then returns the header as output A, and the remainder as output B. It does not polish 
-  either part.
-  '''
-  split = [[], []]  # `split` is a variable to separately handle each side of the script to be 
-  # returned.
-  har = 0  # `har` acts as an interval counter to define which line acts as the separator; the line
-  # '---'. After then, it is used to pinpoint that line for the purposes of the split.
-  ''' while Loop: Finds the separator line, "---". '''
+def split(array: list, index):
+  new_array = []
+  har = 0
+  brake = False
+
   while True:
     try:
-      if (script[har] == "---") or (script[har] == "---\n"):  # If this line is the 
-      # separator...
-        break  # leave the while loop.
+      har = array.index(index)
     except:
-      # This sequence will forcefully crash the program if it does not have a header.
-      har = int("CRASH")
+      har = len(array)
+      brake = True
 
-    har += 1  # if not, increase the counter and go back to the start.
+    new_array.append([])
+    for i in range(har):
+      new_array[-1].append(array[i])
+    del array[:har+1]
 
-  ''' for Loop: Adds every line of the header to `split`. ''' 
-  for iar in range(har):  # For every line in the header...
-    split[0].append(script[iar])  # add to `split[0]`.
-  
-  ''' for Loop: Adds every line outside of the header to `split`. '''
-  for iar in range(len(script)-har-1):  # For every line outside of the header...
-    split[1].append(script[iar+har+1])  # add to `split[1]`.
+    if brake == True:
+      break
 
-  return split[0], split[1]  # returns both sides separately, to be placed in two different 
-  # variables.
+  return(new_array)
 
 
 class Scripter:
@@ -40,13 +28,14 @@ class Scripter:
     header off of the script, if applicable. Or it can polish the script into a readable variable.
     '''
     ''' with Statement: Reads the file and inputs it to `self.script`. '''
-    with open(self.file, "r") as read:
+    with open(file, "r") as read:
       self.script = read.readlines()
     
-    self.script = script  # 'script' is the list that contains the contents of the .txt
-    # file. It is bare-bones, still containing even the '\n' characters.
-    
-    self.header, self.body = dissector(self.script)
+    for iar in range(len(self.script)):
+      self.script[iar] = self.script[iar][:-1]
+
+    self.script = split(self.script, "---")
+    self.header, self.body = self.script[0], self.script[1]
 
 
   def polishHead(self):
@@ -57,7 +46,6 @@ class Scripter:
     traits = []
 
     for iar in range(len(self.header)):
-      self.header[iar] = self.header[iar][:-1]
       self.header[iar] = self.header[iar].split(" ")
 
       while True:
@@ -83,8 +71,8 @@ class Scripter:
     Polishes the body of the script into usable chunks. Returns the polished version of the script.
     '''
     for iar in range(len(self.body)-1):
-      self.body[i] = self.body[iar][:-1]
+      self.body[iar] = self.body[iar][:-1]
       
-    self.body = self.body.split("") 
+    self.body = split(self.body, "") 
     
     return self.body

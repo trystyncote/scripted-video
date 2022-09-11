@@ -4,7 +4,7 @@ def primary():
   # !!! this is TEMPORARY, so I can determine if the script is being edited correctly.
   x = Scripter("sample_script.txt")
   
-  y1 = x.polishHeader()
+  y1 = x.polishHead()
   y2 = x.polishBody()
   
   print(y1)
