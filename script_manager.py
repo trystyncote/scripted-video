@@ -31,48 +31,18 @@ class Scripter:
     with open(file, "r") as read:
       self.script = read.readlines()
     
-    for iar in range(len(self.script)):
-      self.script[iar] = self.script[iar][:-1]
-
-    self.script = split(self.script, "---")
-    self.header, self.body = self.script[0], self.script[1]
+    ''' for Loop: Clears the '\n' off the end of each line exclusing the last line. '''
+    for iar in range(len(self.script)):  # For each line in the self.script variable...
+      self.script[iar] = self.script[iar][:-1]  # Cut off the '\n' to that line.
 
 
-  def polishHead(self):
-    '''
-    Polishes the header of the script into a readable variable. Returns the polished version of the
-    header.
-    '''
-    traits = []
-
-    for iar in range(len(self.header)):
-      self.header[iar] = self.header[iar].split(" ")
-
-      while True:
-        traits.append(self.header[iar][0])
-        self.header[iar].remove(self.header[iar][0]) 
-        
-        if self.header[iar] == []:
-          break
-    
-    for iar in range(len(traits)):
-      try:
-        traits[iar] = int(traits[iar])
-      except:
-        pass 
-    
-    # est. sequence of traits: window width, window height, framerate,
-    # scene number, take number [edits every time program is run*]
-    return tuple(traits)
-
-
-  def polishBody(self):
+  def polishScript(self):
     '''
     Polishes the body of the script into usable chunks. Returns the polished version of the script.
     '''
-    for iar in range(len(self.body)-1):
-      self.body[iar] = self.body[iar][:-1]
+    for iar in range(len(self.script)-1):
+      self.script[iar] = self.script[iar][:-1]
       
-    self.body = split(self.body, "") 
+    self.script = split(self.script, "") 
     
     return self.body
