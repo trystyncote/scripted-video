@@ -6,6 +6,7 @@ def primary():
 
     for iar in xar:
         xar.clear_comments()
+        xar.find_line_end()
         print(xar.lineCurrent)
 
 

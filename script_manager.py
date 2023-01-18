@@ -3,7 +3,9 @@ class Scripter:
         self.lineCurrent = None
         self.lineNumber = 0
         self._scriptReader = self._read_script(file)
-        self.outstandingMultiLine = False
+        self._outstandingMultiLine = False
+        self._atEnd_ofLine = False
+        self.linePrevious = []
 
     def __iter__(self):
         return self
@@ -22,25 +24,47 @@ class Scripter:
         self.lineCurrent = self.lineCurrent[:xar] + self.lineCurrent[yar:]
 
     def clear_comments(self):
+        if self.lineCurrent == "":
+            return
+
         index = 0
         stringSlice_toCheck = ""
 
         for iar, var in enumerate(self.lineCurrent):
             stringSlice_toCheck = self.lineCurrent[iar:iar+2]
 
-            if (self.outstandingMultiLine is False
+            if (self._outstandingMultiLine is False
                     and stringSlice_toCheck == "//"):
                 self._clear_line(iar, len(self.lineCurrent))
 
-            elif (self.outstandingMultiLine is False
+            elif (self._outstandingMultiLine is False
                     and stringSlice_toCheck == "/*"):
-                self.outstandingMultiLine = True
+                self._outstandingMultiLine = True
                 index = iar
 
-            elif (self.outstandingMultiLine is True
+            elif (self._outstandingMultiLine is True
                     and stringSlice_toCheck == "*/"):
                 self._clear_line(index, iar+2)
-                self.outstandingMultiLine = False
+                self._outstandingMultiLine = False
 
-        if self.outstandingMultiLine:
+        if self._outstandingMultiLine:
             self._clear_line(index, len(self.lineCurrent))
+
+    def find_line_end(self):
+        if self.lineCurrent == "":
+            return
+
+        for iar, var in enumerate(self.lineCurrent):
+            if var == ";" and self._atEnd_ofLine is False:
+                if (self.lineCurrent[iar-1] == "\\"
+                        and self.lineCurrent[iar-2] != "\\"
+                        and iar > 0):
+                    continue
+
+                self._clear_line(iar, iar+1)
+                self._atEnd_ofLine = True
+
+        if self._atEnd_ofLine is True:
+            self._atEnd_ofLine = False
+        else:
+            self.linePrevious.append(self.lineCurrent)
