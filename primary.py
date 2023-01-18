@@ -5,7 +5,8 @@ def primary():
     xar = Scripter("sample_script.txt")
 
     for iar in xar:
-        print(iar)
+        xar.clear_comments()
+        print(xar.lineCurrent)
 
 
 if __name__ == "__main__":

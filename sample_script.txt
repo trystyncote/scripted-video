@@ -1,13 +1,13 @@
 HEAD window_length = 852;
 HEAD window_height = 480;
 HEAD framerate = 30;
-HEAD file_name = "scripted_sampleVideo_final";
- 
-SET abc = __current_address__ AS ADDRESS;
+HEAD file_name = "scripted_sampleVideo_final"; /*
+Hello */
+SET abc = __current_address__ AS ADDRESS; /* Hello */
  
 FROM (abc/img1.png) MANAGE IMAGE (1, 2s:15f, 0, 0, FIT LEFT);
 FROM (abc/img2.png) MANAGE IMAGE (1, 1s, 0, 0, FIT LEFT);
 FROM (abc/img3.png) MANAGE IMAGE (1, 120f, 0, 0, FIT LEFT);
 FROM (abc/img4.png) MANAGE IMAGE (1, 0.5s, 0, 0, FIT LEFT);
-FROM (abc/img5.png) MANAGE IMAGE (1, 3s, 0, 0, FIT LEFT);
+FROM (abc/img5.png) MANAGE IMAGE (1, 3s, 0, 0, FIT LEFT); // Hello
 FROM (abc/img6.png) MANAGE IMAGE (1, 1m, 0, 0, FIT LEFT);
