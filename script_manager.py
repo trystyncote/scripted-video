@@ -2,10 +2,10 @@ class Scripter:
     def __init__(self, file: str):
         self.lineCurrent = None
         self.lineNumber = 0
+        self.linePrevious = []
         self._scriptReader = self._read_script(file)
         self._outstandingMultiLine = False
         self._atEnd_ofLine = False
-        self.linePrevious = []
 
     def __iter__(self):
         return self
@@ -64,7 +64,18 @@ class Scripter:
                 self._clear_line(iar, iar+1)
                 self._atEnd_ofLine = True
 
-        if self._atEnd_ofLine is True:
-            self._atEnd_ofLine = False
-        else:
+        if self._atEnd_ofLine is False:
             self.linePrevious.append(self.lineCurrent)
+            return
+
+        self._atEnd_ofLine = False
+
+        if not self.linePrevious:
+            return
+
+        lineCombined = ""
+        for iar in self.linePrevious:
+            lineCombined += iar + " "
+
+        self.lineCurrent = lineCombined + self.lineCurrent
+        self.linePrevious = []
