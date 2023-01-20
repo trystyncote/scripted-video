@@ -1,6 +1,6 @@
-HEAD window_length = 852;
+HEAD window_width = 852;
 HEAD window_height = 480;
-HEAD framerate = 30;
+HEAD frame_rate = 30;
 HEAD file_name = "scripted_sampleVideo_final"; /*
 Hello */
 SET abc = __current_address__ AS ADDRESS; /* Hello */

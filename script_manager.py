@@ -1,3 +1,6 @@
+from class_Compile import Compiler, CompileHEAD, CompileSET
+
+
 class Scripter:
     def __init__(self, file: str):
         self.lineCurrent = None
@@ -79,3 +82,12 @@ class Scripter:
 
         self.lineCurrent = lineCombined + self.lineCurrent
         self.linePrevious = []
+
+    def define_prefix(self):
+        if self.lineCurrent[0:5].upper() == "HEAD ":
+            return CompileHEAD(self.lineCurrent)
+
+        elif self.lineCurrent[0:4].upper() == "SET ":
+            return CompileSET(self.lineCurrent)
+
+        return None
