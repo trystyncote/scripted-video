@@ -2,7 +2,9 @@ class Compiler:
     def __init__(self, lineCurrent: str, syntax: tuple):
         self.lineData = []
         self._discover_syntax(lineCurrent, syntax)
-        self._trim_whitespace()
+
+        for iar, var in enumerate(self.lineData):
+            self.lineData[iar] = var.strip()
 
     def _discover_syntax(self, lineCurrent: str, syntax: tuple):
         outstandingParenthesis = False  # ()
@@ -10,6 +12,7 @@ class Compiler:
         outstandingBraces = False  # {}
         outstandingSingle_quotes = False  # ''
         outstandingDouble_quotes = False  # ""
+
         syntaxIndex = 0
         har = 0
 
@@ -52,6 +55,10 @@ class Compiler:
                 continue
 
             # Find members of syntax...
+            '''
+            if type() == tuple:
+                for jar in syntax[har]:
+            '''
             if lineCurrent[iar:iar+len(syntax[har])].upper() == syntax[har]:
                 if har != 0:
                     self.lineData.append(lineCurrent[syntaxIndex:iar])
@@ -73,26 +80,8 @@ class Compiler:
                 self.lineData.append(lineCurrent[iar+1:])
                 break
 
-    def _trim_whitespace(self):
-        har = 0
-        trimmed = False
-
-        while True:
-            if self.lineData[har][0] == (" " or "\t"):
-                self.lineData[har] = self.lineData[har][1:]
-                trimmed = True
-
-            if self.lineData[har][-1] == (" " or "\t"):
-                self.lineData[har] = self.lineData[har][:-1]
-                trimmed = True
-
-            if trimmed is False:
-                har += 1
-
-            if har >= len(self.lineData):
+            if iar >= len(lineCurrent):
                 break
-
-            trimmed = False
 
     def classify_information(self):
         # To be overridden by child classes.
@@ -151,3 +140,50 @@ class CompileSET(Compiler):
             pass
 
         return identifyVariable, identifyValue
+
+
+class CompileOBJECT(Compiler):
+    syntaxCreate = ("CREATE OBJECT <", "@filename", ">", ":",
+                    "@initialtime", ",", "@x", ",", "@y", ",", "@scale", ",",
+                    "@layer")
+    syntaxMove = ("MOVE OBJECT <", "@filename", ">", ":",
+                  "@changetime", ",", "@xchange", ",", "@ychange", ",",
+                  "@scale", ",", "@rate")
+    syntaxDelete = ("DELETE OBJECT <", "@filename", ">", ":",
+                    "@deletetime", ",", "@delay")
+
+    def __init__(self, lineCurrent: str):
+        index = lineCurrent.find(" ", 4)
+        self.classification = lineCurrent[:index].strip()
+
+        if self.classification == "CREATE":
+            super().__init__(lineCurrent, self.syntaxCreate)
+        elif self.classification == "MOVE":
+            super().__init__(lineCurrent, self.syntaxMove)
+        elif self.classification == "DELETE":
+            super().__init__(lineCurrent, self.syntaxDelete)
+        else:
+            # Raise exception for the script.
+            pass
+
+    def _create(self):
+        print("Entered ._create()")
+        return None
+
+    def _move(self):
+        print("Entered ._move()")
+        return None
+
+    def _delete(self):
+        print("Entered ._delete()")
+        return None
+
+    def classify_information(self):
+        if self.classification == "CREATE":
+            self._create()
+
+        elif self.classification == "MOVE":
+            self._move()
+
+        elif self.classification == "DELETE":
+            self._delete()
