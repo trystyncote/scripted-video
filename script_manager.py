@@ -1,5 +1,4 @@
-from class_Compile import Compiler, CompileHEAD, \
-    CompileSET, CompileOBJECT
+from class_Compile import CompileHEAD, CompileSET, CompileOBJECT
 
 
 class Scripter:
@@ -85,17 +84,15 @@ class Scripter:
         self.linePrevious = []
 
     def define_prefix(self):
-        index = [-1, -1]
-        index[0] = self.lineCurrent.find(" ")
-        index[1] = self.lineCurrent.find(" ", index[0]+4)
-
         if self.lineCurrent[0:5].upper() == "HEAD ":
             return CompileHEAD(self.lineCurrent)
 
         elif self.lineCurrent[0:4].upper() == "SET ":
             return CompileSET(self.lineCurrent)
 
-        elif self.lineCurrent[index[0]+1:index[1]] == "OBJECT":
+        elif (self.lineCurrent[0:7] == "CREATE "
+                or self.lineCurrent[0:5] == "MOVE "
+                or self.lineCurrent[0:7] == "DELETE "):
             return CompileOBJECT(self.lineCurrent)
 
         return None
