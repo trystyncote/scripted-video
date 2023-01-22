@@ -93,6 +93,7 @@ class Scripter:
         elif (self.lineCurrent[0:7] == "CREATE "
                 or self.lineCurrent[0:5] == "MOVE "
                 or self.lineCurrent[0:7] == "DELETE "):
-            return CompileOBJECT(self.lineCurrent)
+            return CompileOBJECT(self.lineCurrent, frame_rate=30)
+            # Delcaration of the frame_rate is temporary
 
         return None
