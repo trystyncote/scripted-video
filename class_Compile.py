@@ -167,23 +167,39 @@ class CompileOBJECT(Compiler):
             pass
 
     def _create(self):
-        print("Entered ._create()")
-        return None
+        identifyInitialTime = self.lineData[5]
+        identifyX = self.lineData[7]
+        identifyY = self.lineData[9]
+        identifyScale = self.lineData[11]
+        identifyLayer = self.lineData[13]
+
+        return identifyInitialTime, identifyX, identifyY, identifyScale, \
+        identifyLayer
 
     def _move(self):
-        print("Entered ._move()")
-        return None
+        identifyChangeTime = self.lineData[5]
+        identifyXChange = self.lineData[7]
+        identifyYChange = self.lineData[9]
+        identifyScaleChange = self.lineData[11]
+        identifyRate = self.lineData[13]
+
+        return identifyChangeTime, identifyXChange, identifyYChange, \
+        identifyScaleChange, identifyRate
 
     def _delete(self):
-        print("Entered ._delete()")
-        return None
+        identifyDeleteTime = self.lineData[5]
+        identifyDelay = self.lineData[7]
+
+        return identifyDeleteTime, identifyDelay
 
     def classify_information(self):
         if self.classification == "CREATE":
-            self._create()
+            return self._create()
 
         elif self.classification == "MOVE":
-            self._move()
+            return self._move()
 
         elif self.classification == "DELETE":
-            self._delete()
+            return self._delete()
+
+        return None
