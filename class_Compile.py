@@ -94,7 +94,7 @@ class CompileHEAD(Compiler):
     def __init__(self, lineCurrent: str):
         super().__init__(lineCurrent, self.syntax)
 
-    def classify_information(self):
+    def classify_information(self, **kwargs):
         keywordList = ["window_width", "window_height", "frame_rate",
                        "file_name"]
         identifyVariable = self.lineData[1]
@@ -114,7 +114,7 @@ class CompileSET(Compiler):
     def __init__(self, lineCurrent: str):
         super().__init__(lineCurrent, self.syntax)
 
-    def classify_information(self):
+    def classify_information(self, **kwargs):
         identifyVariable = self.lineData[1]
         identifyValue = self.lineData[3]
         identifyType = self.lineData[5]
@@ -152,7 +152,7 @@ class CompileOBJECT(Compiler):
     syntaxDelete = ("DELETE OBJECT <", "@filename", ">", ":",
                     "@deletetime", ",", "@delay")
 
-    def __init__(self, lineCurrent: str):
+    def __init__(self, lineCurrent: str, **kwargs):
         index = lineCurrent.find(" ", 4)
         self.classification = lineCurrent[:index].strip()
 
@@ -166,33 +166,50 @@ class CompileOBJECT(Compiler):
             # Raise exception for the script.
             pass
 
-    def _create(self):
-        identifyInitialTime = self.lineData[5]
-        identifyX = self.lineData[7]
-        identifyY = self.lineData[9]
-        identifyScale = self.lineData[11]
-        identifyLayer = self.lineData[13]
+        self._kwargs = {}
+        for key, value in kwargs.items():
+            self._kwargs[key] = value
+
+    def _manage_time(self, stringToDissect: str):
+        frame_rate = self._kwargs["frame_rate"]
+        stringToDissect = (stringToDissect + " ").split(" ")
+        _ = stringToDissect.pop(-1)
+        suffixEffect = {"f": 1, "s": frame_rate, "m": frame_rate*60,
+                        "h": frame_rate*60*60}
+
+        aar = 0
+        for iar in stringToDissect:
+            aar += int(iar[:-1]) * suffixEffect[iar[-1]]
+
+        return aar
+
+    def _create(self, **kwargs):
+        identifyInitialTime = self._manage_time(self.lineData[5])
+        identifyX = int(self.lineData[7])
+        identifyY = int(self.lineData[9])
+        identifyScale = float(self.lineData[11])
+        identifyLayer = int(self.lineData[13])
 
         return identifyInitialTime, identifyX, identifyY, identifyScale, \
-        identifyLayer
+            identifyLayer
 
-    def _move(self):
-        identifyChangeTime = self.lineData[5]
-        identifyXChange = self.lineData[7]
-        identifyYChange = self.lineData[9]
-        identifyScaleChange = self.lineData[11]
-        identifyRate = self.lineData[13]
+    def _move(self, **kwargs):
+        identifyChangeTime = self._manage_time(self.lineData[5])
+        identifyXChange = int(self.lineData[7])
+        identifyYChange = int(self.lineData[9])
+        identifyScaleChange = float(self.lineData[11])
+        identifyRate = self._manage_time(self.lineData[13])
 
         return identifyChangeTime, identifyXChange, identifyYChange, \
-        identifyScaleChange, identifyRate
+            identifyScaleChange, identifyRate
 
-    def _delete(self):
-        identifyDeleteTime = self.lineData[5]
+    def _delete(self, **kwargs):
+        identifyDeleteTime = self._manage_time(self.lineData[5])
         identifyDelay = self.lineData[7]
 
         return identifyDeleteTime, identifyDelay
 
-    def classify_information(self):
+    def classify_information(self, **kwargs):
         if self.classification == "CREATE":
             return self._create()
 
