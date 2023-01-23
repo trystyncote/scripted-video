@@ -94,7 +94,7 @@ class CompileHEAD(Compiler):
     def __init__(self, lineCurrent: str):
         super().__init__(lineCurrent, self.syntax)
 
-    def classify_information(self, **kwargs):
+    def classify_information(self):
         keywordList = ["window_width", "window_height", "frame_rate",
                        "file_name"]
         identifyVariable = self.lineData[1]
@@ -114,7 +114,7 @@ class CompileSET(Compiler):
     def __init__(self, lineCurrent: str):
         super().__init__(lineCurrent, self.syntax)
 
-    def classify_information(self, **kwargs):
+    def classify_information(self):
         identifyVariable = self.lineData[1]
         identifyValue = self.lineData[3]
         identifyType = self.lineData[5]
@@ -177,13 +177,13 @@ class CompileOBJECT(Compiler):
         suffixEffect = {"f": 1, "s": frame_rate, "m": frame_rate*60,
                         "h": frame_rate*60*60}
 
-        aar = 0
+        aar = 0.0
         for iar in stringToDissect:
-            aar += int(iar[:-1]) * suffixEffect[iar[-1]]
+            aar += float(iar[:-1]) * suffixEffect[iar[-1]]
 
         return aar
 
-    def _create(self, **kwargs):
+    def _create(self):
         identifyInitialTime = self._manage_time(self.lineData[5])
         identifyX = int(self.lineData[7])
         identifyY = int(self.lineData[9])
@@ -193,7 +193,7 @@ class CompileOBJECT(Compiler):
         return identifyInitialTime, identifyX, identifyY, identifyScale, \
             identifyLayer
 
-    def _move(self, **kwargs):
+    def _move(self):
         identifyChangeTime = self._manage_time(self.lineData[5])
         identifyXChange = int(self.lineData[7])
         identifyYChange = int(self.lineData[9])
@@ -203,13 +203,13 @@ class CompileOBJECT(Compiler):
         return identifyChangeTime, identifyXChange, identifyYChange, \
             identifyScaleChange, identifyRate
 
-    def _delete(self, **kwargs):
+    def _delete(self):
         identifyDeleteTime = self._manage_time(self.lineData[5])
         identifyDelay = self.lineData[7]
 
         return identifyDeleteTime, identifyDelay
 
-    def classify_information(self, **kwargs):
+    def classify_information(self):
         if self.classification == "CREATE":
             return self._create()
 
