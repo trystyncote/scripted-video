@@ -1,5 +1,5 @@
-from script_manager import Scripter
-from class_Compile import Compiler, CompileHEAD, CompileSET
+from Scripter import Scripter
+from Compiler import Compiler, CompileHEAD, CompileSET
 
 
 def primary():

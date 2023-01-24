@@ -1,4 +1,4 @@
-from class_Compile import CompileHEAD, CompileSET, CompileOBJECT
+from Compiler import CompileHEAD, CompileSET, CompileOBJECT
 
 
 class Scripter:
