@@ -143,14 +143,17 @@ class CompileSET(Compiler):
 
 
 class CompileOBJECT(Compiler):
-    syntaxCreate = ("CREATE OBJECT <", "@filename", ">", ":",
+    syntaxCreate = ("CREATE OBJECT ", "@objectname", ":", "@filename", ",",
                     "@initialtime", ",", "@x", ",", "@y", ",", "@scale", ",",
                     "@layer")
-    syntaxMove = ("MOVE OBJECT <", "@filename", ">", ":",
+    # CREATE OBJECT obj5: "abc/img5.png", 8s, 0, 0, 1, 5;
+    syntaxMove = ("MOVE OBJECT ", "@objectname", ":",
                   "@changetime", ",", "@xchange", ",", "@ychange", ",",
                   "@scale", ",", "@rate")
-    syntaxDelete = ("DELETE OBJECT <", "@filename", ">", ":",
-                    "@deletetime", ",", "@delay")
+    # MOVE OBJECT obj5: 9s, 100, 100, 0, 15f;
+    syntaxDelete = ("DELETE OBJECT ", "@objectname", ":", "@deletetime", ",",
+                    "@delay")
+    # DELETE OBJECT obj5: 11s, 0;
 
     def __init__(self, lineCurrent: str, **kwargs):
         index = lineCurrent.find(" ", 4)
@@ -181,33 +184,37 @@ class CompileOBJECT(Compiler):
         for iar in stringToDissect:
             aar += float(iar[:-1]) * suffixEffect[iar[-1]]
 
-        return aar
+        return int(aar)
 
     def _create(self):
+        identifyObject = self.lineData[1]
+        identifyFileName = self.lineData[3]
         identifyInitialTime = self._manage_time(self.lineData[5])
         identifyX = int(self.lineData[7])
         identifyY = int(self.lineData[9])
         identifyScale = float(self.lineData[11])
         identifyLayer = int(self.lineData[13])
 
-        return identifyInitialTime, identifyX, identifyY, identifyScale, \
-            identifyLayer
+        return identifyObject, identifyFileName, identifyInitialTime, \
+            identifyX, identifyY, identifyScale, identifyLayer
 
     def _move(self):
-        identifyChangeTime = self._manage_time(self.lineData[5])
-        identifyXChange = int(self.lineData[7])
-        identifyYChange = int(self.lineData[9])
-        identifyScaleChange = float(self.lineData[11])
-        identifyRate = self._manage_time(self.lineData[13])
+        identifyObject = self.lineData[1]
+        identifyChangeTime = self._manage_time(self.lineData[3])
+        identifyXChange = int(self.lineData[5])
+        identifyYChange = int(self.lineData[7])
+        identifyScaleChange = float(self.lineData[9])
+        identifyRate = self._manage_time(self.lineData[11])
 
-        return identifyChangeTime, identifyXChange, identifyYChange, \
-            identifyScaleChange, identifyRate
+        return identifyObject, identifyChangeTime, identifyXChange, \
+            identifyYChange, identifyScaleChange, identifyRate
 
     def _delete(self):
-        identifyDeleteTime = self._manage_time(self.lineData[5])
-        identifyDelay = self.lineData[7]
+        identifyObject = self.lineData[1]
+        identifyDeleteTime = self._manage_time(self.lineData[3])
+        identifyDelay = self._manage_time(self.lineData[5])
 
-        return identifyDeleteTime, identifyDelay
+        return identifyObject, identifyDeleteTime, identifyDelay
 
     def classify_information(self):
         if self.classification == "CREATE":

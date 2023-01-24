@@ -8,23 +8,23 @@ Hello
 
 SET abc = __current_address__ AS ADDRESS; /* Hello */
  
-CREATE OBJECT <abc/img1.png>: 0s, 0, 0, 1, 1;
-DELETE OBJECT <abc/img1.png>: 2s 15f, 0;
+CREATE OBJECT obj1: abc/img1.png, 0s, 0, 0, 1, 1;
+DELETE OBJECT obj1: 2s 15f, 0f;
 
-CREATE OBJECT <abc/img2.png>: 2s 15f, 0, 0, 1, 2; // Hello
-DELETE OBJECT <abc/img2.png>: 3s 15f, 0;
+CREATE OBJECT obj2: abc/img2.png, 2s 15f, 0, 0, 1, 2; // Hello
+DELETE OBJECT obj2: 3s 15f, 0f;
 
-CREATE OBJECT <abc/img3.png>: 3s 15f, 0, 0, 1, 3;
-DELETE OBJECT <abc/img3.png>: 7s 15f, 0;
+CREATE OBJECT obj3: abc/img3.png, 3s 15f, 0, 0, 1, 3;
+DELETE OBJECT obj3: 7s 15f, 0f;
 
-CREATE OBJECT <abc/img4.png>:
-    7s 15f, 0, 0, 1, 4;
-DELETE OBJECT <abc/img4.png>:
-    8s, 0;
+CREATE OBJECT obj4:
+    abc/img4.png, 7s 15f, 0, 0, 1, 4;
+DELETE OBJECT obj4:
+    8s, 0f;
 
-CREATE OBJECT <abc/img5.png>: 8s, 0, 0, 1, 5;
-MOVE OBJECT <abc/img5.png>: 9s, 100, 100, 0, 15f;
-DELETE OBJECT <abc/img5.png>: 11s, 0;
+CREATE OBJECT obj5: abc/img5.png, 8s, 0, 0, 1, 5;
+MOVE OBJECT obj5: 9s, 100, 100, 0, 15f;
+DELETE OBJECT obj5: 11s, 0f;
 
-CREATE OBJECT <abc/img6.png>: 11s, 0, 0, 1, 6;
-DELETE OBJECT <abc/img6.png>: 1m 11s, 0;
+CREATE OBJECT obj6: abc/img6.png, 11s, 0, 0, 1, 6;
+DELETE OBJECT obj6: 1m 11s, 0f;
