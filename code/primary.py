@@ -1,16 +1,10 @@
 from Scripter import Scripter
-from Compiler import Compiler, CompileHEAD, CompileSET
-import os
-
-
-def find_path_of_file(desiredFile_name: str, absoluteTop: str = "C:\\"):
-    for root, dirs, files in os.walk(absoluteTop):
-        for name in files:
-            if name == desiredFile_name:
-                return os.path.abspath(os.path.join(root, name))
+from File import find_path_of_file
 
 
 def primary():
+    scriptVariable_list = {}
+
     xar = Scripter(find_path_of_file("sample_script.txt"))
     yar = None
     yar_collect = ()
