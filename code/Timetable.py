@@ -4,6 +4,17 @@ class Timetable:
         self.timetableRaw = fullTimetable
         self.timetableSorted = []
 
+        self.objectIndex = {
+            "startTime": 1,
+            "xCoord": 2,
+            "yCoord": 3,
+            "scale": 4,
+            "layer": 5,
+            "moveDetails": 6,
+            "deleteTime": 7,
+            "delayDelete": 8
+        }
+
         self._collect_information()
         self._define_dimensions()
         self._sort_information()
@@ -17,17 +28,20 @@ class Timetable:
         # "D", objectname, time, delay
         for row in self.timetableRaw:
             if row[0] == "C":
-                self.objectInformation[row[1]] = [row[2], row[3], row[4], row[5], row[6], row[7], []]
+                self.objectInformation[row[1]] = [row[2], row[3], row[4],
+                                                  row[5], row[6], row[7], []]
 
             elif row[0] == "M":
                 if row[1] in self.objectInformation is False:
                     # Raise exception for the script.
                     break
 
-                self.objectInformation[row[1]][6].append([])
+                self.objectInformation[row[1]] \
+                    [self.objectIndex["moveDetails"]].append([])
 
                 for jar in row[2:]:  # UNSURE: Syntax may not be proper.
-                    self.objectInformation[row[1]][6][-1].append(jar)
+                    self.objectInformation[row[1]] \
+                        [self.objectIndex["moveDetails"]][-1].append(jar)
 
             elif row[0] == "D":
                 if row[1] in self.objectInformation is False:
@@ -41,9 +55,15 @@ class Timetable:
         findMax_frame = []
         findMax_layer = []
         for key in self.objectInformation:
-            findMax_frame.append(self.objectInformation[key][7])
-            findMax_frame.append(self.objectInformation[key][1])
-            findMax_layer.append(self.objectInformation[key][5])
+            findMax_frame.append(
+                self.objectInformation[key][self.objectIndex["startTime"]]
+            )
+            findMax_frame.append(
+                self.objectInformation[key][self.objectIndex["deleteTime"]]
+            )
+            findMax_layer.append(
+                self.objectInformation[key][self.objectIndex["layer"]]
+            )
 
         maxFrame = max(findMax_frame) + 1
         maxLayer = max(findMax_layer)
@@ -62,12 +82,14 @@ class Timetable:
         # col: layer of video
         # thing[x][y] -> x: row, y: col
         for key in self.objectInformation:
-            start = self.objectInformation[key][1]
-            end = self.objectInformation[key][7]
+            start = self.objectInformation[key][self.objectIndex["startTime"]]
+            end = self.objectInformation[key][self.objectIndex["deleteTime"]]
 
-            if self.objectInformation[key][6]:
-                for iar in self.objectInformation[key][6]:
-                    # Enters another function to manage how the move information is managed.
+            if self.objectInformation[key][self.objectIndex["moveDetails"]]:
+                for iar in self.objectInformation[key] \
+                        [self.objectIndex["moveDetails"]]:
+                    # Enters another function to manage how the move
+                    # information is managed.
                     pass
 
             for xar, aar in enumerate(self.timetableSorted):
@@ -75,7 +97,8 @@ class Timetable:
                     continue
 
                 for yar, bar in enumerate(aar):
-                    if yar + 1 != self.objectInformation[key][5]:
+                    if yar + 1 != self.objectInformation[key] \
+                            [self.objectIndex["layer"]]:
                         continue
 
                     self.timetableSorted[xar][yar] = [key, ""]  # x, y, scale
