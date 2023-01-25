@@ -1,3 +1,6 @@
+from File import find_path_of_file
+
+
 class Compiler:
     def __init__(self, lineCurrent: str, syntax: tuple):
         self.lineData = []
@@ -7,9 +10,6 @@ class Compiler:
             self.lineData[iar] = var.strip()
 
     def _discover_syntax(self, lineCurrent: str, syntax: tuple):
-        outstandingParenthesis = False  # ()
-        outstandingBrackets = False  # []
-        outstandingBraces = False  # {}
         outstandingSingle_quotes = False  # ''
         outstandingDouble_quotes = False  # ""
 
@@ -17,27 +17,6 @@ class Compiler:
         har = 0
 
         for iar, var in enumerate(lineCurrent):
-            if not outstandingParenthesis and var == "(":
-                outstandingParenthesis = True
-                continue
-            elif outstandingParenthesis and var == ")":
-                outstandingParenthesis = False
-                continue
-
-            if not outstandingBrackets and var == "[":
-                outstandingBrackets = True
-                continue
-            elif outstandingBrackets and var == "]":
-                outstandingBrackets = False
-                continue
-
-            if not outstandingBraces and var == "{":
-                outstandingBraces = True
-                continue
-            elif outstandingBraces and var == "}":
-                outstandingBraces = False
-                continue
-
             if not outstandingSingle_quotes and var == "'":
                 outstandingSingle_quotes = True
                 continue
@@ -55,16 +34,11 @@ class Compiler:
                 continue
 
             # Find members of syntax...
-            '''
-            if type() == tuple:
-                for jar in syntax[har]:
-            '''
             if lineCurrent[iar:iar+len(syntax[har])].upper() == syntax[har]:
                 if har != 0:
                     self.lineData.append(lineCurrent[syntaxIndex:iar])
                 syntaxIndex = iar + len(syntax[har])
                 self.lineData.append(lineCurrent[iar:iar+len(syntax[har])])
-                # lineCurrent = lineCurrent[iar+len(syntax[har]):]
 
                 while True:
                     har += 1
@@ -77,7 +51,7 @@ class Compiler:
             try:
                 syntax[har]
             except IndexError:
-                self.lineData.append(lineCurrent[iar+1:])
+                self.lineData.append(lineCurrent[iar+len(self.lineData[-1]):])
                 break
 
             if iar >= len(lineCurrent):
@@ -132,8 +106,10 @@ class CompileSET(Compiler):
             pass
 
         elif identifyType.upper() == "ADDRESS":
-            # Collect directory.
-            pass
+            if identifyValue == "__current_address__":
+                identifyValue = "Compiler.py"
+            identifyValue = find_path_of_file(identifyValue).rsplit("\\", 1)
+            identifyValue = identifyValue[0] + "\\"
 
         else:
             # Raise exception for the script.

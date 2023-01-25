@@ -1,5 +1,5 @@
-from Scripter import Scripter
 from File import find_path_of_file
+from Scripter import Scripter
 
 
 def primary():
