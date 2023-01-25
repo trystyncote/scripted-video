@@ -88,6 +88,12 @@ class Scripter:
         if self.lineCurrent[0:5].upper() == "HEAD ":
             holdValue = CompileHEAD(self.lineCurrent).classify_information()
             self.videoTraits[holdValue[0]] = holdValue[1]
+
+            try:
+                self.videoTraits[holdValue[0]] = int(self.videoTraits[holdValue[0]])
+            except ValueError:
+                pass
+
             return None
 
         elif self.lineCurrent[0:4].upper() == "SET ":
