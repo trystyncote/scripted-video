@@ -195,7 +195,7 @@ class CompileOBJECT(Compiler):
         identifyScale = float(self.lineData[11])
         identifyLayer = int(self.lineData[13])
 
-        return identifyObject, identifyFileName, identifyInitialTime, \
+        return "C", identifyObject, identifyFileName, identifyInitialTime, \
             identifyX, identifyY, identifyScale, identifyLayer
 
     def _move(self):
@@ -206,7 +206,7 @@ class CompileOBJECT(Compiler):
         identifyScaleChange = float(self.lineData[9])
         identifyRate = self._manage_time(self.lineData[11])
 
-        return identifyObject, identifyChangeTime, identifyXChange, \
+        return "M", identifyObject, identifyChangeTime, identifyXChange, \
             identifyYChange, identifyScaleChange, identifyRate
 
     def _delete(self):
@@ -214,7 +214,7 @@ class CompileOBJECT(Compiler):
         identifyDeleteTime = self._manage_time(self.lineData[3])
         identifyDelay = self._manage_time(self.lineData[5])
 
-        return identifyObject, identifyDeleteTime, identifyDelay
+        return "D", identifyObject, identifyDeleteTime, identifyDelay
 
     def classify_information(self):
         if self.classification == "CREATE":

@@ -6,6 +6,7 @@ class Scripter:
         self.lineCurrent = None
         self.lineNumber = 0
         self.linePrevious = []
+        self.videoTraits = {}
         self._scriptReader = self._read_script(file)
         self._outstandingMultiLine = False
         self._atEnd_ofLine = False
@@ -85,7 +86,9 @@ class Scripter:
 
     def define_prefix(self):
         if self.lineCurrent[0:5].upper() == "HEAD ":
-            return CompileHEAD(self.lineCurrent)
+            holdValue = CompileHEAD(self.lineCurrent).classify_information()
+            self.videoTraits[holdValue[0]] = holdValue[1]
+            return None
 
         elif self.lineCurrent[0:4].upper() == "SET ":
             return CompileSET(self.lineCurrent)
@@ -93,7 +96,7 @@ class Scripter:
         elif (self.lineCurrent[0:7] == "CREATE "
                 or self.lineCurrent[0:5] == "MOVE "
                 or self.lineCurrent[0:7] == "DELETE "):
-            return CompileOBJECT(self.lineCurrent, frame_rate=30)
-            # Delcaration of the frame_rate is temporary
+            return CompileOBJECT(self.lineCurrent,
+                                 frame_rate=self.videoTraits["frame_rate"])
 
         return None
