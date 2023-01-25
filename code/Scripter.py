@@ -19,6 +19,9 @@ class Scripter:
         self.lineNumber += 1
         return self.lineCurrent
 
+    def __index__(self):
+        return self.lineNumber
+
     def _read_script(self, fileName: str):
         with open(fileName, "r") as fileStore:
             for line in fileStore:
