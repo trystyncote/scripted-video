@@ -19,8 +19,8 @@ class Timetable:
         self._define_dimensions()
         self._sort_information()
 
-        for oar in self.timetableSorted:
-            print(oar)
+        for nar, oar in enumerate(self.timetableSorted):
+            print(f"{nar}: {oar}")
 
     def _collect_information(self):
         # "C", objectname, time, x, y, scale, layer
@@ -73,10 +73,23 @@ class Timetable:
             for yar in range(maxLayer):
                 self.timetableSorted[xar].append("")
 
+    def _move_details(self, key: str):
+        details = []
+        for iar in self.objectInformation[key] \
+                [self.objectIndex["moveDetails"]]:
+            details.append(iar)
+        return details
+        # changeTime, xChange, yChange, scaleChange, rate
+        #        270,     100,     100,         0.0,   15
+
     def _sort_information(self):
         start = -1
-        move = -1
+        moveDetails = []
         end = -1
+        currentLayer = -1
+        moveStart = -1
+        moveEnd = -1
+        moveStatus = ""
 
         # row: frame of video
         # col: layer of video
@@ -84,21 +97,24 @@ class Timetable:
         for key in self.objectInformation:
             start = self.objectInformation[key][self.objectIndex["startTime"]]
             end = self.objectInformation[key][self.objectIndex["deleteTime"]]
+            moveDetails = []
+            moveStart = -1
+            moveEnd = -1
+            moveStatus = ""
 
             if self.objectInformation[key][self.objectIndex["moveDetails"]]:
-                for iar in self.objectInformation[key] \
-                        [self.objectIndex["moveDetails"]]:
-                    # Enters another function to manage how the move
-                    # information is managed.
-                    pass
+                moveDetails = self._move_details(key)
+                # moveStart = moveDetails[0]
+                # moveEnd = moveStart + moveDetails[4]
 
-            for xar, aar in enumerate(self.timetableSorted):
-                if xar < start or xar >= end:
-                    continue
-
-                for yar, bar in enumerate(aar):
-                    if yar + 1 != self.objectInformation[key] \
-                            [self.objectIndex["layer"]]:
-                        continue
-
-                    self.timetableSorted[xar][yar] = [key, ""]  # x, y, scale
+            for xar in range(end - start):
+                currentLayer = self.objectInformation[key][self.objectIndex["layer"]]
+                moveStatus = ()
+                for var in moveDetails:
+                    moveStart = var[0]
+                    moveEnd = moveStart + var[4]
+                    if moveStart < (start + xar) <= moveEnd:
+                        moveStatus = (var[1], var[2], var[3])
+                self.timetableSorted[start+xar][currentLayer-1] = [key, moveStatus]
+                # x: self.objectInformation[key][self.objectIndex["xCoord"]]
+                # xCoord
