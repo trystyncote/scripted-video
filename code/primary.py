@@ -7,30 +7,31 @@ def primary():
     scriptVariable_list = {}
     timetable = []
 
-    xar = Scripter(find_path_of_file("sample_script.txt"))
-    yar = None
-    yar_collect = ()
-    zar = None
+    script = Scripter(find_path_of_file("sample_script.txt"))
+    compile = None
+    compile_collect = ()
+    timetableClass = None
 
-    for iar in xar:
-        xar.clear_comments()
-        xar.find_line_end()
+    for iar in script:
+        script.clear_comments()
+        script.find_line_end()
 
-        if xar.linePrevious:
+        if script.linePrevious:
             continue
 
-        yar = xar.define_prefix()
+        compile = script.define_prefix()
 
-        if yar:
-            yar_collect = yar.classify_information()
+        if compile:
+            compile_collect = compile.classify_information()
 
-            if len(yar_collect) == 2:
-                scriptVariable_list[yar_collect[0]] = yar_collect[1]
+            if len(compile_collect) == 2:
+                scriptVariable_list[compile_collect[0]] = compile_collect[1]
 
             else:
-                timetable.append(yar_collect)
+                timetable.append(compile_collect)
 
-    zar = Timetable(timetable, yar.encoder)
+    timetableClass = Timetable(timetable, compile.encoder)
+    print(timetableClass.timetableSorted)
 
 
 if __name__ == "__main__":
