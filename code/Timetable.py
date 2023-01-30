@@ -73,23 +73,35 @@ class Timetable:
             for yar in range(maxLayer):
                 self.timetableSorted[xar].append("")
 
-    def _move_details(self, key: str):
-        details = []
-        for iar in self.objectInformation[key] \
-                [self.objectIndex["moveDetails"]]:
-            details.append(iar)
-        return details
-        # changeTime, xChange, yChange, scaleChange, rate
-        #        270,     100,     100,         0.0,   15
+    def _determine_details(self, xCoord: int, yCoord: int, scale: float,
+                           key: str, frameIndex: int):
+        moveDetails = self.objectInformation[key] \
+                [self.objectIndex["moveDetails"]]
+
+        if not moveDetails:
+            return xCoord, yCoord, scale
+
+        for var in moveDetails:
+            moveEffect_xCoord = var[1] / var[4]
+            moveEffect_yCoord = var[2] / var[4]
+            moveEffect_scale = var[3] / var[4]
+            moveStart = var[0]
+            moveEnd = var[0] + var[4]
+
+            if moveStart < frameIndex <= moveEnd:
+                xCoord += moveEffect_xCoord
+                yCoord += moveEffect_yCoord
+                scale += moveEffect_scale
+
+        return xCoord, yCoord, scale
 
     def _sort_information(self):
         start = -1
-        moveDetails = []
         end = -1
         currentLayer = -1
-        moveStart = -1
-        moveEnd = -1
-        moveStatus = ""
+        xCoord = -1
+        yCoord = -1
+        scale = -1
 
         # row: frame of video
         # col: layer of video
@@ -97,24 +109,16 @@ class Timetable:
         for key in self.objectInformation:
             start = self.objectInformation[key][self.objectIndex["startTime"]]
             end = self.objectInformation[key][self.objectIndex["deleteTime"]]
-            moveDetails = []
-            moveStart = -1
-            moveEnd = -1
-            moveStatus = ""
-
-            if self.objectInformation[key][self.objectIndex["moveDetails"]]:
-                moveDetails = self._move_details(key)
-                # moveStart = moveDetails[0]
-                # moveEnd = moveStart + moveDetails[4]
+            xCoord = self.objectInformation[key][self.objectIndex["xCoord"]]
+            yCoord = self.objectInformation[key][self.objectIndex["yCoord"]]
+            scale = self.objectInformation[key][self.objectIndex["scale"]]
 
             for xar in range(end - start):
-                currentLayer = self.objectInformation[key][self.objectIndex["layer"]]
-                moveStatus = ()
-                for var in moveDetails:
-                    moveStart = var[0]
-                    moveEnd = moveStart + var[4]
-                    if moveStart < (start + xar) <= moveEnd:
-                        moveStatus = (var[1], var[2], var[3])
-                self.timetableSorted[start+xar][currentLayer-1] = [key, moveStatus]
-                # x: self.objectInformation[key][self.objectIndex["xCoord"]]
-                # xCoord
+                currentLayer = self.objectInformation[key] \
+                        [self.objectIndex["layer"]]
+                xCoord, yCoord, scale = self._determine_details(xCoord, yCoord,
+                                                                scale, key,
+                                                                xar+start)
+                self.timetableSorted[start+xar][currentLayer-1] = \
+                        [key, int(xCoord + 0.5), int(yCoord + 0.5),
+                         float(int(scale * 1000)) / 1000]
