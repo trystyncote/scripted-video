@@ -1,5 +1,6 @@
 class Timetable:
-    def __init__(self, fullTimetable: list):
+    def __init__(self, fullTimetable: list, encoder: str):
+        self.encoder = encoder
         self.objectInformation = {}
         self.timetableRaw = fullTimetable
         self.timetableSorted = []

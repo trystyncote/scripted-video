@@ -2,7 +2,8 @@ from File import find_path_of_file
 
 
 class Compiler:
-    def __init__(self, lineCurrent: str, syntax: tuple):
+    def __init__(self, lineCurrent: str, syntax: tuple, encoder: str):
+        self.encoder = encoder
         self.lineData = []
         self._discover_syntax(lineCurrent, syntax)
 
@@ -65,8 +66,8 @@ class Compiler:
 class CompileHEAD(Compiler):
     syntax = ("HEAD ", "@variable", "=", "@value")
 
-    def __init__(self, lineCurrent: str):
-        super().__init__(lineCurrent, self.syntax)
+    def __init__(self, lineCurrent: str, encoder: str):
+        super().__init__(lineCurrent, self.syntax, encoder)
 
     def classify_information(self):
         keywordList = ["window_width", "window_height", "frame_rate",
@@ -85,8 +86,8 @@ class CompileHEAD(Compiler):
 class CompileSET(Compiler):
     syntax = ("SET ", "@variable", "=", "@value", " AS ", "@type")
 
-    def __init__(self, lineCurrent: str):
-        super().__init__(lineCurrent, self.syntax)
+    def __init__(self, lineCurrent: str, encoder: str):
+        super().__init__(lineCurrent, self.syntax, encoder)
 
     def classify_information(self):
         identifyVariable = self.lineData[1]
@@ -131,16 +132,16 @@ class CompileOBJECT(Compiler):
                     "@delay")
     # DELETE OBJECT obj5: 11s, 0;
 
-    def __init__(self, lineCurrent: str, **kwargs):
+    def __init__(self, lineCurrent: str, encoder: str, **kwargs):
         index = lineCurrent.find(" ", 4)
         self.classification = lineCurrent[:index].strip()
 
         if self.classification == "CREATE":
-            super().__init__(lineCurrent, self.syntaxCreate)
+            super().__init__(lineCurrent, self.syntaxCreate, encoder)
         elif self.classification == "MOVE":
-            super().__init__(lineCurrent, self.syntaxMove)
+            super().__init__(lineCurrent, self.syntaxMove, encoder)
         elif self.classification == "DELETE":
-            super().__init__(lineCurrent, self.syntaxDelete)
+            super().__init__(lineCurrent, self.syntaxDelete, encoder)
         else:
             # Raise exception for the script.
             pass

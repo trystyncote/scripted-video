@@ -30,7 +30,7 @@ def primary():
             else:
                 timetable.append(yar_collect)
 
-    zar = Timetable(timetable)
+    zar = Timetable(timetable, yar.encoder)
 
 
 if __name__ == "__main__":

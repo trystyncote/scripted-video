@@ -1,8 +1,12 @@
 from Compiler import CompileHEAD, CompileSET, CompileOBJECT
+import random
+import string
 
 
 class Scripter:
     def __init__(self, file: str):
+        self.encoder = ''.join(random.choices(string.ascii_uppercase
+                                              + string.digits, k=32))
         self.lineCurrent = None
         self.lineNumber = 0
         self.linePrevious = []
@@ -89,7 +93,7 @@ class Scripter:
 
     def define_prefix(self):
         if self.lineCurrent[0:5].upper() == "HEAD ":
-            holdValue = CompileHEAD(self.lineCurrent).classify_information()
+            holdValue = CompileHEAD(self.lineCurrent, self.encoder).classify_information()
             self.videoTraits[holdValue[0]] = holdValue[1]
 
             try:
@@ -100,12 +104,12 @@ class Scripter:
             return None
 
         elif self.lineCurrent[0:4].upper() == "SET ":
-            return CompileSET(self.lineCurrent)
+            return CompileSET(self.lineCurrent, self.encoder)
 
         elif (self.lineCurrent[0:7] == "CREATE "
                 or self.lineCurrent[0:5] == "MOVE "
                 or self.lineCurrent[0:7] == "DELETE "):
-            return CompileOBJECT(self.lineCurrent,
+            return CompileOBJECT(self.lineCurrent, self.encoder,
                                  frame_rate=self.videoTraits["frame_rate"])
 
         return None
