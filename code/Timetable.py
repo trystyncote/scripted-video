@@ -19,9 +19,6 @@ class Timetable:
         self._define_dimensions()
         self._sort_information()
 
-        for nar, oar in enumerate(self.timetableSorted):
-            print(f"{nar}: {oar}")
-
     def _collect_information(self):
         # "C", objectname, time, x, y, scale, layer
         # "M", objectname, time, x', y', scale', rate
