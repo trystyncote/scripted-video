@@ -1,11 +1,13 @@
 class Timetable:
-    def __init__(self, fullTimetable: list, encoder: str):
+    def __init__(self, fullTimetable: list, encoder: str, variableData: dict):
         self.encoder = encoder
         self.objectInformation = {}
         self.timetableRaw = fullTimetable
         self.timetableSorted = []
+        self.variableData = variableData
 
         self.objectIndex = {
+            "fileName": 0,
             "startTime": 1,
             "xCoord": 2,
             "yCoord": 3,
@@ -21,13 +23,17 @@ class Timetable:
         self._sort_information()
 
     def _collect_information(self):
-        # "C", objectname, time, x, y, scale, layer
+        # "C", objectname, filename, time, x, y, scale, layer
         # "M", objectname, time, x', y', scale', rate
         # "D", objectname, time, delay
         for row in self.timetableRaw:
             if row[0] == "C":
                 self.objectInformation[row[1]] = [row[2], row[3], row[4],
                                                   row[5], row[6], row[7], []]
+
+                for key in self.variableData:
+                    if self.objectInformation[row[1]][0].find(key) != -1:
+                        self.objectInformation[row[1]][0] = self.objectInformation[row[1]][0].replace(key + "/", self.variableData[key])
 
             elif row[0] == "M":
                 if row[1] in self.objectInformation is False:
@@ -120,3 +126,11 @@ class Timetable:
                 self.timetableSorted[start+xar][currentLayer-1] = \
                         [key, int(xCoord + 0.5), int(yCoord + 0.5),
                          float(int(scale * 1000)) / 1000]
+
+    def get_object_names(self):
+        objectFiles = {}
+
+        for key in self.objectInformation:
+            objectFiles[key] = self.objectInformation[key][0]
+
+        return objectFiles
