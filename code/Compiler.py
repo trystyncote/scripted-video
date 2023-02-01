@@ -86,8 +86,11 @@ class CompileHEAD(Compiler):
 class CompileSET(Compiler):
     syntax = ("SET ", "@variable", "=", "@value", " AS ", "@type")
 
-    def __init__(self, lineCurrent: str, encoder: str):
+    def __init__(self, lineCurrent: str, encoder: str, **traits):
         super().__init__(lineCurrent, self.syntax, encoder)
+        self._traits = {}
+        for key in traits:
+            self._traits[key] = traits[key]
 
     def classify_information(self):
         identifyVariable = self.lineData[1]
@@ -108,9 +111,9 @@ class CompileSET(Compiler):
 
         elif identifyType.upper() == "ADDRESS":
             if identifyValue == "__current_address__":
-                identifyValue = "Compiler.py"
-            identifyValue = find_path_of_file(identifyValue).rsplit("\\", 1)
-            identifyValue = identifyValue[0] + "\\"
+                identifyValue = self._traits["file_name"]
+                identifyValue = identifyValue.rsplit("\\", 1)
+                identifyValue = identifyValue[0] + "\\"
 
         else:
             # Raise exception for the script.
