@@ -26,8 +26,8 @@ class FrameDraw:
             if not contents:
                 continue
 
-            xHome = self.timetable[index][1]
-            yHome = self.timetable[index][2]
+            xHome = int(self.timetable[index][1])
+            yHome = int(self.timetable[index][2])
 
             objectImage = Image.open(self.objectFiles[self.timetable[index][layer][0]])
             objectImage_pixel = objectImage.load()
@@ -38,4 +38,4 @@ class FrameDraw:
 
             objectImage.close()
 
-        frame.save(self.folderLocation + "\\" + self.encoder + "__" + index, "PNG")
+        frame.save(f"{self.folderLocation}\\{self.encoder}__{index}", "PNG")
