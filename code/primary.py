@@ -1,6 +1,7 @@
 from File import find_path_of_file
 from Scripter import Scripter
 from Timetable import Timetable
+from FrameDraw import FrameDraw
 
 
 def primary():
@@ -30,8 +31,12 @@ def primary():
             else:
                 timetable.append(compile_collect)
 
-    timetableClass = Timetable(timetable, compile.encoder)
-    print(timetableClass.timetableSorted)
+    timetableClass = Timetable(timetable, compile.encoder, scriptVariable_list)
+    frameDrawClass = FrameDraw(timetableClass.timetableSorted,
+                               timetableClass.encoder,
+                               timetableClass.get_object_names(),
+                               script.videoTraits["window_width"],
+                               script.videoTraits["window_height"])
 
 
 if __name__ == "__main__":
