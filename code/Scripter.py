@@ -7,6 +7,7 @@ class Scripter:
     def __init__(self, file: str):
         self.encoder = ''.join(random.choices(string.ascii_uppercase
                                               + string.digits, k=32))
+        self.file_name = file
         self.lineCurrent = None
         self.lineNumber = 0
         self.linePrevious = []
@@ -104,7 +105,8 @@ class Scripter:
             return None
 
         elif self.lineCurrent[0:4].upper() == "SET ":
-            return CompileSET(self.lineCurrent, self.encoder)
+            return CompileSET(self.lineCurrent, self.encoder,
+                              file_name=self.file_name)
 
         elif (self.lineCurrent[0:7] == "CREATE "
                 or self.lineCurrent[0:5] == "MOVE "
