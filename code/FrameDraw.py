@@ -17,6 +17,7 @@ class FrameDraw:
 
         for index, contents in enumerate(self.timetable):
             self.draw_frame(index)
+        self._video_length_frames = index
 
     def draw_frame(self, index: int):
         frame = Image.new("RGB", self.windowDimensions, (255, 255, 255))
@@ -39,3 +40,7 @@ class FrameDraw:
             objectImage.close()
 
         frame.save(f"{self.folderLocation}\\{self.encoder}__{index}.png", "PNG")
+
+    @property
+    def video_length_frames(self):
+        return self._video_length_frames
