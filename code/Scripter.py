@@ -1,12 +1,9 @@
 from Compiler import CompileHEAD, CompileSET, CompileOBJECT
-import random
-import string
 
 
 class Scripter:
-    def __init__(self, file: str):
-        self.encoder = ''.join(random.choices(string.ascii_uppercase
-                                              + string.digits, k=32))
+    def __init__(self, file: str, encoder: str):
+        self.encoder = encoder
         self.file_name = file
         self.lineCurrent = None
         self.lineNumber = 0
