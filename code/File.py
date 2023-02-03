@@ -13,7 +13,7 @@ def find_path_of_file(desiredFile_name: str, absoluteTop: str = "C:\\"):
 
 def create_encoder():
     while True:
-        encoder = ''.join(random.choice(string.ascii_uppercase + string.digits,
+        encoder = ''.join(random.choices(string.ascii_uppercase + string.digits,
                           k=32))
 
         try:
