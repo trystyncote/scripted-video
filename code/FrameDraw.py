@@ -1,23 +1,44 @@
 from File import find_path_of_file
-import os
+
 from PIL import Image
+import os
+import shutil
+
+from moviepy.editor import ImageClip
+from moviepy.video.compositing.concatenate import concatenate_videoclips
+
+
+def stitch_video(input_folder_location, output_final_video_name: str, video_length_frames: int, frame_rate: int = 24):
+    directory, encoder = input_folder_location.rsplit("\\", 1)
+    clips = [(ImageClip(f"{input_folder_location}\\{encoder}__{m}.png")
+              .set_duration(1 / frame_rate))
+             for m in range(video_length_frames)]
+
+    concat_clip = concatenate_videoclips(clips, method="compose")
+    concat_clip.write_videofile(f"{directory}\\{output_final_video_name}.mp4",
+                                fps=frame_rate)
 
 
 class FrameDraw:
     def __init__(self, timetable: list, encoder: str, objectFiles: dict,
                  windowWidth: int, windowHeight: int,
-                 folderLocation = find_path_of_file("sample_script.txt").rpartition("\\")):
+                 folderLocation=find_path_of_file("sample_script.txt").rpartition("\\")):
         self.encoder = encoder
         self.timetable = timetable
         self.objectFiles = objectFiles
         self.windowDimensions = (windowWidth, windowHeight)
+        self.folderLocation = f"{folderLocation[0]}\\{self.encoder}"
 
         os.mkdir(f"{folderLocation[0]}\\{self.encoder}")
-        self.folderLocation = f"{folderLocation[0]}\\{self.encoder}"
 
         for index, contents in enumerate(self.timetable):
             self.draw_frame(index)
         self._video_length_frames = index
+
+        # Manual declaration of variables is temporary.
+        stitch_video(self.folderLocation, "final", self._video_length_frames, 30)
+
+        shutil.rmtree(self.folderLocation)
 
     def draw_frame(self, index: int):
         frame = Image.new("RGB", self.windowDimensions, (255, 255, 255))
