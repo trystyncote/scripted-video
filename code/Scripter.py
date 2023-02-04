@@ -1,114 +1,197 @@
-from Compiler import CompileHEAD, CompileSET, CompileOBJECT
+def _read_script(file_name: str):
+    with open(file_name, "r") as file_store:
+        for line in file_store:
+            yield line.rstrip()
+
+
+def _clear_line(string: str, start_index: int, end_index: int):
+    return string[:start_index] + string[end_index:]
 
 
 class Scripter:
-    def __init__(self, file: str, encoder: str):
-        self.encoder = encoder
-        self.file_name = file
-        self.lineCurrent = None
-        self.lineNumber = 0
-        self.linePrevious = []
-        self.videoTraits = {}
-        self._scriptReader = self._read_script(file)
-        self._outstandingMultiLine = False
-        self._atEnd_ofLine = False
+    def __init__(self, file: str):
+        """
+        The Scripter class manages a text file and reads it one line at a time,
+        which can be iterated over. The syntax of the file is not part of the
+        class. The main purpose of the class is to read the script and clear
+        the comments and allow multi-line commands.
+
+        :param file: The name of the file containing the script to be run. If
+            the file is not available in the same folder as the python script
+            file running the class, the file must be provided with the full
+            path. Must be in string form.
+        """
+        self._at_end_of_line = False  # at_end_of_line is a boolean for whether
+        # the end-line character has been found. The end-line character is ';'.
+        self._file_name = file  # file_name is the name of the text file being
+        # read.
+        self._line_current = None  # line_current refers to the current line of
+        # the file being read. Outside the class, it's referred to as
+        # 'current_line'.
+        self._line_number = 0  # line_number is the number of the line of the
+        # file being read. *The variable starts at 1 while the class is being
+        # iterated over.*
+        self._line_previous = []  # line_previous stores any previous lines
+        # that occur without an end-line character at the end. This allows the
+        # previous lines to be preserved to allow multi-line commands.
+        self._outstanding_multiline_comment = False  # outstanding_multiline...
+        # is a boolean that determines if a multi-line comment (/* contents */)
+        # is still in effect.
+        self._script_reader = _read_script(file)  # script_reader is the
+        # variable that stores the generator that iterates over the text file
+        # that is being read.
 
     def __iter__(self):
         return self
 
     def __next__(self):
-        self.lineCurrent = next(self._scriptReader)
-        self.lineNumber += 1
-        return self.lineCurrent
+        self._line_current = next(self._script_reader)  # line_current is
+        # updated by calling next on script_reader, which yields the next line
+        # of the text file.
+        self._line_number += 1  # Increases line_number by 1.
+        return self._line_current  # Only returns line_current because it's the
+        # only required variable to return.
 
     def __index__(self):
-        return self.lineNumber
+        # __index__ is used to allow the enumerate function with the class.
+        # Calling enumerate would cause the index (line_number) to be returned.
+        return self._line_number
 
-    def _read_script(self, fileName: str):
-        with open(fileName, "r") as fileStore:
-            for line in fileStore:
-                yield line.rstrip()
-
-    def _clear_line(self, xar: int, yar: int):
-        self.lineCurrent = self.lineCurrent[:xar] + self.lineCurrent[yar:]
-
-    def clear_comments(self):
-        if self.lineCurrent == "":
-            return
-
-        index = 0
-        stringSlice_toCheck = ""
-
-        for iar, var in enumerate(self.lineCurrent):
-            stringSlice_toCheck = self.lineCurrent[iar:iar+2]
-
-            if (self._outstandingMultiLine is False
-                    and stringSlice_toCheck == "//"):
-                self._clear_line(iar, len(self.lineCurrent))
-
-            elif (self._outstandingMultiLine is False
-                    and stringSlice_toCheck == "/*"):
-                self._outstandingMultiLine = True
-                index = iar
-
-            elif (self._outstandingMultiLine is True
-                    and stringSlice_toCheck == "*/"):
-                self._clear_line(index, iar+2)
-                self._outstandingMultiLine = False
-
-        if self._outstandingMultiLine:
-            self._clear_line(index, len(self.lineCurrent))
-
-    def find_line_end(self):
-        if self.lineCurrent == "":
-            return
-
-        for iar, var in enumerate(self.lineCurrent):
-            if var == ";" and self._atEnd_ofLine is False:
-                if (self.lineCurrent[iar-1] == "\\"
-                        and self.lineCurrent[iar-2] != "\\"
-                        and iar > 0):
-                    continue
-
-                self._clear_line(iar, iar+1)
-                self._atEnd_ofLine = True
-
-        if self._atEnd_ofLine is False:
-            self.linePrevious.append(self.lineCurrent)
-            return
-
-        self._atEnd_ofLine = False
-
-        if not self.linePrevious:
-            return
-
-        lineCombined = ""
-        for iar in self.linePrevious:
-            lineCombined += iar + " "
-
-        self.lineCurrent = lineCombined + self.lineCurrent
-        self.linePrevious = []
-
-    def define_prefix(self):
-        if self.lineCurrent[0:5].upper() == "HEAD ":
-            holdValue = CompileHEAD(self.lineCurrent, self.encoder).classify_information()
-            self.videoTraits[holdValue[0]] = holdValue[1]
-
-            try:
-                self.videoTraits[holdValue[0]] = int(self.videoTraits[holdValue[0]])
-            except ValueError:
-                pass
-
+    @property
+    def current_line(self):
+        """ Get current_line unless the end-line character is not found. """
+        # line_current is referred to as current_line externally because it is
+        # more clear that way. Internally, line_current is called that because
+        # of naming symmetry with other variables (line_number, line_previous).
+        if self._line_previous:
             return None
 
-        elif self.lineCurrent[0:4].upper() == "SET ":
-            return CompileSET(self.lineCurrent, self.encoder,
-                              file_name=self.file_name)
+        return self._line_current
 
-        elif (self.lineCurrent[0:7] == "CREATE "
-                or self.lineCurrent[0:5] == "MOVE "
-                or self.lineCurrent[0:7] == "DELETE "):
-            return CompileOBJECT(self.lineCurrent, self.encoder,
-                                 frame_rate=self.videoTraits["frame_rate"])
+    def clear_comments(self, prefix_single_line: str = "//",
+                       prefix_multiline: str = "/*",
+                       suffix_multiline: str = "*/"):
+        """
+        clear_comments() goes through the line and looks for any indicator of
+        a comment and clears the contents of the line accordingly.
 
-        return None
+        :param prefix_single_line: The syntax for the single-line comment's
+            beginning. Default is '//'.
+        :param prefix_multiline: The syntax for the multi-line comment's
+            beginning. Default is '/*'.
+        :param suffix_multiline:  The syntax for the multi-line comment's end.
+            Default is '*/'.
+        :return: Has no return.
+        """
+        if self._line_current == "":
+            # There are no comments in an empty line.
+            return
+
+        index = 0  # index is a variable for holding a value to be for clearing
+        # a comment later. This is used for when a multiline comment prefix is
+        # found, when it'll hold the value it was at until the suffix is found,
+        # if at all.
+
+        for iar, var in enumerate(self._line_current):
+            if self._line_current == "":
+                # There are no [more?] comments in an empty line.
+                return
+
+            if (self._outstanding_multiline_comment is False
+                    and (self._line_current[iar:iar+len(prefix_single_line)]
+                         == prefix_single_line)):
+                # When the single-line prefix has been found, the rest of the
+                # line is the contents of the rest of the comment, so the
+                # remainder of the line is cleared.
+                self._line_current = _clear_line(self._line_current, iar, len(self._line_current))
+
+            elif (self._outstanding_multiline_comment is False
+                    and (self._line_current[iar:iar+len(prefix_multiline)]
+                         == prefix_multiline)):
+                # When the multi-line prefix has been found, the index variable
+                # holds onto the current character's index and sets the
+                # outstanding_multiline... variable to True to begin looking
+                # for the suffix.
+                self._outstanding_multiline_comment = True
+                index = iar
+
+            elif (self._outstanding_multiline_comment is True
+                    and (self._line_current[iar:iar+len(suffix_multiline)]
+                         == suffix_multiline)):
+                # When the multi-line suffix has been found, the line is
+                # cleared from the index to the current index, and the search
+                # for the suffix is over, so the outstanding_multiline...
+                # variable is reset to False.
+                self._line_current = _clear_line(self._line_current, index, iar+len(suffix_multiline))
+                self._outstanding_multiline_comment = False
+
+        if self._outstanding_multiline_comment:
+            # If the multi-line suffix has not yet been found, then the program
+            # presumes that it's on a future line, so it clears the remainder
+            # of the current line and leaves outstanding_multiline... to True
+            # to allow future lines to search for it.
+            self._line_current = _clear_line(self._line_current, index, len(self._line_current))
+
+    def find_line_end(self, syntax_end_line: str = ";"):
+        """
+        find_line_end() looks for the end-line character and determines if the
+        current line has the conclusion to a 'command'. This exists to allow
+        multi-line commands to work properly.
+
+        :param syntax_end_line: The character(s) that are used as the end-line
+            character(s). Default is ';'.
+        :return: Has no return.
+        """
+        if self._line_current == "":
+            # There isn't an end-line character in an empty line.
+            return
+
+        for iar, var in enumerate(self._line_current):
+            if (self._line_current[iar:iar+len(syntax_end_line)]
+                == syntax_end_line) \
+                    and self._at_end_of_line is False:
+                # This monstrosity of an if-statement is simply checking for
+                # the end-line character when at_end_of_line is False, meaning
+                # not found.
+                if (self._line_current[iar-1] == "\\"
+                        and self._line_current[iar-2] != "\\"
+                        and iar > 0):
+                    # This statement allows the use of backslashes to prevent
+                    # the program misinterpreting a use of it as an end-line
+                    # character when not intended.
+                    continue
+
+                # The program clears the end-line character from the current
+                # line, and set at_end_of_line to True to show it's been found.
+                self._line_current = _clear_line(self._line_current, iar, iar+len(syntax_end_line))
+                self._at_end_of_line = True
+                break
+
+        # at_end_of_line being False means that the end-line character was not
+        # found, meaning the program should add the current line to
+        # line_previous to preserve it for when the end-line character *is*
+        # found.
+        if self._at_end_of_line is False:
+            self._line_previous.append(self._line_current)
+            return
+
+        # at_end_of_line is reset here because it needs to be reset after it's
+        # used, and it is no longer needed.
+        self._at_end_of_line = False
+
+        # If there are no previous line to find, then there's no point in
+        # adding them to the current line, so there's another early return.
+        if not self._line_previous:
+            return
+
+        line_combined = ""  # line_combined is used to strap the strings of the
+        # previous line and the current one together.
+        for iar in self._line_previous:
+            line_combined += iar + " "  # A space is added to prevent any
+            # issues with resulting syntax, ie "HEADframe_rate" being incorrect
+            # syntax, but not intended.
+
+        # The program then pastes the previous lines, through line_combined, to
+        # line_current, and resets line_previous to an empty list.
+        self._line_current = line_combined + self._line_current
+        self._line_previous = []
