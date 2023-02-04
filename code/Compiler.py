@@ -2,19 +2,19 @@ from File import find_path_of_file
 
 
 def define_prefix(syntax_line: str, traits: dict):
-    hold_value = None
+    hold_value = []
     split_syntax_line = syntax_line.split(" ")
-    video_traits = None
 
     if split_syntax_line[0].upper() == "HEAD":
         hold_value = CompileHEAD(syntax_line).classify_information()
 
         try:
+            hold_value = list(hold_value)
             hold_value[1] = int(hold_value[1])
         except ValueError:
             pass
 
-        return hold_value
+        return tuple(hold_value)
 
     elif split_syntax_line[0] == "SET":
         return CompileSET(syntax_line, file_name=traits["file_name"])
