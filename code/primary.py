@@ -1,11 +1,12 @@
 from File import find_path_of_file, create_encoder
 from Scripter import Scripter
+from Compiler import define_prefix
 from Timetable import Timetable
 from FrameDraw import FrameDraw
 
 
 def primary():
-    scriptVariable_list = {}
+    script_video_traits = {}
     timetable = []
 
     encoder = create_encoder()
@@ -22,18 +23,16 @@ def primary():
         if script.linePrevious:
             continue
 
-        compile = script.define_prefix()
+        compile = define_prefix(script.current_line, script_video_traits)
 
-        if compile:
-            compile_collect = compile.classify_information()
+        if isinstance(compile, tuple):
+            script_video_traits[compile[0]] = compile[1]
+            continue
 
-            if len(compile_collect) == 2:
-                scriptVariable_list[compile_collect[0]] = compile_collect[1]
+        compile_collect = compile.classify_information()
+        timetable.append(compile_collect)
 
-            else:
-                timetable.append(compile_collect)
-
-    timetableClass = Timetable(timetable, encoder, scriptVariable_list)
+    timetableClass = Timetable(timetable, encoder, script_video_traits)
     frameDrawClass = FrameDraw(timetableClass.timetableSorted,
                                encoder,
                                timetableClass.get_object_names(),

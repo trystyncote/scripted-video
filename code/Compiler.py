@@ -1,9 +1,32 @@
 from File import find_path_of_file
 
 
+def define_prefix(syntax_line: str, traits: dict):
+    hold_value = None
+    split_syntax_line = syntax_line.split(" ")
+    video_traits = None
+
+    if split_syntax_line[0].upper() == "HEAD":
+        hold_value = CompileHEAD(syntax_line).classify_information()
+
+        try:
+            hold_value[1] = int(hold_value[1])
+        except ValueError:
+            pass
+
+        return hold_value
+
+    elif split_syntax_line[0] == "SET":
+        return CompileSET(syntax_line, file_name=traits["file_name"])
+
+    elif split_syntax_line[1] == "OBJECT":
+        return CompileOBJECT(syntax_line, frame_rate=traits["frame_rate"])
+
+    return None
+
+
 class Compiler:
-    def __init__(self, lineCurrent: str, syntax: tuple, encoder: str):
-        self.encoder = encoder
+    def __init__(self, lineCurrent: str, syntax: tuple):
         self.lineData = []
         self._discover_syntax(lineCurrent, syntax)
 
@@ -66,8 +89,8 @@ class Compiler:
 class CompileHEAD(Compiler):
     syntax = ("HEAD ", "@variable", "=", "@value")
 
-    def __init__(self, lineCurrent: str, encoder: str):
-        super().__init__(lineCurrent, self.syntax, encoder)
+    def __init__(self, lineCurrent: str):
+        super().__init__(lineCurrent, self.syntax)
 
     def classify_information(self):
         keywordList = ["window_width", "window_height", "frame_rate",
@@ -86,8 +109,8 @@ class CompileHEAD(Compiler):
 class CompileSET(Compiler):
     syntax = ("SET ", "@variable", "=", "@value", " AS ", "@type")
 
-    def __init__(self, lineCurrent: str, encoder: str, **traits):
-        super().__init__(lineCurrent, self.syntax, encoder)
+    def __init__(self, lineCurrent: str, **traits):
+        super().__init__(lineCurrent, self.syntax)
         self._traits = {}
         for key in traits:
             self._traits[key] = traits[key]
@@ -135,16 +158,16 @@ class CompileOBJECT(Compiler):
                     "@delay")
     # DELETE OBJECT obj5: 11s, 0;
 
-    def __init__(self, lineCurrent: str, encoder: str, **kwargs):
+    def __init__(self, lineCurrent: str, **kwargs):
         index = lineCurrent.find(" ", 4)
         self.classification = lineCurrent[:index].strip()
 
         if self.classification == "CREATE":
-            super().__init__(lineCurrent, self.syntaxCreate, encoder)
+            super().__init__(lineCurrent, self.syntaxCreate)
         elif self.classification == "MOVE":
-            super().__init__(lineCurrent, self.syntaxMove, encoder)
+            super().__init__(lineCurrent, self.syntaxMove)
         elif self.classification == "DELETE":
-            super().__init__(lineCurrent, self.syntaxDelete, encoder)
+            super().__init__(lineCurrent, self.syntaxDelete)
         else:
             # Raise exception for the script.
             pass
