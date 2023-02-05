@@ -1,232 +1,191 @@
 from File import find_path_of_file
 
 
-def define_prefix(syntax_line: str, traits: dict):
-    hold_value = []
-    split_syntax_line = syntax_line.split(" ")
+def define_prefix(current_line: str, traits: dict):
+    split_current_line = current_line.split(" ")
 
-    if split_syntax_line[0].upper() == "HEAD":
-        hold_value = CompileHEAD(syntax_line).classify_information()
+    if split_current_line[0].upper() == "HEAD":
+        return tuple(_command_head(current_line))
 
-        try:
-            hold_value = list(hold_value)
-            hold_value[1] = int(hold_value[1])
-        except ValueError:
-            pass
+    elif split_current_line[0] == "SET":
+        return _command_set(current_line)
 
-        return tuple(hold_value)
+    elif split_current_line[1] == "OBJECT":
+        if split_current_line[0] == "CREATE":
+            return _command_object_create(current_line,
+                                          frame_rate=traits["frame_rate"])
 
-    elif split_syntax_line[0] == "SET":
-        return CompileSET(syntax_line, file_name=traits["file_name"])
+        elif split_current_line[0] == "MOVE":
+            return _command_object_move(current_line,
+                                        frame_rate=traits["frame_rate"])
 
-    elif split_syntax_line[1] == "OBJECT":
-        return CompileOBJECT(syntax_line, frame_rate=traits["frame_rate"])
+        elif split_current_line[0] == "DELETE":
+            return _command_object_delete(current_line,
+                                          frame_rate=traits["frame_rate"])
 
+    # %&$ Raise exception for the script.
     return None
 
 
-class Compiler:
-    def __init__(self, lineCurrent: str, syntax: tuple):
-        self.lineData = []
-        self._discover_syntax(lineCurrent, syntax)
+def _discover_syntax(current_line: str, syntax: tuple):
+    outstanding_single_quotes = False
+    outstanding_double_quotes = False
 
-        for iar, var in enumerate(self.lineData):
-            self.lineData[iar] = var.strip()
+    syntax_index = 0
+    line_index = 0
+    line_data = []
 
-    def _discover_syntax(self, lineCurrent: str, syntax: tuple):
-        outstandingSingle_quotes = False  # ''
-        outstandingDouble_quotes = False  # ""
+    for index, contents in enumerate(current_line):
+        if not outstanding_single_quotes and contents == "\'":
+            outstanding_single_quotes = True
+            continue
+        elif outstanding_single_quotes:
+            if contents == "\'":
+                outstanding_single_quotes = False
+            continue
 
-        syntaxIndex = 0
-        har = 0
+        if not outstanding_double_quotes and contents == "\"":
+            outstanding_double_quotes = True
+            continue
+        elif outstanding_double_quotes:
+            if contents == "\"":
+                outstanding_double_quotes = False
+            continue
 
-        for iar, var in enumerate(lineCurrent):
-            if not outstandingSingle_quotes and var == "'":
-                outstandingSingle_quotes = True
-                continue
-            elif outstandingSingle_quotes:
-                if var == "'":
-                    outstandingSingle_quotes = False
-                continue
+        if (current_line[index:index+len(syntax[syntax_index])].upper()
+                == syntax[syntax_index]):
+            if syntax_index != 0:
+                line_data.append(current_line[syntax_index:index])
+            syntax_index = index + len(syntax[syntax_index])
+            line_data.append(current_line[index:index+len(syntax[syntax_index])])
 
-            if not outstandingDouble_quotes and var == '"':
-                outstandingDouble_quotes = True
-                continue
-            elif outstandingDouble_quotes:
-                if var == '"':
-                    outstandingDouble_quotes = False
-                continue
-
-            # Find members of syntax...
-            if lineCurrent[iar:iar+len(syntax[har])].upper() == syntax[har]:
-                if har != 0:
-                    self.lineData.append(lineCurrent[syntaxIndex:iar])
-                syntaxIndex = iar + len(syntax[har])
-                self.lineData.append(lineCurrent[iar:iar+len(syntax[har])])
-
-                while True:
-                    har += 1
-                    try:
-                        if syntax[har][0] != "@":
-                            break
-                    except IndexError:
+            while True:
+                syntax_index += 1
+                try:
+                    if syntax[syntax_index][0] != "@":
                         break
+                except IndexError:
+                    break
 
             try:
-                syntax[har]
+                syntax[syntax_index]
             except IndexError:
-                self.lineData.append(lineCurrent[iar+len(self.lineData[-1]):])
+                line_data.append(current_line[index+len(line_data[-1]):])
                 break
 
-            if iar >= len(lineCurrent):
-                break
+    return line_data
 
-    def classify_information(self):
-        # To be overridden by child classes.
+
+def _manage_time(time_string: str, frame_rate: int):
+    time_string = time_string.split(" ")
+    _ = time_string.pop(-1)
+    suffix_effect = {"f": 1,
+                     "s": frame_rate,
+                     "m": frame_rate*60,
+                     "h": frame_rate*60*60}
+
+    time = 0.0
+    for i in time_string:
+        time += float(i[:-1]) * suffix_effect[i[-1]]
+
+    return int(time)
+
+
+def _command_head(current_line: str):
+    syntax = ("HEAD ", "@variable", "=", "@value")
+    keyword_list = ["window_width", "window_height", "frame_rate", "file_name"]
+    line_data = _discover_syntax(current_line, syntax)
+
+    classify_variable = line_data[1]
+    classify_value = line_data[3]
+    try:
+        classify_value = int(classify_value)
+    except ValueError:
         pass
 
+    for keyword in keyword_list:
+        if keyword == classify_variable.lower():
+            return classify_variable, classify_value
 
-class CompileHEAD(Compiler):
-    syntax = ("HEAD ", "@variable", "=", "@value")
-
-    def __init__(self, lineCurrent: str):
-        super().__init__(lineCurrent, self.syntax)
-
-    def classify_information(self):
-        keywordList = ["window_width", "window_height", "frame_rate",
-                       "file_name"]
-        identifyVariable = self.lineData[1]
-        identifyValue = self.lineData[3]
-
-        for iar in keywordList:
-            if iar == identifyVariable:
-                return identifyVariable, identifyValue
-
-        # Raise exception for the script.
-        return None
+    # %&$ Raise exception for the script.
+    return None
 
 
-class CompileSET(Compiler):
+def _command_set(current_line: str, **traits):
     syntax = ("SET ", "@variable", "=", "@value", " AS ", "@type")
+    line_data = _discover_syntax(current_line, syntax)
 
-    def __init__(self, lineCurrent: str, **traits):
-        super().__init__(lineCurrent, self.syntax)
-        self._traits = {}
-        for key in traits:
-            self._traits[key] = traits[key]
+    classify_variable = line_data[1]
+    classify_value = line_data[3]
+    classify_type = line_data[5]
 
-    def classify_information(self):
-        identifyVariable = self.lineData[1]
-        identifyValue = self.lineData[3]
-        identifyType = self.lineData[5]
+    if classify_type.upper() == "INT":
+        classify_value = int(classify_value)
 
-        if identifyType.upper() == "INT":
-            identifyValue = int(identifyValue)
+    elif classify_type.upper() == "FLOAT":
+        classify_value = float(classify_value)
 
-        elif identifyType.upper() == "FLOAT":
-            identifyValue = float(identifyValue)
+    elif classify_type.upper() == "BOOL":
+        classify_value = bool(classify_value)
 
-        elif identifyType.upper() == "BOOL":
-            identifyValue = bool(identifyValue)
+    elif classify_type.upper() == "STRING":
+        pass
 
-        elif identifyType.upper() == "STRING":
-            pass
+    elif classify_type.upper() == "ADDRESS":
+        if classify_value == "__current_address__":
+            classify_value = traits["file_name"]
+            classify_value = classify_value.rsplit("\\", 1)
+            classify_value = classify_value[0] + "\\"
 
-        elif identifyType.upper() == "ADDRESS":
-            if identifyValue == "__current_address__":
-                identifyValue = self._traits["file_name"]
-                identifyValue = identifyValue.rsplit("\\", 1)
-                identifyValue = identifyValue[0] + "\\"
+    else:
+        # %&$ Raise exception for the script.
+        pass
 
-        else:
-            # Raise exception for the script.
-            pass
-
-        return identifyVariable, identifyValue
+    return classify_variable, classify_value
 
 
-class CompileOBJECT(Compiler):
-    syntaxCreate = ("CREATE OBJECT ", "@objectname", ":", "@filename", ",",
-                    "@initialtime", ",", "@x", ",", "@y", ",", "@scale", ",",
-                    "@layer")
-    # CREATE OBJECT obj5: "abc/img5.png", 8s, 0, 0, 1, 5;
-    syntaxMove = ("MOVE OBJECT ", "@objectname", ":",
-                  "@changetime", ",", "@xchange", ",", "@ychange", ",",
-                  "@scale", ",", "@rate")
-    # MOVE OBJECT obj5: 9s, 100, 100, 0, 15f;
-    syntaxDelete = ("DELETE OBJECT ", "@objectname", ":", "@deletetime", ",",
-                    "@delay")
-    # DELETE OBJECT obj5: 11s, 0;
+def _command_object_create(current_line: str, **traits):
+    # CREATE OBJECT @objectname: @filename, @initialtime, @x, @y, @scale, @layer
+    syntax = ("CREATE OBJECT ", "@objectname", ":", "@filename", ",",
+              "@initialtime", ",", "@x", ",", "@y", ",", "@scale", ",",
+              "@layer")
+    line_data = _discover_syntax(current_line, syntax)
 
-    def __init__(self, lineCurrent: str, **kwargs):
-        index = lineCurrent.find(" ", 4)
-        self.classification = lineCurrent[:index].strip()
+    classify_object = line_data[1]
+    classify_file_name = line_data[3]
+    classify_initial_time = _manage_time(line_data[5], traits["frame_rate"])
+    classify_x_coord = int(line_data[7])
+    classify_y_coord = int(line_data[9])
+    classify_scale = float(line_data[11])
+    classify_layer = int(line_data[13])
 
-        if self.classification == "CREATE":
-            super().__init__(lineCurrent, self.syntaxCreate)
-        elif self.classification == "MOVE":
-            super().__init__(lineCurrent, self.syntaxMove)
-        elif self.classification == "DELETE":
-            super().__init__(lineCurrent, self.syntaxDelete)
-        else:
-            # Raise exception for the script.
-            pass
+    return "C", classify_object, classify_file_name, classify_initial_time, \
+        classify_x_coord, classify_y_coord, classify_scale, classify_layer
 
-        self._kwargs = {}
-        for key, value in kwargs.items():
-            self._kwargs[key] = value
 
-    def _manage_time(self, stringToDissect: str):
-        frame_rate = self._kwargs["frame_rate"]
-        stringToDissect = (stringToDissect + " ").split(" ")
-        _ = stringToDissect.pop(-1)
-        suffixEffect = {"f": 1, "s": frame_rate, "m": frame_rate*60,
-                        "h": frame_rate*60*60}
+def _command_object_move(current_line: str, **traits):
+    syntax = ("MOVE OBJECT ", "@objectname", ":", "@changetime", ",",
+              "@xchange", ",", "@ychange", ",", "@scale", ",", "@rate")
+    line_data = _discover_syntax(current_line, syntax)
 
-        aar = 0.0
-        for iar in stringToDissect:
-            aar += float(iar[:-1]) * suffixEffect[iar[-1]]
+    classify_object = line_data[1]
+    classify_change_time = _manage_time(line_data[3], traits["frame_rate"])
+    classify_x_change = int(line_data[5])
+    classify_y_change = int(line_data[7])
+    classify_scale_change = float(line_data[9])
+    classify_rate = _manage_time(line_data[11], traits["frame_rate"])
 
-        return int(aar)
+    return "M", classify_object, classify_change_time, classify_x_change, \
+        classify_y_change, classify_scale_change, classify_rate
 
-    def _create(self):
-        identifyObject = self.lineData[1]
-        identifyFileName = self.lineData[3]
-        identifyInitialTime = self._manage_time(self.lineData[5])
-        identifyX = int(self.lineData[7])
-        identifyY = int(self.lineData[9])
-        identifyScale = float(self.lineData[11])
-        identifyLayer = int(self.lineData[13])
 
-        return "C", identifyObject, identifyFileName, identifyInitialTime, \
-            identifyX, identifyY, identifyScale, identifyLayer
+def _command_object_delete(current_line: str, **traits):
+    syntax = ("DELETE OBJECT ", "@objectname", ":", "@deletetime", ",",
+              "@delay")
+    line_data = _discover_syntax(current_line, syntax)
 
-    def _move(self):
-        identifyObject = self.lineData[1]
-        identifyChangeTime = self._manage_time(self.lineData[3])
-        identifyXChange = int(self.lineData[5])
-        identifyYChange = int(self.lineData[7])
-        identifyScaleChange = float(self.lineData[9])
-        identifyRate = self._manage_time(self.lineData[11])
+    classify_object = line_data[1]
+    classify_delete_time = _manage_time(line_data[3], traits["frame_rate"])
+    classify_delay = _manage_time(line_data[5], traits["frame_rate"])
 
-        return "M", identifyObject, identifyChangeTime, identifyXChange, \
-            identifyYChange, identifyScaleChange, identifyRate
-
-    def _delete(self):
-        identifyObject = self.lineData[1]
-        identifyDeleteTime = self._manage_time(self.lineData[3])
-        identifyDelay = self._manage_time(self.lineData[5])
-
-        return "D", identifyObject, identifyDeleteTime, identifyDelay
-
-    def classify_information(self):
-        if self.classification == "CREATE":
-            return self._create()
-
-        elif self.classification == "MOVE":
-            return self._move()
-
-        elif self.classification == "DELETE":
-            return self._delete()
-
-        return None
+    return "D", classify_object, classify_delete_time, classify_delay
