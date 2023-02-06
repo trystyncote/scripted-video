@@ -13,7 +13,9 @@ def define_prefix(current_line: str, traits: dict):
     # readability purposes.
 
     if split_current_line[0].upper() == "HEAD":
-        return tuple(_command_head(current_line))
+        h = _command_head(current_line)
+        h = tuple(h)
+        return h
 
     elif split_current_line[0] == "SET":
         return _command_set(current_line)
@@ -35,6 +37,12 @@ def define_prefix(current_line: str, traits: dict):
     return None
 
 
+def _update_line_data(line_data: list, current_line: str, start_index: int, end_index: int):
+    line_data.append(current_line[start_index:end_index])
+    line_data[-1] = line_data[-1].split()[0]
+    return line_data
+
+
 def _discover_syntax(current_line: str, syntax: tuple):
     # These variables are to prevent a command from taking effect in the middle
     # of a string, when it's not supposed to.
@@ -48,6 +56,7 @@ def _discover_syntax(current_line: str, syntax: tuple):
     syntax_index = 0  # The purpose of syntax_index is to be a separate counter
     # to the index in the upcoming for-loop. In particular, syntax_index is
     # counting indexes of the syntax variable, as opposed to the current_line.
+    line_index = 0
     line_data = []  # line_data is the list with the commands in them.
 
     for index, contents in enumerate(current_line):
@@ -76,9 +85,15 @@ def _discover_syntax(current_line: str, syntax: tuple):
             if syntax_index != 0:
                 # If the syntax_index is for the first element, then there is
                 # no previous element, meaning the system doesn't collect it.
-                line_data.append(current_line[syntax_index:index])
-            syntax_index = index + len(syntax[syntax_index])
-            line_data.append(current_line[index:index+syntax_index])
+                # line_data.append(current_line[line_index:index])
+                # line_data[-1] = line_data[-1].strip()
+                line_data = _update_line_data(line_data, current_line,
+                                              line_index, index)
+            line_index = index + len(syntax[syntax_index])
+            # line_data.append(current_line[index:index+len(syntax[syntax_index])])
+            # line_data[-1] = line_data[-1].strip()
+            line_data = _update_line_data(line_data, current_line, index,
+                                          index+len(syntax[syntax_index]))
 
             # syntax_index needs to update by two to move to the next part of
             # the syntax that isn't a variable part (@something). No member of
@@ -91,7 +106,11 @@ def _discover_syntax(current_line: str, syntax: tuple):
                 syntax[syntax_index]  # This statement just exists to raise an
                 # IndexError if the syntax_index is out of range.
             except IndexError:
-                line_data.append(current_line[index+len(line_data[-1]):])
+                # line_data.append(current_line[index+len(line_data[-1]):])
+                # line_data[-1] = line_data[-1].split()
+                line_data = _update_line_data(line_data, current_line,
+                                              index+len(line_data[-1]),
+                                              len(current_line))
                 # The remainder of the current_line is pasted into the
                 # line_data to allow it to exist. This usually takes everything
                 # in the line after the previous anchor.
