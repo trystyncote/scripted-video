@@ -7,12 +7,14 @@ from FrameDraw import FrameDraw
 
 def primary():
     script_variables = {}
-    script_video_traits = {}
+    script_video_traits = {
+        "_script_name": find_path_of_file("sample_script.txt")
+    }
     timetable = []
 
     encoder = create_encoder()
 
-    script = Scripter(find_path_of_file("sample_script.txt"))
+    script = Scripter(script_video_traits["_script_name"])
     compile = None
     compile_collect = ()
     timetableClass = None
