@@ -18,20 +18,17 @@ def define_prefix(current_line: str, traits: dict):
         return h
 
     elif split_current_line[0] == "SET":
-        return _command_set(current_line)
+        return _command_set(current_line, **traits)
 
     elif split_current_line[1] == "OBJECT":
         if split_current_line[0] == "CREATE":
-            return _command_object_create(current_line,
-                                          frame_rate=traits["frame_rate"])
+            return _command_object_create(current_line, **traits)
 
         elif split_current_line[0] == "MOVE":
-            return _command_object_move(current_line,
-                                        frame_rate=traits["frame_rate"])
+            return _command_object_move(current_line, **traits)
 
         elif split_current_line[0] == "DELETE":
-            return _command_object_delete(current_line,
-                                          frame_rate=traits["frame_rate"])
+            return _command_object_delete(current_line, **traits)
 
     # %&$ Raise exception for the script.
     return None
@@ -39,7 +36,7 @@ def define_prefix(current_line: str, traits: dict):
 
 def _update_line_data(line_data: list, current_line: str, start_index: int, end_index: int):
     line_data.append(current_line[start_index:end_index])
-    line_data[-1] = line_data[-1].split()[0]
+    # line_data[-1] = line_data[-1].split()[0]
     return line_data
 
 
@@ -116,6 +113,9 @@ def _discover_syntax(current_line: str, syntax: tuple):
                 # in the line after the previous anchor.
                 break
 
+    for index, contents in enumerate(line_data):
+        line_data[index] = contents.split()[0]
+
     return line_data
 
 
@@ -187,7 +187,7 @@ def _command_set(current_line: str, **traits):
 
     elif classify_type.upper() == "ADDRESS":
         if classify_value == "__current_address__":
-            classify_value = traits["file_name"]
+            classify_value = traits["_script_name"]
             classify_value = classify_value.rsplit("\\", 1)
             classify_value = classify_value[0] + "\\"
 
