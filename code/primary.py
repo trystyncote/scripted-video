@@ -1,51 +1,58 @@
 from File import find_path_of_file, create_encoder
 from Scripter import Scripter
-from Compiler import define_prefix, CompileSET, CompileOBJECT
-from Timetable import Timetable
-from FrameDraw import FrameDraw
+from Compiler import define_prefix
+from Timetable import create_timetable
+from FrameDraw import create_video #FrameDraw
+
+import logging
 
 
 def primary():
+    script_traits = {"_script_name": find_path_of_file("sample_script.txt"),
+                     "window_width": None,
+                     "window_height": None,
+                     "frame_rate": None,
+                     "file_name": None}
+    script = Scripter(script_traits["_script_name"])
     script_variables = {}
-    script_video_traits = {
-        "_script_name": find_path_of_file("sample_script.txt")
-    }
-    timetable = []
-
+    timetable_information = []
+    hold_value = None
     encoder = create_encoder()
 
-    script = Scripter(script_video_traits["_script_name"])
-    compile = None
-    compile_collect = ()
-    timetableClass = None
+    logging.basicConfig(format=">> %(message)s")
+    l = logging.getLogger("")
 
-    for iar in script:
+    l.warning("Started reading script.")
+    for i, v in enumerate(script):
         script.clear_comments()
         script.find_line_end()
 
         if not script.current_line:
             continue
 
-        compile = define_prefix(script.current_line, script_video_traits)
+        hold_value = define_prefix(script.current_line, script_traits)
 
-        if isinstance(compile, tuple):
-            script_video_traits[compile[0]] = compile[1]
+        if len(hold_value) == 2:
+            if hold_value[0] in script_traits:
+                script_traits[hold_value[0]] = hold_value[1]
+                continue
+
+            script_variables[hold_value[0]] = hold_value[1]
             continue
 
-        compile_collect = compile.classify_information()
+        timetable_information.append(hold_value)
 
-        if len(compile_collect) == 2:
-            script_variables[compile_collect[0]] = compile_collect[1]
-            continue
+    l.warning("Finished reading script.")
+    l.warning("Started creating the timetable.")
 
-        timetable.append(compile_collect)
+    sorted_timetable, object_information = create_timetable(
+        timetable_information, script_variables
+    )
 
-    timetableClass = Timetable(timetable, encoder, script_video_traits)
-    frameDrawClass = FrameDraw(timetableClass.timetableSorted,
-                               encoder,
-                               timetableClass.get_object_names(),
-                               script.videoTraits["window_width"],
-                               script.videoTraits["window_height"])
+    l.warning("Finished creating the timetable.")
+    l.warning("Started drawing the frames for the video.")
+
+    create_video(sorted_timetable, object_information, encoder, l, **script_traits)
 
 
 if __name__ == "__main__":
