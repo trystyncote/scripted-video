@@ -37,17 +37,33 @@ class Scripter:
         self._outstanding_multiline_comment = False  # outstanding_multiline...
         # is a boolean that determines if a multi-line comment (/* contents */)
         # is still in effect.
-        self._script_reader = _read_script(file)  # script_reader is the
-        # variable that stores the generator that iterates over the text file
-        # that is being read.
+        self._script_reader = None  # script_reader is the variable that stores
+        # the generator that iterates over the text file that is being read.
 
     def __iter__(self):
         return self
 
     def __next__(self):
-        self._line_current = next(self._script_reader)  # line_current is
-        # updated by calling next on script_reader, which yields the next line
-        # of the text file.
+        if not self._script_reader:
+            # If ._script_reader is empty, then it is not presently reading the
+            # file as the class is intended to read. If that's the case, then
+            # it creates a new generator object to read from.
+            self._script_reader = _read_script(self._file_name)
+
+        try:
+            self._line_current = next(self._script_reader)  # line_current is
+            # updated by calling next on script_reader, which yields the next line
+            # of the text file.
+        except StopIteration:
+            self._script_reader = None  # The class resets the generator object
+            # to allow it to make a new generator class if the script wants to
+            # read the file a second time without making a new instance of the
+            # class.
+            self._line_number = 0  # ._line_number is also reset since there is
+            # no longer a script to have a line number for.
+            raise StopIteration  # Re-raises the StopIteration exception to
+            # allow it to work with a for-loop, as it is intended to be used.
+
         self._line_number += 1  # Increases line_number by 1.
         return self._line_current  # Only returns line_current because it's the
         # only required variable to return.
