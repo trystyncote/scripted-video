@@ -2,7 +2,7 @@ from File import find_path_of_file, create_encoder
 from Scripter import Scripter
 from Compiler import define_prefix
 from Timetable import create_timetable
-from FrameDraw import create_video #FrameDraw
+from FrameDraw import create_video
 
 import logging
 
@@ -23,7 +23,7 @@ def primary():
     l = logging.getLogger("")
 
     l.warning("Started reading script.")
-    for i, v in enumerate(script):
+    for _ in script:
         script.clear_comments()
         script.find_line_end()
 
