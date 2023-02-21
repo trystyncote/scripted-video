@@ -9,7 +9,7 @@ def _clear_line(string: str, start_index: int, end_index: int):
 
 
 class Scripter:
-    def __init__(self, file: str):
+    def __init__(self, file: str, allow_rereading: bool = False):
         """
         The Scripter class manages a text file and reads it one line at a time,
         which can be iterated over. The syntax of the file is not part of the
@@ -21,10 +21,20 @@ class Scripter:
             file running the class, the file must be provided with the full
             path. Must be in string form.
         """
+        self._allow_rereading = allow_rereading  # allow_rereading is a
+        # boolean for whether a script can be re-run if the script has already
+        # finished running. Note: The Scripter class is unable to tell if the
+        # script has been run on a previous running of the full program; it
+        # doesn't have a means to tell that. This is merely a preventative
+        # measure for accidentally trying to read a script twice.
         self._at_end_of_line = False  # at_end_of_line is a boolean for whether
         # the end-line character has been found. The end-line character is ';'.
         self._file_name = file  # file_name is the name of the text file being
         # read.
+        self._finished_reading = False  # finished_reading is for whether the
+        # script has been read in full. This variable may become unhelpful if
+        # allow_rereading is set to True, where this variable doesn't prevent
+        # re-reading.
         self._line_current = None  # line_current refers to the current line of
         # the file being read. Outside the class, it's referred to as
         # 'current_line'.
@@ -41,26 +51,20 @@ class Scripter:
         # the generator that iterates over the text file that is being read.
 
     def __iter__(self):
+        self.reset_script()
+        self._script_reader = _read_script(self._file_name)
         return self
 
     def __next__(self):
-        if not self._script_reader:
-            # If ._script_reader is empty, then it is not presently reading the
-            # file as the class is intended to read. If that's the case, then
-            # it creates a new generator object to read from.
-            self._script_reader = _read_script(self._file_name)
-
         try:
             self._line_current = next(self._script_reader)  # line_current is
             # updated by calling next on script_reader, which yields the next line
             # of the text file.
         except StopIteration:
-            self._script_reader = None  # The class resets the generator object
-            # to allow it to make a new generator class if the script wants to
-            # read the file a second time without making a new instance of the
-            # class.
-            self._line_number = 0  # ._line_number is also reset since there is
-            # no longer a script to have a line number for.
+            self._finished_reading = True  # The script changes the
+            # finished_reading variable to show that the script has been fully
+            # read.
+            self.reset_script()
             raise StopIteration  # Re-raises the StopIteration exception to
             # allow it to work with a for-loop, as it is intended to be used.
 
@@ -211,3 +215,24 @@ class Scripter:
         # line_current, and resets line_previous to an empty list.
         self._line_current = line_combined + self._line_current
         self._line_previous = []
+
+    def reset_script(self):
+        """
+        reset_script() clears the current generator object that the class is
+        reading from. If the allow_rereading attribute has been left at False,
+        then this function may raise a UserWarning exception.
+        """
+        self._check_rereading()  # This call to the _check_rereading() function
+        # acts a gatekeeper to prevent the script from being reset if the class
+        # isn't allowed to.
+
+        self._script_reader = None  # The class resets the generator object
+        # to allow it to make a new generator class if the script wants to
+        # read the file a second time without making a new instance of the
+        # class.
+        self._line_number = 0  # ._line_number is also reset since there is
+        # no longer a script to have a line number for.
+
+    def _check_rereading(self):
+        if self._finished_reading and not self._allow_rereading:
+            raise UserWarning("Scripter has not been allowed to read the script more than once.")
