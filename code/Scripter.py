@@ -20,6 +20,10 @@ class Scripter:
             the file is not available in the same folder as the python script
             file running the class, the file must be provided with the full
             path. Must be in string form.
+        :param allow_rereading: OPTIONAL: A boolean for whether the script can
+            be read multiple times in different for-loops. If True, then the
+            script will allow itself to reread the script when another
+            iteration is required. Default is False.
         """
         self._allow_rereading = allow_rereading  # allow_rereading is a
         # boolean for whether a script can be re-run if the script has already
@@ -221,6 +225,8 @@ class Scripter:
         reset_script() clears the current generator object that the class is
         reading from. If the allow_rereading attribute has been left at False,
         then this function may raise a UserWarning exception.
+
+        :return: Has no return.
         """
         self._check_rereading()  # This call to the _check_rereading() function
         # acts a gatekeeper to prevent the script from being reset if the class
