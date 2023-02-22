@@ -286,7 +286,7 @@ class ImageObject:
                     y_alter += int(self._move_y[move_index] / self._move_rate[move_index])
                     scale_alter += (self._move_scale[move_index] / self._move_rate[move_index])
             except IndexError:
-                 break
+                break
 
             move_index += 1
 
