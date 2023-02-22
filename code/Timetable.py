@@ -38,7 +38,8 @@ def create_timetable(timetable_information: list, variable_data: dict = None):
     # is for the layer it is on. Lower layer number is further back.
     sorted_timetable = _fill_timetable(sorted_timetable, object_information)
     # The timetable is filled second, to prevent any out-of-order errors.
-    # The first test script (sample_script.txt) doesn't have this issue.
+    # The first test script (scriptedvideo_sample_script_1.txt) doesn't have
+    # this issue.
 
     return sorted_timetable, object_information
 
