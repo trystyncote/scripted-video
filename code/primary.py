@@ -8,7 +8,7 @@ import logging
 
 
 def primary():
-    script_traits = {"_script_name": find_path_of_file("sample_script.txt"),
+    script_traits = {"_script_name": find_path_of_file("scriptedvideo_sample_script_1.txt"),
                      "window_width": None,
                      "window_height": None,
                      "frame_rate": None,
