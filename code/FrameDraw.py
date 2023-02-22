@@ -32,9 +32,6 @@ def create_video(timetable, object_information, encoder, l, **traits):
 def _draw_frames(frame_information, frame_index, object_information, window_dimensions, folder_location, encoder):
     frame = Image.new("RGB", window_dimensions, (255, 255, 255))
     frame_pixel = frame.load()
-    x_alter = 0
-    y_alter = 0
-    scale_alter = 0.0
 
     for layer, contents in enumerate(frame_information):
         if not contents:
@@ -42,10 +39,9 @@ def _draw_frames(frame_information, frame_index, object_information, window_dime
 
         if object_information[contents].moves:
             object_information[contents].move_object(frame_index)
-            # x_alter, y_alter, scale_alter = _collect_move_details(frame_index, contents, object_information)
 
-        x_home = object_information[contents].x + x_alter
-        y_home = object_information[contents].y + y_alter
+        x_home = object_information[contents].x
+        y_home = object_information[contents].y
 
         object_image = Image.open(object_information[contents].file_name)
         object_image_pixel = object_image.load()
