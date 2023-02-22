@@ -52,7 +52,10 @@ def _draw_frames(frame_information, frame_index, object_information, window_dime
 
         for x in range(x_home, x_home + object_image.width):
             for y in range(y_home, y_home + object_image.height):
-                frame_pixel.__setitem__((x, y), object_image_pixel.__getitem__((x - x_home, y - y_home)))
+                try:
+                    frame_pixel.__setitem__((x, y), object_image_pixel.__getitem__((x - x_home, y - y_home)))
+                except IndexError:
+                    pass
 
         object_image.close()
 
