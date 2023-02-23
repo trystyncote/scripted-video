@@ -228,10 +228,6 @@ class Scripter:
 
         :return: Has no return.
         """
-        self._check_rereading()  # This call to the _check_rereading() function
-        # acts a gatekeeper to prevent the script from being reset if the class
-        # isn't allowed to.
-
         self._script_reader = None  # The class resets the generator object
         # to allow it to make a new generator class if the script wants to
         # read the file a second time without making a new instance of the
