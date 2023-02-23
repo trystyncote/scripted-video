@@ -1,3 +1,6 @@
+import re
+
+
 def define_prefix(current_line: str, traits: dict):
     """
     Collects the information about the respective command from the
@@ -96,7 +99,7 @@ def _discover_syntax(current_line: str, syntax: tuple):
             # the syntax that isn't a variable part (@something). No member of
             # syntax should have two variable parts in a row, or two
             # non-variable parts in a row. There needs be always a seperator
-            # between variable parts, lest this code breaks..
+            # between variable parts, lest this code breaks.
             syntax_index += 2
 
             try:
@@ -140,27 +143,42 @@ def _manage_time(time_string: str, frame_rate: int):
     return int(time)
 
 
-def _command_head(current_line: str):
-    syntax = ("HEAD ", "@variable", "=", "@value")
-    keyword_list = ["window_width", "window_height", "frame_rate", "file_name"]
-    line_data = _discover_syntax(current_line, syntax)
+def _collect_syntax_snapshot(re_match_instance, full_line):
+    return full_line[re_match_instance.start():re_match_instance.end()]
 
-    # These 'classify' grade variables are based on position, which is based on
-    # syntax.
-    classify_variable = line_data[1]
-    classify_value = line_data[3]
+
+def _command_head(current_line: str):
+    syntax_full = "HEAD ((f((rame_rate)|(ile_name)))|(window_((width)|(height))))(\s|)=(\s|)[0-9A-Za-z_]*"
+    # HEAD window_width = 852
+    # ^^^^^^^^^^^^^^^^^^^^^^^
+    if not re.match(syntax_full, current_line):
+        # %&$ Raise exception for the script.
+        pass
+
+    syntax_keyword = "f((rame_rate)|(ile_name))|(window_((width)|(height)))"
+    # HEAD window_width = 852
+    #      ^^^^^^^^^^^^
+    keyword = re.search(syntax_keyword, current_line)
+    keyword = _collect_syntax_snapshot(keyword, current_line).strip()
+
+    syntax_equal_sign = "="
+    # HEAD window_width = 852
+    #                   ^
+    equal_sign = re.search(syntax_equal_sign, current_line)
+
+    syntax_contents = "[\w\s-]*"
+    # (Only to be used for the part of the string after the equal sign.)
+    # HEAD window_width = 852
+    #                     ^^^
+    contents = re.search(syntax_contents, current_line[equal_sign.end():])
+    contents = _collect_syntax_snapshot(contents, current_line[equal_sign.end():]).strip()
+
     try:
-        classify_value = int(classify_value)  # Attempts to convert the value
-        # into an integer, but only if it can. If it can't, it moves on.
+        contents = int(contents)
     except ValueError:
         pass
 
-    for keyword in keyword_list:
-        if keyword == classify_variable.lower():
-            return classify_variable, classify_value
-
-    # %&$ Raise exception for the script.
-    return None
+    return keyword, contents
 
 
 def _command_set(current_line: str, **traits):
@@ -180,7 +198,8 @@ def _command_set(current_line: str, **traits):
         classify_value = float(classify_value)
 
     elif classify_type.upper() == "BOOL":
-        classify_value = bool(classify_value)
+        classify_value\
+            = bool(classify_value)
 
     elif classify_type.upper() == "STRING":
         pass
