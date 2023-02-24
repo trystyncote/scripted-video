@@ -182,14 +182,31 @@ def _command_head(current_line: str):
 
 
 def _command_set(current_line: str, **traits):
-    syntax = ("SET ", "@variable", "=", "@value", " AS ", "@type")
-    line_data = _discover_syntax(current_line, syntax)
+    syntax_full = "SET [0-9A-Za-z_]*(\s|)=(\s|)[0-9A-Za-z_]* AS [0-9A-Za-z_]*"
+    # SET variable = value AS type
+    # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    if not re.match(syntax_full, current_line):
+        # %&$ Raise exception for the script.
+        pass
 
-    # These 'classify' grade variables are based on position, which is based on
-    # syntax.
-    classify_variable = line_data[1]
-    classify_value = line_data[3]
-    classify_type = line_data[5]
+    syntax_SET_ = "SET "
+    # SET variable = value AS type
+    # ^^^
+    SET_ = re.search(syntax_SET_, current_line)
+
+    syntax_equal_sign = "="
+    # SET variable = value AS type
+    #              ^
+    equal_sign = re.search(syntax_equal_sign, current_line)
+
+    classify_variable = current_line[SET_.end():equal_sign.start()].strip()
+    syntax__AS_ = " AS "
+    # SET variable = value AS type
+    #                      ^^
+    _AS_ = re.search(syntax__AS_, current_line)
+
+    classify_value = current_line[equal_sign.end():_AS_.start()].strip()
+    classify_type = current_line[_AS_.end():].strip()
 
     if classify_type.upper() == "INT":
         classify_value = int(classify_value)
@@ -198,8 +215,7 @@ def _command_set(current_line: str, **traits):
         classify_value = float(classify_value)
 
     elif classify_type.upper() == "BOOL":
-        classify_value\
-            = bool(classify_value)
+        classify_value = bool(classify_value)
 
     elif classify_type.upper() == "STRING":
         pass
