@@ -143,7 +143,7 @@ def _manage_time(time_string: str, frame_rate: int):
     return int(time)
 
 
-def _collect_syntax_snapshot(re_match_instance, full_line):
+def _collect_syntax_snapshot(full_line, re_match_instance: re.Match):
     return full_line[re_match_instance.start():re_match_instance.end()]
 
 
@@ -159,7 +159,7 @@ def _command_head(current_line: str):
     # HEAD window_width = 852
     #      ^^^^^^^^^^^^
     keyword = re.search(syntax_keyword, current_line)
-    keyword = _collect_syntax_snapshot(keyword, current_line).strip()
+    keyword = _collect_syntax_snapshot(current_line, keyword).strip()
 
     syntax_equal_sign = "="
     # HEAD window_width = 852
@@ -171,7 +171,7 @@ def _command_head(current_line: str):
     # HEAD window_width = 852
     #                     ^^^
     contents = re.search(syntax_contents, current_line[equal_sign.end():])
-    contents = _collect_syntax_snapshot(contents, current_line[equal_sign.end():]).strip()
+    contents = _collect_syntax_snapshot(current_line[equal_sign.end():], contents).strip()
 
     try:
         contents = int(contents)
