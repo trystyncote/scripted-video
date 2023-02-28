@@ -55,6 +55,7 @@ class Scripter:
         # the generator that iterates over the text file that is being read.
 
     def __iter__(self):
+        self._check_rereading()
         self.reset_script()
         self._script_reader = _read_script(self._file_name)
         return self
