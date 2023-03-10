@@ -59,18 +59,9 @@ def _collect_information(command: list, object_information: dict,
 
     # "C", objectname, filename, time, x, y, scale, layer
     if classification == "C":
-        object_reference.file_name = command[2]
-        for key in variable_data:
-            # This loop checks to see if there are any variables in the
-            # file_name variable. If there are, replace it with the variable's
-            # contents.
-            if object_reference.file_name.find(key) != -1:
-                object_reference.file_name = object_reference.file_name \
-                    .replace(key + "/", variable_data[key])
-
         # Positions are all hard-coded!
-        object_reference.add_create_details(start_time=command[3], x=command[4], y=command[5], scale=command[6],
-                                            layer=command[7])
+        object_reference.add_create_details(file_name=command[2], start_time=command[3], x=command[4], y=command[5], scale=command[6],
+                                            layer=command[7], traits=variable_data)
 
     # "M", objectname, time, x', y', scale', rate
     elif classification == "M":
@@ -202,7 +193,7 @@ class ImageObject:
         return self._x_current
 
     @property
-    def y(self):
+    def current_y(self):
         """
         The y-coordinate of the image. The position in question is for the
         top-left corner of the image. Measured in pixels from the top-left-most
@@ -211,7 +202,7 @@ class ImageObject:
         return self._y_current
 
     @property
-    def scale(self):
+    def current_scale(self):
         """
         The scale of the image. The measurement is a decimal point, where 1.0
         is 100%, 0.9 is 90%, etc.
@@ -246,7 +237,15 @@ class ImageObject:
         """
         return self._delete_delay
 
-    def add_create_details(self, *, start_time: int, x: int, y: int, scale: float, layer: int):
+    def add_create_details(self, *, file_name: str, start_time: int, x: int, y: int, scale: float, layer: int, **traits):
+        self._file_name = file_name
+        for key in traits["ADDRESS"]:
+            # This loop checks to see if there are any address variables in the
+            # file_name variable. If there are, replace it with the variable's
+            # contents.
+            if self._file_name.find(key) != -1:
+                self._file_name = self._file_name.replace(key + "/", traits["ADDRESS"][key])
+
         self._start_time = start_time
         self._x_coord = x
         self._x_current = x
