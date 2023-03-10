@@ -1,3 +1,5 @@
+from Timetable import ImageObject
+
 import re
 
 
@@ -16,18 +18,29 @@ def define_prefix(current_line: str, traits: dict):
     # readability purposes.
 
     if split_current_line[0].upper() == "HEAD":
-        h = _command_head(current_line)
-        h = tuple(h)
-        return h
+        return _command_head(current_line, **traits), 1
+        # h = tuple(h)
+        # return h
 
     elif split_current_line[0] == "SET":
-        return _command_set(current_line, **traits)
+        return _command_set(current_line, **traits), 1
 
+    elif split_current_line[0] == "CREATE" and split_current_line[1] == "OBJECT":
+        return _command_object_create_regex(current_line, **traits), 2
+
+    elif split_current_line[0] == "MOVE" and split_current_line[1] == "OBJECT":
+        return _command_object_move_regex(current_line, **traits), 2
+
+    elif split_current_line[0] == "DELETE" and split_current_line[1] == "OBJECT":
+        return _command_object_delete_regex(current_line, **traits), 2
+
+    '''
     elif split_current_line[1] == "OBJECT":
-        if split_current_line[0] == "CREATE":
-            return _command_object_create(current_line, **traits)
+        # if split_current_line[0] == "CREATE":
+        #     return _command_object_create(current_line, **traits)
 
-        elif split_current_line[0] == "MOVE":
+        # el
+        if split_current_line[0] == "MOVE":
             return _command_object_move(current_line, **traits)
 
         elif split_current_line[0] == "DELETE":
@@ -35,6 +48,7 @@ def define_prefix(current_line: str, traits: dict):
 
     # %&$ Raise exception for the script.
     return None
+    '''
 
 
 def _update_line_data(line_data: list, current_line: str, start_index: int, end_index: int):
@@ -143,11 +157,13 @@ def _manage_time(time_string: str, frame_rate: int):
     return int(time)
 
 
-def _collect_syntax_snapshot(full_line, re_match_instance: re.Match):
-    return full_line[re_match_instance.start():re_match_instance.end()]
+def _collect_syntax_snapshot(full_line, re_match_instance: re.Match, re_match_instance_additional: re.Match = None):
+    if re_match_instance_additional is None:
+        return full_line[re_match_instance.start():re_match_instance.end()]
+    return full_line[re_match_instance.end():re_match_instance_additional.start()]
 
 
-def _command_head(current_line: str):
+def _command_head(current_line: str, **traits):
     syntax_full = "HEAD ((f((rame_rate)|(ile_name)))|(window_((width)|(height))))(\s|)=(\s|)[0-9A-Za-z_]*"
     # HEAD window_width = 852
     # ^^^^^^^^^^^^^^^^^^^^^^^
@@ -176,7 +192,8 @@ def _command_head(current_line: str):
     if keyword == "window_width" or keyword == "window_height" or keyword == "frame_rate":
         contents = int(contents)
 
-    return keyword, contents
+    traits["_HEAD"][keyword] = contents
+    return traits
 
 
 def _command_set(current_line: str, **traits):
@@ -220,7 +237,7 @@ def _command_set(current_line: str, **traits):
 
     elif classify_type.upper() == "ADDRESS":
         if classify_value == "__current_address__":
-            classify_value = traits["_script_name"]
+            classify_value = traits["_HEAD"]["_script_name"]
             classify_value = classify_value.rsplit("\\", 1)
             classify_value = classify_value[0] + "\\"
 
@@ -228,7 +245,140 @@ def _command_set(current_line: str, **traits):
         # %&$ Raise exception for the script.
         pass
 
-    return classify_variable, classify_value
+    traits[classify_type][classify_variable] = classify_value
+    return traits
+
+
+def _command_object_create_regex(current_line: str, **traits):
+    syntax_full = "CREATE OBJECT \w*: \w*"
+    # CREATE OBJECT objectname: filename, start_time, ...
+    # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^~~~~~~~~~~~~~ ...
+    if not re.match(syntax_full, current_line):
+        # %&$ Raise exception for the script.
+        pass
+
+    syntax_CREATE_OBJECT_ = "CREATE OBJECT "
+    # CREATE OBJECT objectname: filename, start_time, ...
+    # ^^^^^^^^^^^^^
+    CREATE_OBJECT_ = re.search(syntax_CREATE_OBJECT_, current_line)
+
+    syntax_colon = ":"
+    # CREATE OBJECT objectname: filename, start_time, ...
+    #                         ^
+    colon = re.search(syntax_colon, current_line)
+
+    object_name = _collect_syntax_snapshot(current_line, CREATE_OBJECT_, colon)
+    # object_name = current_line[CREATE_OBJECT_.end():colon.start()]
+
+    keys = _split_by_keys(current_line[colon.end():], 6)
+
+    keys_contained = [
+        "C",
+        ("object_name", object_name),
+        ("file_name", keys[0]),
+        ("start_time", keys[1]),
+        ("x", keys[2]),
+        ("y", keys[3]),
+        ("scale", keys[4]),
+        ("layer", keys[5])
+    ]
+
+    if len(keys) > 6:
+        keys_contained = _split_extra_keys(keys_contained, keys[6:])
+
+    return keys_contained
+
+
+def _command_object_move_regex(current_line: str, **traits):
+    syntax_full = "MOVE OBJECT \w*: \w*"
+    # MOVE OBJECT objectname: change_time, x_change, ...
+    # ^^^^^^^^^^^^^^^^^^^^^^^~~~~~~~~~~~~~~~~~~~~~~~ ...
+    if not re.match(syntax_full, current_line):
+        # %&$ Raise exception for the script.
+        pass
+
+    syntax_MOVE_OBJECT_ = "MOVE OBJECT "
+    # MOVE OBJECT objectname: move_time, x, y, ...
+    # ^^^^^^^^^^^
+    MOVE_OBJECT_ = re.search(syntax_MOVE_OBJECT_, current_line)
+
+    syntax_colon = ":"
+    # MOVE OBJECT objectname: move_time, x, y, ...
+    #                       ^
+    colon = re.search(syntax_colon, current_line)
+
+    object_name = _collect_syntax_snapshot(current_line, MOVE_OBJECT_, colon)
+    # object_name = current_line[MOVE_OBJECT_.end():colon.start()]
+
+    keys = _split_by_keys(current_line[colon.end():], 5)
+
+    keys_contained = [
+        "M",
+        ("object_name", object_name),
+        ("move_time", keys[0]),
+        ("move_x", keys[1]),
+        ("move_y", keys[2]),
+        ("move_scale", keys[3]),
+        ("move_rate", keys[4])
+    ]
+
+    if len(keys) > 5:
+        keys_contained = _split_extra_keys(keys_contained, keys[5:])
+
+    return keys_contained
+
+
+def _command_object_delete_regex(current_line: str, **traits):
+    syntax_full = "DELETE OBJECT \w*: \w*"
+    # DELETE OBJECT objectname: delete_time, ...
+    # ^^^^^^^^^^^^^^^^^^^^^^^^^~~~~~~~~~~~~~ ...
+    if not re.match(syntax_full, current_line):
+        # %&$ Raise exception for the script.
+        pass
+
+    syntax_DELETE_OBJECT_ = "DELETE OBJECT "
+    # DELETE OBJECT objectname: filename, start_time, ...
+    # ^^^^^^^^^^^^^
+    DELETE_OBJECT_ = re.search(syntax_DELETE_OBJECT_, current_line)
+
+    syntax_colon = ":"
+    # DELETE OBJECT objectname: filename, start_time, ...
+    #                         ^
+    colon = re.search(syntax_colon, current_line)
+
+    object_name = _collect_syntax_snapshot(current_line, DELETE_OBJECT_, colon)
+    # object_name = current_line[DELETE_OBJECT_.end():colon.start()]
+
+    keys = _split_by_keys(current_line[colon.end():], 1)
+
+    keys_contained = [
+        "D",
+        ("object_name", object_name),
+        ("delete_time", keys[0])
+    ]
+
+    if len(keys) > 1:
+        keys_contained = _split_extra_keys(keys_contained, keys[1:])
+
+    return keys_contained
+
+
+def _split_by_keys(string_keys: str, minimum: int):
+    keys = string_keys.split(",")
+    keys = [k.strip() for k in keys]
+    if len(keys) < minimum:
+        raise UserWarning("Temporary exception for having too few keys.")
+    return keys
+
+
+def _split_extra_keys(keys_contained: list, keys_series: list):
+    for keys_item in keys_series:
+        keys_contained.append(keys_item.split("=", 1))
+        if len(keys_contained[-1]) != 2:
+            raise UserWarning("Temporary exception for excess keys or multiple equal signs.")
+        keys_contained[-1][0] = keys_contained[-1][0].lower()
+        keys_contained[-1] = tuple(keys_contained[-1])
+    return keys_contained
 
 
 def _command_object_create(current_line: str, **traits):
@@ -242,7 +392,7 @@ def _command_object_create(current_line: str, **traits):
     # syntax.
     classify_object = line_data[1]
     classify_file_name = line_data[3]
-    classify_initial_time = _manage_time(line_data[5], traits["frame_rate"])
+    classify_initial_time = _manage_time(line_data[5], traits["_HEAD"]["frame_rate"])
     classify_x_coord = int(line_data[7])
     classify_y_coord = int(line_data[9])
     classify_scale = float(line_data[11])
@@ -263,11 +413,11 @@ def _command_object_move(current_line: str, **traits):
     # These 'classify' grade variables are based on position, which is based on
     # syntax.
     classify_object = line_data[1]
-    classify_change_time = _manage_time(line_data[3], traits["frame_rate"])
+    classify_change_time = _manage_time(line_data[3], traits["_HEAD"]["frame_rate"])
     classify_x_change = int(line_data[5])
     classify_y_change = int(line_data[7])
     classify_scale_change = float(line_data[9])
-    classify_rate = _manage_time(line_data[11], traits["frame_rate"])
+    classify_rate = _manage_time(line_data[11], traits["_HEAD"]["frame_rate"])
 
     # The "M" is to denote two things: first, that this is a result of the
     # OBJECT keyword family. Second, that among that family, this is for the
@@ -284,8 +434,8 @@ def _command_object_delete(current_line: str, **traits):
     # These 'classify' grade variables are based on position, which is based on
     # syntax.
     classify_object = line_data[1]
-    classify_delete_time = _manage_time(line_data[3], traits["frame_rate"])
-    classify_delay = _manage_time(line_data[5], traits["frame_rate"])
+    classify_delete_time = _manage_time(line_data[3], traits["_HEAD"]["frame_rate"])
+    classify_delay = _manage_time(line_data[5], traits["_HEAD"]["frame_rate"])
 
     # The "D" is to denote two things: first, that this is a result of the
     # OBJECT keyword family. Second, that among that family, this is for an
