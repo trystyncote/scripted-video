@@ -114,39 +114,29 @@ class ImageObject:
         """
         self._object_name = object_name
         self._file_name = None
-        self._start_time = None
-        self._x_coord = None
+        self.start_time = None
+        self.x = None
         self._x_current = None
-        self._y_coord = None
+        self.y = None
         self._y_current = None
-        self._scale = None
+        self.scale = None
         self._scale_current = None
-        self._layer = None
-        self._move = False
-        self._move_index = 0
-        self._move_time = []
-        self._move_x = []
-        self._move_y = []
-        self._move_scale = []
-        self._move_rate = []
-        self._delete_time = None
-        self._delete_delay = None
+        self.layer = None
+        self.move_time = []
+        self.move_x = []
+        self.move_y = []
+        self.move_scale = []
+        self.move_rate = []
+        self.delete_time = None
+        self.delay = 0
 
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        if not self._move:
-            self._move_index = -1
-            raise StopIteration
-
-        self._move_index += 1
-        try:
-            return self._move_time[self._move_index], self._move_x[self._move_index], self._move_y[self._move_index], \
-                self._move_scale[self._move_index], self._move_rate[self._move_index]
-        except IndexError:
-            self._move_index = -1
-            raise StopIteration
+    def __setattr__(self, name, value):
+        # if name not in self.__dict__:
+        #     raise AttributeError(f"Attribute {name} not in ImageObject.")
+        if name[0:4] == "move" and value != []:
+            self.__dict__[name].append(value)
+            return
+        super().__setattr__(name, value)
 
     @property
     def object_name(self):
@@ -157,109 +147,24 @@ class ImageObject:
         return self._object_name
 
     @property
-    def file_name(self):
-        """
-        The name of the file that the object is portrayed as. Should be a .png,
-        .jpg, or .bmp file.
-        """
-        return self._file_name
-
-    @file_name.setter
-    def file_name(self, file_name: str):
-        self._file_name = file_name
-
-    @property
-    def start_time(self):
-        """
-        The time that the object first appears in the video. The measurement is
-        in frames.
-        """
-        return self._start_time
-
-    @property
-    def x(self):
-        """
-        The x-coordinate of the image. The position in question is for the
-        top-left corner of the image. Measured in pixels from the top-left-most
-        corner.
-        """
-        return self._x_current
-
-    @property
-    def current_y(self):
-        """
-        The y-coordinate of the image. The position in question is for the
-        top-left corner of the image. Measured in pixels from the top-left-most
-        corner.
-        """
-        return self._y_current
-
-    @property
-    def current_scale(self):
-        """
-        The scale of the image. The measurement is a decimal point, where 1.0
-        is 100%, 0.9 is 90%, etc.
-        """
-        return self._scale_current
-
-    @property
-    def layer(self):
-        """
-        The layer that the image should be placed on. Lower numbers are farther
-        back on the image.
-        """
-        return self._layer
-
-    @property
     def moves(self):
-        return self._move
+        return True if self.move_time else False
 
-    @property
-    def delete_time(self):
-        """
-        The time that the object is removed from the video. The measurement is
-        in frames.
-        """
-        return self._delete_time
+    def check_move_alignment(self):
+        expected_length = len(self.move_time)
 
-    @property
-    def delete_delay(self):
-        """
-        The rate that the object is delayed from being removed. A delay of '0'
-        means it is deleted immediately. The measurement is in frames.
-        """
-        return self._delete_delay
-
-    def add_create_details(self, *, file_name: str, start_time: int, x: int, y: int, scale: float, layer: int, **traits):
-        self._file_name = file_name
-        for key in traits["ADDRESS"]:
-            # This loop checks to see if there are any address variables in the
-            # file_name variable. If there are, replace it with the variable's
-            # contents.
-            if self._file_name.find(key) != -1:
-                self._file_name = self._file_name.replace(key + "/", traits["ADDRESS"][key])
-
-        self._start_time = start_time
-        self._x_coord = x
-        self._x_current = x
-        self._y_coord = y
-        self._y_current = y
-        self._scale = scale
-        self._scale_current = scale
-        self._layer = layer
-
-    def add_move_details(self, *, move_time: int, x_change: int, y_change: int,
-                         scale_change: float, move_rate: int):
-        self._move = True
-        self._move_time.append(move_time)
-        self._move_x.append(x_change)
-        self._move_y.append(y_change)
-        self._move_scale.append(scale_change)
-        self._move_rate.append(move_rate)
-
-    def add_delete_details(self, *, delete_time: int, delete_delay: int):
-        self._delete_time = delete_time
-        self._delete_delay = delete_delay
+        # These if-statements are temporary, since the commands require these
+        # parameters, so these if-statements are useless. This is a test part
+        # of the code, since there are currently no optional parameters to the
+        # MOVE OBJECT statement.
+        if len(self.move_x) < expected_length:
+            self.move_x.append(0)
+        if len(self.move_y) < expected_length:
+            self.move_y.append(0)
+        if len(self.move_scale) < expected_length:
+            self.move_scale.append(0.0)
+        if len(self.move_rate) < expected_length:
+            self.move_rate.append(1)
 
     def move_object(self, frame_index):
         move_index = 0
@@ -271,12 +176,12 @@ class ImageObject:
 
         while True:
             try:
-                if self._move_time[move_index] < frame_index \
-                        < (self._move_time[move_index] + self._move_rate[move_index]):
+                if self.move_time[move_index] < frame_index \
+                        < (self.move_time[move_index] + self.move_rate[move_index]):
                     # frame_difference = (frame_index - self._move_time[move_index])
-                    x_alter += int(self._move_x[move_index] / self._move_rate[move_index])
-                    y_alter += int(self._move_y[move_index] / self._move_rate[move_index])
-                    scale_alter += (self._move_scale[move_index] / self._move_rate[move_index])
+                    x_alter += int(self.move_x[move_index] / self.move_rate[move_index])
+                    y_alter += int(self.move_y[move_index] / self.move_rate[move_index])
+                    scale_alter += (self.move_scale[move_index] / self.move_rate[move_index])
             except IndexError:
                 break
 
