@@ -35,27 +35,6 @@ def define_prefix(current_line: str, traits: dict):
     raise UserWarning("Temporary exception for an unrecognized command.")
 
 
-def _manage_time(time_string: str, frame_rate: int):
-    time_string = (time_string + " ").split(" ")  # time_string splits itself
-    # by the whitespace because the full command must be split that way by
-    # default. Example: "2s 15f" refers to 2 seconds, and 15 frames after that.
-    _ = time_string.pop(-1)
-    # f: frame, s: seconds, m: minutes, h: hours
-    suffix_effect = {"f": 1,
-                     "s": frame_rate,  # The amount of frames per second is a
-                     "m": frame_rate*60,  # variable amount, so it's manually
-                     "h": frame_rate*60*60}  # calculated here.
-
-    time = 0.0  # This variable is to store the amount of frames per unit as
-    # it is iterated over.
-    for i in time_string:
-        time += float(i[:-1]) * suffix_effect[i[-1]]  # The float member of the
-        # number 'i[:-1]', meaning before the suffix, is multiplied by the
-        # suffix effect denoted by the specific character.
-
-    return int(time)
-
-
 def _collect_syntax_snapshot(full_line, re_match_instance: re.Match, re_match_instance_additional: re.Match = None):
     if re_match_instance_additional is None:
         return full_line[re_match_instance.start():re_match_instance.end()]
@@ -173,17 +152,19 @@ def _command_object_create(current_line: str, **traits):
 
     keys_contained = [
         "C",
-        ("object_name", object_name),
-        ("file_name", keys[0]),
-        ("start_time", keys[1]),
-        ("x", keys[2]),
-        ("y", keys[3]),
-        ("scale", keys[4]),
-        ("layer", keys[5])
+        ["object_name", object_name],
+        ["file_name", keys[0]],
+        ["start_time", keys[1]],
+        ["x", keys[2]],
+        ["y", keys[3]],
+        ["scale", keys[4]],
+        ["layer", keys[5]]
     ]
 
     if len(keys) > 6:
         keys_contained = _split_extra_keys(keys_contained, keys[6:])
+
+    keys_contained = _evaluate_values(keys_contained, **traits)
 
     return keys_contained
 
@@ -213,16 +194,18 @@ def _command_object_move(current_line: str, **traits):
 
     keys_contained = [
         "M",
-        ("object_name", object_name),
-        ("move_time", keys[0]),
-        ("move_x", keys[1]),
-        ("move_y", keys[2]),
-        ("move_scale", keys[3]),
-        ("move_rate", keys[4])
+        ["object_name", object_name],
+        ["move_time", keys[0]],
+        ["move_x", keys[1]],
+        ["move_y", keys[2]],
+        ["move_scale", keys[3]],
+        ["move_rate", keys[4]]
     ]
 
     if len(keys) > 5:
         keys_contained = _split_extra_keys(keys_contained, keys[5:])
+
+    keys_contained = _evaluate_values(keys_contained, **traits)
 
     return keys_contained
 
@@ -252,14 +235,37 @@ def _command_object_delete(current_line: str, **traits):
 
     keys_contained = [
         "D",
-        ("object_name", object_name),
-        ("delete_time", keys[0])
+        ["object_name", object_name],
+        ["delete_time", keys[0]]
     ]
 
     if len(keys) > 1:
         keys_contained = _split_extra_keys(keys_contained, keys[1:])
 
+    keys_contained = _evaluate_values(keys_contained, **traits)
+
     return keys_contained
+
+
+def _manage_time(time_string: str, frame_rate: int):
+    time_string = (time_string + " ").split(" ")  # time_string splits itself
+    # by the whitespace because the full command must be split that way by
+    # default. Example: "2s 15f" refers to 2 seconds, and 15 frames after that.
+    _ = time_string.pop(-1)
+    # f: frame, s: seconds, m: minutes, h: hours
+    suffix_effect = {"f": 1,
+                     "s": frame_rate,  # The amount of frames per second is a
+                     "m": frame_rate*60,  # variable amount, so it's manually
+                     "h": frame_rate*60*60}  # calculated here.
+
+    time = 0.0  # This variable is to store the amount of frames per unit as
+    # it is iterated over.
+    for i in time_string:
+        time += float(i[:-1]) * suffix_effect[i[-1]]  # The float member of the
+        # number 'i[:-1]', meaning before the suffix, is multiplied by the
+        # suffix effect denoted by the specific character.
+
+    return int(time)
 
 
 def _split_by_keys(string_keys: str, minimum: int):
@@ -276,5 +282,54 @@ def _split_extra_keys(keys_contained: list, keys_series: list):
         if len(keys_contained[-1]) != 2:
             raise UserWarning("Temporary exception for excess keys or multiple equal signs.")
         keys_contained[-1][0] = keys_contained[-1][0].lower()
-        keys_contained[-1] = tuple(keys_contained[-1])
+    return keys_contained
+
+
+def _evaluate_values(keys_contained: list, **traits):
+    value_types = {
+        "object_name": "STRING",
+        "file_name":   "ADDRESS",
+        "start_time":  "TIME",
+        "x":           "INT",
+        "y":           "INT",
+        "scale":       "FLOAT",
+        "layer":       "INT",
+        "move_time":   "TIME",
+        "move_x":      "INT",
+        "move_y":      "INT",
+        "move_scale":  "FLOAT",
+        "move_rate":   "TIME",
+        "delete_time": "TIME",
+        "delay":       "TIME"  # optional
+    }
+
+    for index, (name, contents) in enumerate(keys_contained[1:].copy(), start=1):
+        if value_types[name] == "STRING":
+            continue
+
+        if value_types[name] == "TIME":
+            keys_contained[index][1] = _manage_time(contents, traits["_HEAD"]["frame_rate"])
+            continue
+
+        type_ = value_types[name]
+        for key in traits[type_]:
+            if contents.find(key) == -1:
+                continue
+
+            if type_ == "ADDRESS" and contents.find(key) != -1:
+                keys_contained[index][1] = contents.replace(key + "/", traits[type_][key])
+                continue
+
+            keys_contained[index][1] = contents.replace(key, traits[type_][key])
+
+        if type_ == "ADDRESS":
+            continue
+
+        if type_ == "INT":
+            keys_contained[index][1] = int(keys_contained[index][1])
+        elif type_ == "FLOAT":
+            keys_contained[index][1] = float(keys_contained[index][1])
+        elif type_ == "BOOL":
+            keys_contained[index][1] = bool(keys_contained[index][1])
+
     return keys_contained
