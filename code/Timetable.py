@@ -47,9 +47,13 @@ def create_timetable(timetable_information: list, variable_data: dict = None):
 def _collect_information(command: list, object_information: dict,
                          variable_data: dict):
     classification = command[0]  # "C" (Create), "M" (Move), or "D" (Delete).
-    object_name = command[1]
+    object_name = ""
+    if command[1][0] == "object_name":
+        object_name = command[1][1]
 
     if not object_information.get(object_name, False):
+        if classification != "C":
+            raise UserWarning("Temporary exception for an object being called before it's created.")
         # This only occurs if the object doesn't already exist, likely to
         # happen if the object is trying to be created.
         object_information[object_name] = ImageObject(object_name)
@@ -57,22 +61,11 @@ def _collect_information(command: list, object_information: dict,
     object_reference = object_information[object_name]  # object_reference
     # exists to prevent repetitive typing.
 
-    # "C", objectname, filename, time, x, y, scale, layer
-    if classification == "C":
-        # Positions are all hard-coded!
-        object_reference.add_create_details(file_name=command[2], start_time=command[3], x=command[4], y=command[5], scale=command[6],
-                                            layer=command[7], traits=variable_data)
+    for name, contents in command[2:]:
+        object_reference.__setattr__(name, contents)
 
-    # "M", objectname, time, x', y', scale', rate
-    elif classification == "M":
-        # Positions are all hard-coded!
-        object_reference.add_move_details(move_time=command[2], x_change=command[3], y_change=command[4],
-                                          scale_change=command[5], move_rate=command[6])
-
-    # "D", objectname, time, delay
-    elif classification == "D":
-        # Positions are all hard-coded!
-        object_reference.add_delete_details(delete_time=command[2], delete_delay=command[3])
+    if classification == "M":
+        object_reference.check_move_alignment()
 
     return object_information
 
