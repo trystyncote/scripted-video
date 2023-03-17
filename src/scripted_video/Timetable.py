@@ -187,6 +187,6 @@ class ImageObject:
 
             move_index += 1
 
-        self._x_current += x_alter
-        self._y_current += y_alter
-        self._scale_current += scale_alter
+        self.x += x_alter
+        self.y += y_alter
+        self.scale += scale_alter
