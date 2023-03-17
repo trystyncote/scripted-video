@@ -73,15 +73,26 @@ def test_end_line_detection():
            + "{gGgG /*}{Commented out? */ hHhH i}"
 
 
-@pytest.skip(reason="No assert statements.")
+def script_output_repeated_iteration(file_name, allow_rereading):
+    script = Scripter(file_name, allow_rereading=allow_rereading)
+    string_output = ""
+
+    for i in range(2):
+        for current_line in script:
+            string_output += f"{{{current_line}}}"
+    return string_output
+
+
 def test_repeating_iterating_false():
     # Tests for the behaviour if the script is being read twice, when it has
     # *not* been allowed to.
-    pass
+    with pytest.raises(UserWarning):
+        script_output_repeated_iteration("example_script_file_1.txt", False)
 
 
-@pytest.skip(reason="No assert statements.")
 def test_repeating_iterating_true():
     # Tests for the behaviour if the script is being read twice, when it *is*
     # allowed to.
-    pass
+    assert script_output_repeated_iteration("example_script_file_1.txt", True) == "{aAaA;}{bBbB;}{cCcC;}{dDdD}{eEeE;}" \
+           + "{}{fFfF;}{gGgG; /*}{Commented out?}{*/}{}{hHhH}{i;}{aAaA;}{bBbB;}{cCcC;}{dDdD}{eEeE;}{}{fFfF;}" \
+           + "{gGgG; /*}{Commented out?}{*/}{}{hHhH}{i;}"
