@@ -1,9 +1,10 @@
 from scripted_video.Scripter import Scripter
+from scripted_video.File import find_path_of_file
 import pytest
 
 
 def script_output(file_name):
-    script = Scripter(file_name)
+    script = Scripter(find_path_of_file(file_name))
     string_output = ""
 
     for current_line in script:
@@ -18,7 +19,7 @@ def test_iteration():
 
 
 def script_output_enumerate(file_name):
-    script = Scripter(file_name)
+    script = Scripter(find_path_of_file(file_name))
     string_output = ""
 
     for index, current_line in enumerate(script):
@@ -34,7 +35,7 @@ def test_iteration_enumerate():
 
 
 def script_output_comment_clearing(file_name):
-    script = Scripter(file_name)
+    script = Scripter(find_path_of_file(file_name))
     string_output = ""
     new_current_line = None
 
@@ -53,7 +54,7 @@ def test_comment_clearing():
 
 
 def script_output_end_line_detection(file_name):
-    script = Scripter(file_name)
+    script = Scripter(find_path_of_file(file_name))
     string_output = ""
     new_current_line = None
 
@@ -74,7 +75,7 @@ def test_end_line_detection():
 
 
 def script_output_repeated_iteration(file_name, allow_rereading):
-    script = Scripter(file_name, allow_rereading=allow_rereading)
+    script = Scripter(find_path_of_file(file_name), allow_rereading=allow_rereading)
     string_output = ""
 
     for i in range(2):
