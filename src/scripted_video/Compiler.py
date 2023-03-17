@@ -1,5 +1,3 @@
-from Timetable import ImageObject
-
 import re
 
 
@@ -66,6 +64,8 @@ def _command_head(current_line: str, **traits):
     #                     ^^^
     contents = re.search(syntax_contents, current_line[equal_sign.end():])
     contents = _collect_syntax_snapshot(current_line[equal_sign.end():], contents).strip()
+    if contents.strip() == "":
+        raise ValueError
 
     if keyword == "window_width" or keyword == "window_height" or keyword == "frame_rate":
         contents = int(contents)
