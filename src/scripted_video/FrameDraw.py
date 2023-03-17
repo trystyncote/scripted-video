@@ -8,14 +8,15 @@ from moviepy.video.compositing.concatenate import concatenate_videoclips
 
 
 def create_video(timetable, object_information, encoder, l, **traits):
-    script_path = traits["_script_name"].rpartition("\\")[0]
+    script_path = traits["_HEAD"]["_script_name"].rpartition("\\")[0]
     folder_location = f"{script_path}\\{encoder}"
-    frame_rate = traits["frame_rate"]
+    frame_rate = traits["_HEAD"]["frame_rate"]
 
     os.mkdir(folder_location)
 
     for index, contents in enumerate(timetable):
-        _draw_frames(contents, index, object_information, (traits["window_width"], traits["window_height"]),
+        _draw_frames(contents, index, object_information,
+                     (traits["_HEAD"]["window_width"], traits["_HEAD"]["window_height"]),
                      folder_location, encoder)
 
         if (index + 1) % frame_rate == 0:
@@ -24,7 +25,7 @@ def create_video(timetable, object_information, encoder, l, **traits):
     video_length = index
     l.warning("Finished drawing the frames for the video.")
 
-    _stitch_video(folder_location, traits["file_name"], video_length, traits["frame_rate"])
+    _stitch_video(folder_location, traits["_HEAD"]["file_name"], video_length, traits["_HEAD"]["frame_rate"])
 
     shutil.rmtree(folder_location)
 
