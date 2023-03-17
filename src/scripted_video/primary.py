@@ -1,7 +1,7 @@
 from src.scripted_video.File import find_path_of_file, create_encoder
-from Scripter import Scripter
+from src.scripted_video.Scripter import Scripter
 from src.scripted_video.Compiler import define_prefix
-from Timetable import create_timetable
+from src.scripted_video.Timetable import create_timetable
 from src.scripted_video.FrameDraw import create_video
 
 import logging
