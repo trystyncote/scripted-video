@@ -47,7 +47,7 @@ def _command_head(current_line: str, **traits):
     # ^^^^^^^^^^^^^^^^^^^^^^^
     if not re.match(syntax_full, current_line):
         # %&$ Raise exception for the script.
-        pass
+        raise UserWarning("SyntaxIssue: HEAD keyword")
 
     syntax_keyword = "f((rame_rate)|(ile_name))|(window_((width)|(height)))"
     # HEAD window_width = 852
@@ -80,7 +80,7 @@ def _command_set(current_line: str, **traits):
     # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     if not re.match(syntax_full, current_line):
         # %&$ Raise exception for the script.
-        pass
+        raise UserWarning("SyntaxIssue: SET keyword")
 
     syntax_SET_ = "SET "
     # SET variable = value AS type
@@ -133,7 +133,7 @@ def _command_object_create(current_line: str, **traits):
     # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^~~~~~~~~~~~~~ ...
     if not re.match(syntax_full, current_line):
         # %&$ Raise exception for the script.
-        pass
+        raise UserWarning("SyntaxIssue: CREATE OBJECT keyword")
 
     syntax_CREATE_OBJECT_ = "CREATE OBJECT "
     # CREATE OBJECT objectname: filename, start_time, ...
@@ -175,7 +175,7 @@ def _command_object_move(current_line: str, **traits):
     # ^^^^^^^^^^^^^^^^^^^^^^^~~~~~~~~~~~~~~~~~~~~~~~ ...
     if not re.match(syntax_full, current_line):
         # %&$ Raise exception for the script.
-        pass
+        raise UserWarning("SyntaxIssue: MOVE OBJECT keyword")
 
     syntax_MOVE_OBJECT_ = "MOVE OBJECT "
     # MOVE OBJECT objectname: move_time, x, y, ...
@@ -216,7 +216,7 @@ def _command_object_delete(current_line: str, **traits):
     # ^^^^^^^^^^^^^^^^^^^^^^^^^~~~~~~~~~~~~~ ...
     if not re.match(syntax_full, current_line):
         # %&$ Raise exception for the script.
-        pass
+        raise UserWarning("SyntaxIssue: DELETE OBJECT keyword")
 
     syntax_DELETE_OBJECT_ = "DELETE OBJECT "
     # DELETE OBJECT objectname: filename, start_time, ...
