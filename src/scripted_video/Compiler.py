@@ -75,7 +75,7 @@ def _command_head(current_line: str, **traits):
 
 
 def _command_set(current_line: str, **traits):
-    syntax_full = "SET [0-9A-Za-z_]*(\s|)=(\s|)[0-9A-Za-z_]* AS [0-9A-Za-z_]*"
+    syntax_full = "SET [0-9A-Za-z_]*(\s|)=(\s|)[0-9A-Za-z_.\'\"\\]* AS [0-9A-Za-z_]*"
     # SET variable = value AS type
     # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     if not re.match(syntax_full, current_line):
@@ -108,7 +108,12 @@ def _command_set(current_line: str, **traits):
         classify_value = float(classify_value)
 
     elif classify_type.upper() == "BOOL":
-        classify_value = bool(classify_value)
+        if classify_value.upper() == "TRUE":
+            classify_value = True
+        elif classify_value.upper() == "FALSE":
+            classify_value = False
+        else:
+            raise ValueError(f"Expected True or False, got {classify_value}")
 
     elif classify_type.upper() == "STRING":
         pass
@@ -121,7 +126,7 @@ def _command_set(current_line: str, **traits):
 
     else:
         # %&$ Raise exception for the script.
-        pass
+        raise UserWarning("Variable 'classify_value' not valid.")
 
     traits[classify_type][classify_variable] = classify_value
     return traits
