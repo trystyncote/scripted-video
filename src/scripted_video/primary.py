@@ -32,9 +32,9 @@ def primary():
     encoder = create_encoder()
 
     logging.basicConfig(format=">> %(message)s")
-    l = logging.getLogger("")
+    log_master = logging.getLogger("")
 
-    l.warning("Started reading script.")
+    log_master.warning("Started reading script.")
     for _ in script:
         script.clear_comments()
         script.find_line_end()
@@ -46,26 +46,24 @@ def primary():
 
         if classification == 1:
             script_variables = hold_value
-            hold_value = None
-            continue
 
         if classification == 2:
             timetable_information.append(hold_value)
-            continue
 
+        hold_value = None
         # More to come here?
 
-    l.warning("Finished reading script.")
-    l.warning("Started creating the timetable.")
+    log_master.warning("Finished reading script.")
+    log_master.warning("Started creating the timetable.")
 
     sorted_timetable, object_information = create_timetable(
         timetable_information, script_variables
     )
 
-    l.warning("Finished creating the timetable.")
-    l.warning("Started drawing the frames for the video.")
+    log_master.warning("Finished creating the timetable.")
+    log_master.warning("Started drawing the frames for the video.")
 
-    create_video(sorted_timetable, object_information, encoder, l, **script_variables)
+    create_video(sorted_timetable, object_information, encoder, log_master, **script_variables)
 
 
 if __name__ == "__main__":

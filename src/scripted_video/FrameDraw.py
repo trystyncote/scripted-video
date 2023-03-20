@@ -7,7 +7,7 @@ from moviepy.editor import ImageClip
 from moviepy.video.compositing.concatenate import concatenate_videoclips
 
 
-def create_video(timetable, object_information, encoder, l, **traits):
+def create_video(timetable, object_information, encoder, log_master, **traits):
     script_path = traits["_HEAD"]["_script_name"].rpartition("\\")[0]
     folder_location = f"{script_path}\\{encoder}"
     frame_rate = traits["_HEAD"]["frame_rate"]
@@ -20,10 +20,10 @@ def create_video(timetable, object_information, encoder, l, **traits):
                      folder_location, encoder)
 
         if (index + 1) % frame_rate == 0:
-            l.warning(f"Successfully drew {index+1} frames (equal to {int((index+1)/frame_rate)} seconds).")
+            log_master.warning(f"Successfully drew {index+1} frames (equal to {int((index+1)/frame_rate)} seconds).")
 
     video_length = index
-    l.warning("Finished drawing the frames for the video.")
+    log_master.warning("Finished drawing the frames for the video.")
 
     _stitch_video(folder_location, traits["_HEAD"]["file_name"], video_length, traits["_HEAD"]["frame_rate"])
 
