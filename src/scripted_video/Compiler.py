@@ -58,7 +58,7 @@ def _command_head(current_line: str, **traits):
     #                   ^
     equal_sign = re.search(syntax_equal_sign, current_line)
 
-    syntax_contents = "[\w\s-]*"
+    syntax_contents = "[[0-9A-Za-z_]\s-]*"
     # (Only to be used for the part of the string after the equal sign.)
     # HEAD window_width = 852
     #                     ^^^
@@ -128,7 +128,7 @@ def _command_set(current_line: str, **traits):
 
 
 def _command_object_create(current_line: str, **traits):
-    syntax_full = "CREATE OBJECT \w*: \w*"
+    syntax_full = "CREATE OBJECT [0-9A-Za-z_]*: [0-9A-Za-z_]*"
     # CREATE OBJECT objectname: filename, start_time, ...
     # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^~~~~~~~~~~~~~ ...
     if not re.match(syntax_full, current_line):
@@ -170,7 +170,7 @@ def _command_object_create(current_line: str, **traits):
 
 
 def _command_object_move(current_line: str, **traits):
-    syntax_full = "MOVE OBJECT \w*: \w*"
+    syntax_full = "MOVE OBJECT [0-9A-Za-z_]*: [0-9A-Za-z_]*"
     # MOVE OBJECT objectname: change_time, x_change, ...
     # ^^^^^^^^^^^^^^^^^^^^^^^~~~~~~~~~~~~~~~~~~~~~~~ ...
     if not re.match(syntax_full, current_line):
@@ -211,7 +211,7 @@ def _command_object_move(current_line: str, **traits):
 
 
 def _command_object_delete(current_line: str, **traits):
-    syntax_full = "DELETE OBJECT \w*: \w*"
+    syntax_full = "DELETE OBJECT [0-9A-Za-z_]*: [0-9A-Za-z_]*"
     # DELETE OBJECT objectname: delete_time, ...
     # ^^^^^^^^^^^^^^^^^^^^^^^^^~~~~~~~~~~~~~ ...
     if not re.match(syntax_full, current_line):
@@ -255,8 +255,8 @@ def _manage_time(time_string: str, frame_rate: int):
     # f: frame, s: seconds, m: minutes, h: hours
     suffix_effect = {"f": 1,
                      "s": frame_rate,  # The amount of frames per second is a
-                     "m": frame_rate*60,  # variable amount, so it's manually
-                     "h": frame_rate*60*60}  # calculated here.
+                     "m": frame_rate * 60,  # variable amount, so it's manually
+                     "h": frame_rate * 60 * 60}  # calculated here.
 
     time = 0.0  # This variable is to store the amount of frames per unit as
     # it is iterated over.
@@ -288,19 +288,19 @@ def _split_extra_keys(keys_contained: list, keys_series: list):
 def _evaluate_values(keys_contained: list, **traits):
     value_types = {
         "object_name": "STRING",
-        "file_name":   "ADDRESS",
-        "start_time":  "TIME",
-        "x":           "INT",
-        "y":           "INT",
-        "scale":       "FLOAT",
-        "layer":       "INT",
-        "move_time":   "TIME",
-        "move_x":      "INT",
-        "move_y":      "INT",
-        "move_scale":  "FLOAT",
-        "move_rate":   "TIME",
+        "file_name": "ADDRESS",
+        "start_time": "TIME",
+        "x": "INT",
+        "y": "INT",
+        "scale": "FLOAT",
+        "layer": "INT",
+        "move_time": "TIME",
+        "move_x": "INT",
+        "move_y": "INT",
+        "move_scale": "FLOAT",
+        "move_rate": "TIME",
         "delete_time": "TIME",
-        "delay":       "TIME"  # optional
+        "delay": "TIME"  # optional
     }
 
     for index, (name, contents) in enumerate(keys_contained[1:].copy(), start=1):
