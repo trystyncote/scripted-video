@@ -5,7 +5,7 @@ import pytest
 def return_traits_example():
     return {
         "_HEAD": {
-            "_script_name": "src\\script\\Script.txt",
+            "_script_name": r"src\script\Script.txt",
             "file_name": None,
             "frame_rate": None,
             "window_width": None,

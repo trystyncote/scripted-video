@@ -40,25 +40,25 @@ def _collect_syntax_snapshot(full_line, re_match_instance: re.Match, re_match_in
 
 
 def _command_head(current_line: str, **traits):
-    syntax_full = "HEAD ((f((rame_rate)|(ile_name)))|(window_((width)|(height))))(\s|)=(\s|)[0-9A-Za-z_]*"
+    syntax_full = r"HEAD ((f((rame_rate)|(ile_name)))|(window_((width)|(height))))(\s|)=(\s|)[\w_]*"
     # HEAD window_width = 852
     # ^^^^^^^^^^^^^^^^^^^^^^^
     if not re.match(syntax_full, current_line):
         # %&$ Raise exception for the script.
         raise UserWarning("SyntaxIssue: HEAD keyword")
 
-    syntax_keyword = "f((rame_rate)|(ile_name))|(window_((width)|(height)))"
+    syntax_keyword = r"f((rame_rate)|(ile_name))|(window_((width)|(height)))"
     # HEAD window_width = 852
     #      ^^^^^^^^^^^^
     keyword = re.search(syntax_keyword, current_line)
     keyword = _collect_syntax_snapshot(current_line, keyword).strip()
 
-    syntax_equal_sign = "="
+    syntax_equal_sign = r"="
     # HEAD window_width = 852
     #                   ^
     equal_sign = re.search(syntax_equal_sign, current_line)
 
-    syntax_contents = "[[0-9A-Za-z_]\s-]*"
+    syntax_contents = r"[[\w]\s-]*"
     # (Only to be used for the part of the string after the equal sign.)
     # HEAD window_width = 852
     #                     ^^^
@@ -75,25 +75,25 @@ def _command_head(current_line: str, **traits):
 
 
 def _command_set(current_line: str, **traits):
-    syntax_full = "SET [0-9A-Za-z_]*(\s|)=(\s|)[0-9A-Za-z_.\'\"\\]* AS [0-9A-Za-z_]*"
+    syntax_full = r"SET [\w_]*(\s|)=(\s|)[\w.'\"\\]* AS [\w]*"
     # SET variable = value AS type
     # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     if not re.match(syntax_full, current_line):
         # %&$ Raise exception for the script.
         raise UserWarning("SyntaxIssue: SET keyword")
 
-    syntax_SET_ = "SET "
+    syntax_SET_ = r"SET "
     # SET variable = value AS type
     # ^^^
     SET_ = re.search(syntax_SET_, current_line)
 
-    syntax_equal_sign = "="
+    syntax_equal_sign = r"="
     # SET variable = value AS type
     #              ^
     equal_sign = re.search(syntax_equal_sign, current_line)
 
     classify_variable = current_line[SET_.end():equal_sign.start()].strip()
-    syntax__AS_ = " AS "
+    syntax__AS_ = r" AS "
     # SET variable = value AS type
     #                      ^^
     _AS_ = re.search(syntax__AS_, current_line)
@@ -133,19 +133,19 @@ def _command_set(current_line: str, **traits):
 
 
 def _command_object_create(current_line: str, **traits):
-    syntax_full = "CREATE OBJECT [0-9A-Za-z_]*: [0-9A-Za-z_]*"
+    syntax_full = r"CREATE OBJECT [\w_]*: [\w_]*"
     # CREATE OBJECT objectname: filename, start_time, ...
     # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^~~~~~~~~~~~~~ ...
     if not re.match(syntax_full, current_line):
         # %&$ Raise exception for the script.
         raise UserWarning("SyntaxIssue: CREATE OBJECT keyword")
 
-    syntax_CREATE_OBJECT_ = "CREATE OBJECT "
+    syntax_CREATE_OBJECT_ = r"CREATE OBJECT "
     # CREATE OBJECT objectname: filename, start_time, ...
     # ^^^^^^^^^^^^^
     CREATE_OBJECT_ = re.search(syntax_CREATE_OBJECT_, current_line)
 
-    syntax_colon = ":"
+    syntax_colon = r":"
     # CREATE OBJECT objectname: filename, start_time, ...
     #                         ^
     colon = re.search(syntax_colon, current_line)
@@ -175,19 +175,19 @@ def _command_object_create(current_line: str, **traits):
 
 
 def _command_object_move(current_line: str, **traits):
-    syntax_full = "MOVE OBJECT [0-9A-Za-z_]*: [0-9A-Za-z_]*"
+    syntax_full = r"MOVE OBJECT [\w_]*: [\w_]*"
     # MOVE OBJECT objectname: change_time, x_change, ...
     # ^^^^^^^^^^^^^^^^^^^^^^^~~~~~~~~~~~~~~~~~~~~~~~ ...
     if not re.match(syntax_full, current_line):
         # %&$ Raise exception for the script.
         raise UserWarning("SyntaxIssue: MOVE OBJECT keyword")
 
-    syntax_MOVE_OBJECT_ = "MOVE OBJECT "
+    syntax_MOVE_OBJECT_ = r"MOVE OBJECT "
     # MOVE OBJECT objectname: move_time, x, y, ...
     # ^^^^^^^^^^^
     MOVE_OBJECT_ = re.search(syntax_MOVE_OBJECT_, current_line)
 
-    syntax_colon = ":"
+    syntax_colon = r":"
     # MOVE OBJECT objectname: move_time, x, y, ...
     #                       ^
     colon = re.search(syntax_colon, current_line)
@@ -216,19 +216,19 @@ def _command_object_move(current_line: str, **traits):
 
 
 def _command_object_delete(current_line: str, **traits):
-    syntax_full = "DELETE OBJECT [0-9A-Za-z_]*: [0-9A-Za-z_]*"
+    syntax_full = r"DELETE OBJECT [\w_]*: [\w_]*"
     # DELETE OBJECT objectname: delete_time, ...
     # ^^^^^^^^^^^^^^^^^^^^^^^^^~~~~~~~~~~~~~ ...
     if not re.match(syntax_full, current_line):
         # %&$ Raise exception for the script.
         raise UserWarning("SyntaxIssue: DELETE OBJECT keyword")
 
-    syntax_DELETE_OBJECT_ = "DELETE OBJECT "
+    syntax_DELETE_OBJECT_ = r"DELETE OBJECT "
     # DELETE OBJECT objectname: filename, start_time, ...
     # ^^^^^^^^^^^^^
     DELETE_OBJECT_ = re.search(syntax_DELETE_OBJECT_, current_line)
 
-    syntax_colon = ":"
+    syntax_colon = r":"
     # DELETE OBJECT objectname: filename, start_time, ...
     #                         ^
     colon = re.search(syntax_colon, current_line)
