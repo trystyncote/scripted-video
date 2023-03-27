@@ -5,6 +5,7 @@ from src.scripted_video.Timetable import create_timetable
 from src.scripted_video.FrameDraw import create_video
 
 import logging
+import pathlib
 
 
 def primary():
@@ -23,9 +24,10 @@ def primary():
         "STRING":  {}
     }
 
-    script_file = find_path_of_file("scriptedvideo_sample_script_1.txt")
-    script = Scripter(script_file)
+    script_file = pathlib.Path(find_path_of_file("scriptedvideo_sample_script_1.txt"))
+    script = Scripter(str(script_file))
     script_variables["_HEAD"]["_script_name"] = script_file
+    # pathlib.Path("dir").name for getting purely the root file name.
 
     timetable_information = []
     object_information = {}
@@ -42,7 +44,7 @@ def primary():
         if not script.current_line:
             continue
 
-        hold_value, classification = define_prefix(script.current_line, script_variables)  # 52:73, script_traits
+        hold_value, classification = define_prefix(script.current_line, script_variables)
 
         if classification == 1:
             script_variables = hold_value
