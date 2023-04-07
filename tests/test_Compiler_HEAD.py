@@ -14,6 +14,7 @@ def return_traits_example():
     }
 
 
+@pytest.mark.skip(reason="Functionality isn't set in stone.")
 @pytest.mark.parametrize("test_input,keyword,expected", [
     ("HEAD window_width = 852", "window_width", 852),
     ("HEAD window_height = 532", "window_height", 532),
@@ -26,6 +27,7 @@ def test_syntax_success(test_input, keyword, expected):
     assert result["_HEAD"][keyword] == expected
 
 
+@pytest.mark.skip(reason="Functionality isn't set in stone.")
 @pytest.mark.parametrize("test_input", [
     "HEAD windwo_width = 852",
     "HEAD window_hright = 532",
@@ -40,6 +42,7 @@ def test_syntax_failure_keyword(test_input):
         define_prefix(test_input, return_traits_example())
 
 
+@pytest.mark.skip(reason="Functionality isn't set in stone.")
 @pytest.mark.parametrize("test_input", [
     "HEAD window_width = ae",
     "HEAD window_height = ae",

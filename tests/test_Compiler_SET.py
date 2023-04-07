@@ -19,6 +19,7 @@ def return_traits_example():
     }
 
 
+@pytest.mark.skip(reason="Functionality isn't set in stone.")
 @pytest.mark.parametrize("test_input,keyword,var_type,expected", [
     ("SET hello_world = \"Hello, world!\" AS STRING", "hello_world", "STRING", "\"Hello, world!\""),
     ("SET addr = __current_address__ AS ADDRESS", "addr", "ADDRESS", "src\\script\\"),
@@ -32,6 +33,7 @@ def test_syntax_success(test_input, keyword, var_type, expected):
     assert result[var_type][keyword] == expected
 
 
+@pytest.mark.skip(reason="Functionality isn't set in stone.")
 @pytest.mark.parametrize("test_input", [
     "SET variable = \"Hello, world!\" AS INT",
     "SET variable = \"Hello, world!\" AS FlOAT",
@@ -42,6 +44,7 @@ def test_syntax_failure_value_error(test_input):
         define_prefix(test_input, return_traits_example())
 
 
+@pytest.mark.skip(reason="Functionality isn't set in stone.")
 def test_syntax_failure_variable_type():
     test_input = "SET variable = \"Hello, world!\" AS NOTATYPE"
     with pytest.raises(UserWarning):

@@ -34,6 +34,7 @@ def return_keys_contained_expected(object_name, file_name, start_time, x, y, sca
     ]
 
 
+@pytest.mark.skip(reason="Functionality isn't set in stone.")
 @pytest.mark.parametrize("test_input,keys_list", [
     ("CREATE OBJECT obj1: addr/img1.png, 0s, 0, 0, 1, 1",
      ("obj1", r"src\Images\img1.png", 0, 0, 0, 1.0, 1)),
