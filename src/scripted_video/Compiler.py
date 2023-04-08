@@ -140,15 +140,17 @@ def _command_object_create(current_line: str, **traits):
         # %&$ Raise exception for the script.
         raise UserWarning("SyntaxIssue: CREATE OBJECT keyword")
 
-    syntax_CREATE_OBJECT_ = r"CREATE OBJECT "
+    CREATE_OBJECT_ = re.search("CREATE OBJECT ", current_line)
     # CREATE OBJECT objectname: filename, start_time, ...
     # ^^^^^^^^^^^^^
-    CREATE_OBJECT_ = re.search(syntax_CREATE_OBJECT_, current_line)
+    if CREATE_OBJECT_ is None:
+        raise UserWarning("SyntaxIssue: CREATE OBJECT keyword; \'CREATE_OBJECT_\'.")
 
-    syntax_colon = r":"
+    colon = re.search(":", current_line)
     # CREATE OBJECT objectname: filename, start_time, ...
     #                         ^
-    colon = re.search(syntax_colon, current_line)
+    if colon is None:
+        raise UserWarning("SyntaxIssue: CREATE OBJECT keyword; \'colon\'.")
 
     object_name = _collect_syntax_snapshot(current_line, CREATE_OBJECT_, colon)
     # object_name = current_line[CREATE_OBJECT_.end():colon.start()]
@@ -182,15 +184,17 @@ def _command_object_move(current_line: str, **traits):
         # %&$ Raise exception for the script.
         raise UserWarning("SyntaxIssue: MOVE OBJECT keyword")
 
-    syntax_MOVE_OBJECT_ = r"MOVE OBJECT "
+    MOVE_OBJECT_ = re.search("MOVE OBJECT ", current_line)
     # MOVE OBJECT objectname: move_time, x, y, ...
     # ^^^^^^^^^^^
-    MOVE_OBJECT_ = re.search(syntax_MOVE_OBJECT_, current_line)
+    if MOVE_OBJECT_ is None:
+        raise UserWarning("SyntaxIssue: MOVE OBJECT keyword; \'MOVE_OBJECT_\'.")
 
-    syntax_colon = r":"
+    colon = re.search(":", current_line)
     # MOVE OBJECT objectname: move_time, x, y, ...
     #                       ^
-    colon = re.search(syntax_colon, current_line)
+    if colon is None:
+        raise UserWarning("SyntaxIssue: MOVE OBJECT keyword; \'colon\'.")
 
     object_name = _collect_syntax_snapshot(current_line, MOVE_OBJECT_, colon)
     # object_name = current_line[MOVE_OBJECT_.end():colon.start()]
@@ -223,15 +227,17 @@ def _command_object_delete(current_line: str, **traits):
         # %&$ Raise exception for the script.
         raise UserWarning("SyntaxIssue: DELETE OBJECT keyword")
 
-    syntax_DELETE_OBJECT_ = r"DELETE OBJECT "
+    DELETE_OBJECT_ = re.search("DELETE OBJECT ", current_line)
     # DELETE OBJECT objectname: filename, start_time, ...
     # ^^^^^^^^^^^^^
-    DELETE_OBJECT_ = re.search(syntax_DELETE_OBJECT_, current_line)
+    if DELETE_OBJECT_ is None:
+        raise UserWarning("SyntaxIssue: DELETE OBJECT keyword; \'DELETE_OBJECT_\'.")
 
-    syntax_colon = r":"
+    colon = re.search(":", current_line)
     # DELETE OBJECT objectname: filename, start_time, ...
     #                         ^
-    colon = re.search(syntax_colon, current_line)
+    if colon is None:
+        raise UserWarning("SyntaxIssue: DELETE OBJECT keyword; \'colon\'.")
 
     object_name = _collect_syntax_snapshot(current_line, DELETE_OBJECT_, colon)
     # object_name = current_line[DELETE_OBJECT_.end():colon.start()]
@@ -253,10 +259,10 @@ def _command_object_delete(current_line: str, **traits):
 
 
 def _manage_time(time_string: str, frame_rate: int):
-    time_string = (time_string + " ").split(" ")  # time_string splits itself
+    time_string_list = (time_string + " ").split(" ")  # time_string splits itself
     # by the whitespace because the full command must be split that way by
     # default. Example: "2s 15f" refers to 2 seconds, and 15 frames after that.
-    _ = time_string.pop(-1)
+    _ = time_string_list.pop(-1)
     # f: frame, s: seconds, m: minutes, h: hours
     suffix_effect = {"f": 1,
                      "s": frame_rate,  # The amount of frames per second is a
@@ -265,7 +271,7 @@ def _manage_time(time_string: str, frame_rate: int):
 
     time = 0.0  # This variable is to store the amount of frames per unit as
     # it is iterated over.
-    for i in time_string:
+    for i in time_string_list:
         time += float(i[:-1]) * suffix_effect[i[-1]]  # The float member of the
         # number 'i[:-1]', meaning before the suffix, is multiplied by the
         # suffix effect denoted by the specific character.
