@@ -112,12 +112,12 @@ class Scripter:
             # There are no comments in an empty line.
             return
 
-        index = 0  # index is a variable for holding a value to be for clearing
-        # a comment later. This is used for when a multiline comment prefix is
-        # found, when it'll hold the value it was at until the suffix is found,
-        # if at all.
+        clearing_index = 0  # clearing_index is a variable for holding a value
+        # to be for clearing a comment later. This is used for when a multiline
+        # comment prefix is found, when it'll hold the value it was at until
+        # the suffix is found, if at all.
 
-        for iar, var in enumerate(self._line_current):
+        for index, var in enumerate(self._line_current):
             if self._line_current == "":
                 # There are no [more?] comments in an empty line.
                 return
@@ -138,7 +138,7 @@ class Scripter:
                 # outstanding_multiline... variable to True to begin looking
                 # for the suffix.
                 self._outstanding_multiline_comment = True
-                index = iar
+                clearing_index = iar
 
             elif (self._outstanding_multiline_comment is True
                     and (self._line_current[iar:iar+len(suffix_multiline)]
@@ -155,7 +155,7 @@ class Scripter:
             # presumes that it's on a future line, so it clears the remainder
             # of the current line and leaves outstanding_multiline... to True
             # to allow future lines to search for it.
-            self._line_current = _clear_line(self._line_current, index, len(self._line_current))
+            self._line_current = _clear_line(self._line_current, clearing_index, len(self._line_current))
 
     def find_line_end(self, syntax_end_line: str = ";"):
         """
