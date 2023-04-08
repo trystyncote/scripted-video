@@ -53,10 +53,9 @@ def _command_head(current_line: str, **traits):
     keyword = re.search(syntax_keyword, current_line)
     keyword = _collect_syntax_snapshot(current_line, keyword).strip()
 
-    syntax_equal_sign = r"="
+    equal_sign = re.search("=", current_line)
     # HEAD window_width = 852
     #                   ^
-    equal_sign = re.search(syntax_equal_sign, current_line)
 
     syntax_contents = r"[[\w]\s-]*"
     # (Only to be used for the part of the string after the equal sign.)
@@ -82,21 +81,24 @@ def _command_set(current_line: str, **traits):
         # %&$ Raise exception for the script.
         raise UserWarning("SyntaxIssue: SET keyword")
 
-    syntax_SET_ = r"SET "
+    SET_ = re.search("SET ", current_line)
     # SET variable = value AS type
     # ^^^
-    SET_ = re.search(syntax_SET_, current_line)
+    if SET_ is None:
+        raise UserWarning("SyntaxIssue: SET keyword; \'SET_\'.")
 
-    syntax_equal_sign = r"="
+    equal_sign = re.search("=", current_line)
     # SET variable = value AS type
     #              ^
-    equal_sign = re.search(syntax_equal_sign, current_line)
+    if equal_sign is None:
+        raise UserWarning("SyntaxIssue: SET keyword; \'equal_sign\'.")
 
     classify_variable = current_line[SET_.end():equal_sign.start()].strip()
-    syntax__AS_ = r" AS "
+    _AS_ = re.search(" AS ", current_line)
     # SET variable = value AS type
     #                      ^^
-    _AS_ = re.search(syntax__AS_, current_line)
+    if _AS_ is None:
+        raise UserWarning("SyntaxIssue: SET keyword; \'_AS_\'.")
 
     classify_value = current_line[equal_sign.end():_AS_.start()].strip()
     classify_type = current_line[_AS_.end():].strip()
