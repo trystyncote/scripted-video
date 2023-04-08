@@ -117,37 +117,37 @@ class Scripter:
         # comment prefix is found, when it'll hold the value it was at until
         # the suffix is found, if at all.
 
-        for index, var in enumerate(self._line_current):
+        for index, _ in enumerate(self._line_current):
             if self._line_current == "":
                 # There are no [more?] comments in an empty line.
                 return
 
             if (self._outstanding_multiline_comment is False
-                    and (self._line_current[iar:iar+len(prefix_single_line)]
+                    and (self._line_current[index:index+len(prefix_single_line)]
                          == prefix_single_line)):
                 # When the single-line prefix has been found, the rest of the
                 # line is the contents of the rest of the comment, so the
                 # remainder of the line is cleared.
-                self._line_current = _clear_line(self._line_current, iar, len(self._line_current))
+                self._line_current = _clear_line(self._line_current, index, len(self._line_current))
 
             elif (self._outstanding_multiline_comment is False
-                    and (self._line_current[iar:iar+len(prefix_multiline)]
+                    and (self._line_current[index:index+len(prefix_multiline)]
                          == prefix_multiline)):
                 # When the multi-line prefix has been found, the index variable
                 # holds onto the current character's index and sets the
                 # outstanding_multiline... variable to True to begin looking
                 # for the suffix.
                 self._outstanding_multiline_comment = True
-                clearing_index = iar
+                clearing_index = index
 
             elif (self._outstanding_multiline_comment is True
-                    and (self._line_current[iar:iar+len(suffix_multiline)]
+                    and (self._line_current[index:index+len(suffix_multiline)]
                          == suffix_multiline)):
                 # When the multi-line suffix has been found, the line is
                 # cleared from the index to the current index, and the search
                 # for the suffix is over, so the outstanding_multiline...
                 # variable is reset to False.
-                self._line_current = _clear_line(self._line_current, index, iar+len(suffix_multiline))
+                self._line_current = _clear_line(self._line_current, clearing_index, index+len(suffix_multiline))
                 self._outstanding_multiline_comment = False
 
         if self._outstanding_multiline_comment:
@@ -171,16 +171,16 @@ class Scripter:
             # There isn't an end-line character in an empty line.
             return
 
-        for iar, var in enumerate(self._line_current):
-            if (self._line_current[iar:iar+len(syntax_end_line)]
+        for index, _ in enumerate(self._line_current):
+            if (self._line_current[index:index+len(syntax_end_line)]
                 == syntax_end_line) \
                     and self._at_end_of_line is False:
                 # This monstrosity of an if-statement is simply checking for
                 # the end-line character when at_end_of_line is False, meaning
                 # not found.
-                if (self._line_current[iar-1] == "\\"
-                        and self._line_current[iar-2] != "\\"
-                        and iar > 0):
+                if (self._line_current[index-1] == "\\"
+                        and self._line_current[index-2] != "\\"
+                        and index > 0):
                     # This statement allows the use of backslashes to prevent
                     # the program misinterpreting a use of it as an end-line
                     # character when not intended.
@@ -188,7 +188,7 @@ class Scripter:
 
                 # The program clears the end-line character from the current
                 # line, and set at_end_of_line to True to show it's been found.
-                self._line_current = _clear_line(self._line_current, iar, iar+len(syntax_end_line))
+                self._line_current = _clear_line(self._line_current, index, index+len(syntax_end_line))
                 self._at_end_of_line = True
                 break
 
@@ -211,8 +211,8 @@ class Scripter:
 
         line_combined = ""  # line_combined is used to strap the strings of the
         # previous line and the current one together.
-        for iar in self._line_previous:
-            line_combined += iar + " "  # A space is added to prevent any
+        for index in self._line_previous:
+            line_combined += index + " "  # A space is added to prevent any
             # issues with resulting syntax, ie "HEADframe_rate" being incorrect
             # syntax, but not intended.
 
