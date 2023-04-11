@@ -9,7 +9,8 @@ def _clear_line(string: str, start_index: int, end_index: int):
 
 
 class Scripter:
-    def __init__(self, file: str, allow_rereading: bool = False):
+    def __init__(self, file: str, *, allow_rereading: bool = False, auto_clear_comments: bool = False,
+                 auto_clear_end_line: bool = False):
         """
         The Scripter class manages a text file and reads it one line at a time,
         which can be iterated over. The syntax of the file is not part of the
@@ -33,6 +34,12 @@ class Scripter:
         # measure for accidentally trying to read a script twice.
         self._at_end_of_line = False  # at_end_of_line is a boolean for whether
         # the end-line character has been found. The end-line character is ';'.
+        self._auto_clear_comments = auto_clear_comments  # auto_clear_comments
+        # is a flag variable for whether the script will automatically call
+        # .clear_comments() on each iteration.
+        self._auto_clear_end_line = auto_clear_end_line  # auto_clear_end_line
+        # is a flag variable for whether the script will automatically call
+        # .find_end_line() on each iteration.
         self._file_name = file  # file_name is the name of the text file being
         # read.
         self._finished_reading = False  # finished_reading is for whether the
@@ -62,9 +69,23 @@ class Scripter:
 
     def __next__(self):
         try:
-            self._line_current = next(self._script_reader)  # line_current is
-            # updated by calling next on script_reader, which yields the next line
-            # of the text file.
+            while True:
+                self._line_current = next(self._script_reader)  # line_current is
+                # updated by calling next on script_reader, which yields the next line
+                # of the text file.
+
+                if self._auto_clear_comments:  # If the flag is set to True, then the
+                    self.clear_comments()  # script calls .clear_comments() without the
+                    # user being required to call it.
+                if self._auto_clear_end_line:  # If the flag is set to True, then the
+                    self.find_line_end()  # script calls .find_line_end() without the
+                    # user being required to call it.
+                if self._line_current.strip() == "":
+                    continue
+                if self._line_previous:
+                    continue
+                break
+
         except StopIteration:
             self._finished_reading = True  # The script changes the
             # finished_reading variable to show that the script has been fully
