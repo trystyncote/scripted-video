@@ -238,10 +238,10 @@ class Scripter:
 
         line_combined = ""  # line_combined is used to strap the strings of the
         # previous line and the current one together.
-        for index in self._line_previous:
-            line_combined += index + " "  # A space is added to prevent any
-            # issues with resulting syntax, ie "HEADframe_rate" being incorrect
-            # syntax, but not intended.
+        for previous_item in self._line_previous:
+            line_combined += previous_item + " "  # A space is added to prevent
+            # any issues with resulting syntax, ie "HEADframe_rate" being
+            # incorrect syntax, but not intended.
 
         # The program then pastes the previous lines, through line_combined, to
         # line_current, and resets line_previous to an empty list.
