@@ -56,9 +56,10 @@ class Scripter:
         self._line_number = 0  # line_number is the number of the line of the
         # file being read. *The variable starts at 1 while the class is being
         # iterated over.*
-        self._line_previous = []  # line_previous stores any previous lines
-        # that occur without an end-line character at the end. This allows the
-        # previous lines to be preserved to allow multi-line commands.
+        self._line_previous: list[str] = []  # line_previous stores any
+        # previous lines that occur without an end-line character at the end.
+        # This allows the previous lines to be preserved to allow multi-line
+        # commands.
         self._outstanding_multiline_comment = False  # outstanding_multiline...
         # is a boolean that determines if a multi-line comment (/* contents */)
         # is still in effect.
