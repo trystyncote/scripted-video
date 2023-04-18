@@ -9,8 +9,8 @@ def _clear_line(string: str, start_index: int, end_index: int):
 
 
 class Scripter:
-    def __init__(self, file: str, *, allow_rereading: bool = False, auto_clear_comments: bool = False,
-                 auto_clear_end_line: bool = False):
+    def __init__(self, file: str, *, allow_empty_lines: bool = False, allow_rereading: bool = False,
+                 auto_clear_comments: bool = False, auto_clear_end_line: bool = False):
         """
         The Scripter class manages a text file and reads it one line at a time,
         which can be iterated over. The syntax of the file is not part of the
@@ -26,6 +26,10 @@ class Scripter:
             script will allow itself to reread the script when another
             iteration is required. Default is False.
         """
+        self._allow_empty_lines = allow_empty_lines  # allow_empty_lines is a
+        # flag variable for whether the script should return an empty line when
+        # it is asked to iterate. By default, the behaviour prevents the script
+        # from returning an empty line.
         self._allow_rereading = allow_rereading  # allow_rereading is a
         # boolean for whether a script can be re-run if the script has already
         # finished running. Note: The Scripter class is unable to tell if the
@@ -80,9 +84,9 @@ class Scripter:
                 if self._auto_clear_end_line:  # If the flag is set to True, then the
                     self.find_line_end()  # script calls .find_line_end() without the
                     # user being required to call it.
-                if self._line_current.strip() == "":
-                    continue
-                if self._line_previous:
+                    if self._line_previous:
+                        continue
+                if self._line_current.strip() == "" and not self._allow_empty_lines:
                     continue
                 break
 
@@ -260,3 +264,18 @@ class Scripter:
     def _check_rereading(self):
         if self._finished_reading and not self._allow_rereading:
             raise UserWarning("Scripter has not been allowed to read the script more than once.")
+
+
+from scripted_video.File import find_path_of_file
+
+
+def experiment():
+    s = Scripter(find_path_of_file("example_script_file_1.txt"))
+    for _ in s:
+        s.find_line_end()
+        current_line = s.current_line
+        print(current_line)
+
+
+if __name__ == "__main__":
+    experiment()
