@@ -9,11 +9,11 @@ class ImageObject:
         self._object_name = object_name
         self._file_name = None
         self.start_time = None
-        self.x = None
+        self.x = 0
         self._x_current = None
-        self.y = None
+        self.y = 0
         self._y_current = None
-        self.scale = None
+        self.scale = 0.0
         self._scale_current = None
         self.layer = None
         self.move_time = []
