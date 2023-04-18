@@ -16,11 +16,11 @@ class ImageObject:
         self.scale = 0.0
         self._scale_current = None
         self.layer = None
-        self.move_time = []
-        self.move_x = []
-        self.move_y = []
-        self.move_scale = []
-        self.move_rate = []
+        self.move_time: list[int] = []
+        self.move_x: list[int] = []
+        self.move_y: list[int] = []
+        self.move_scale: list[float | int] = []
+        self.move_rate: list[int] = []
         self.delete_time = None
         self.delay = 0
 
