@@ -50,7 +50,7 @@ class Scripter:
         # script has been read in full. This variable may become unhelpful if
         # allow_rereading is set to True, where this variable doesn't prevent
         # re-reading.
-        self._line_current = None  # line_current refers to the current line of
+        self._line_current = ""  # line_current refers to the current line of
         # the file being read. Outside the class, it's referred to as
         # 'current_line'.
         self._line_number = 0  # line_number is the number of the line of the
@@ -62,8 +62,9 @@ class Scripter:
         self._outstanding_multiline_comment = False  # outstanding_multiline...
         # is a boolean that determines if a multi-line comment (/* contents */)
         # is still in effect.
-        self._script_reader = None  # script_reader is the variable that stores
-        # the generator that iterates over the text file that is being read.
+        self._script_reader = _read_script(file)  # script_reader is the
+        # variable that stores the generator that iterates over the text file
+        # that is being read.
 
     def __iter__(self):
         self._check_rereading()
