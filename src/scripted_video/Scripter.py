@@ -264,18 +264,3 @@ class Scripter:
     def _check_rereading(self):
         if self._finished_reading and not self._allow_rereading:
             raise UserWarning("Scripter has not been allowed to read the script more than once.")
-
-
-from scripted_video.File import find_path_of_file
-
-
-def experiment():
-    s = Scripter(find_path_of_file("example_script_file_1.txt"))
-    for _ in s:
-        s.find_line_end()
-        current_line = s.current_line
-        print(current_line)
-
-
-if __name__ == "__main__":
-    experiment()
