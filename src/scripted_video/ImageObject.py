@@ -1,3 +1,6 @@
+from typing import Any
+
+
 class ImageObject:
     def __init__(self, object_name: str):
         """
@@ -24,7 +27,7 @@ class ImageObject:
         self.delete_time = None
         self.delay = 0
 
-    def __setattr__(self, name, value):
+    def __setattr__(self, name: str, value: Any):
         # if name not in self.__dict__:
         #     raise AttributeError(f"Attribute {name} not in ImageObject.")
         if name[0:4] == "move" and value != []:
