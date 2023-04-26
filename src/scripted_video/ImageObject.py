@@ -11,20 +11,20 @@ class ImageObject:
         """
         self._object_name = object_name
         self._file_name = None
-        self.start_time = None
+        self.start_time = 0
         self.x = 0
         self._x_current = None
         self.y = 0
         self._y_current = None
         self.scale = 0.0
         self._scale_current = None
-        self.layer = None
+        self.layer = 0
         self.move_time: list[int] = []
         self.move_x: list[int] = []
         self.move_y: list[int] = []
         self.move_scale: list[float | int] = []
         self.move_rate: list[int] = []
-        self.delete_time = None
+        self.delete_time = 0
         self.delay = 0
 
     def __setattr__(self, name: str, value: Any):
