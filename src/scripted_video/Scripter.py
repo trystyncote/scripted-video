@@ -1,3 +1,6 @@
+from pathlib import Path
+
+
 def _read_script(file_name: str):
     with open(file_name, "r") as file_store:
         for line in file_store:
@@ -9,7 +12,7 @@ def _clear_line(string: str, start_index: int, end_index: int):
 
 
 class Scripter:
-    def __init__(self, file: str, *, allow_empty_lines: bool = False, allow_rereading: bool = False,
+    def __init__(self, file: (Path | str), *, allow_empty_lines: bool = False, allow_rereading: bool = False,
                  auto_clear_comments: bool = False, auto_clear_end_line: bool = False):
         """
         The Scripter class manages a text file and reads it one line at a time,
