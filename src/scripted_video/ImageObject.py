@@ -9,8 +9,8 @@ class ImageObject:
 
         :param object_name: Name of the object. Should be unique.
         """
-        self._object_name = object_name
-        self._file_name = None
+        self.object_name = object_name
+        self.file_name = None
         self.start_time = 0
         self.x = 0
         self._x_current = None
@@ -35,13 +35,15 @@ class ImageObject:
             return
         super().__setattr__(name, value)
 
+    '''
     @property
     def object_name(self):
-        """
+        "/""
         The name of the object, which is also the name of the instance, so to
         speak. Has no setter method, as this attribute shouldn't be changed.
-        """
+        "/""
         return self._object_name
+    '''
 
     @property
     def moves(self):
