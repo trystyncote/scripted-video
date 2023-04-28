@@ -122,9 +122,9 @@ def _command_set(current_line: str, **traits):
 
     elif classify_type.upper() == "ADDRESS":
         if classify_value == "__current_address__":
-            classify_value = traits["_HEAD"]["_script_name"]
-            classify_value = classify_value.rsplit("\\", 1)
-            classify_value = classify_value[0] + "\\"
+            classify_value = Path(traits["_HEAD"]["_script_name"])
+            classify_value = classify_value.parent
+            classify_value = str(classify_value)
 
     else:
         # %&$ Raise exception for the script.
