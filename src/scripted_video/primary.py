@@ -11,11 +11,11 @@ import pathlib
 def primary():
     script_variables = {
         "_HEAD": {
-            "_script_name":  None,
-            "file_name":     None,
-            "frame_rate":    None,
-            "window_height": None,
-            "window_width":  None
+            "_script_name":  "",
+            "file_name":     "",
+            "frame_rate":    0,
+            "window_height": 0,
+            "window_width":  0
         },
         "ADDRESS": {},
         "BOOL":    {},
