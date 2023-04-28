@@ -5,7 +5,7 @@ from scripted_video.Timetable import create_timetable
 from scripted_video.FrameDraw import create_video
 
 import logging
-import pathlib
+from pathlib import Path
 
 
 def primary():
@@ -25,8 +25,8 @@ def primary():
     }
 
     script_file = find_path_of_file("scriptedvideo_sample_script_1.txt")
-    script = Scripter(script_file)
-    script_variables["_HEAD"]["_script_name"] = script_file
+    script = Scripter(Path(script_file))
+    script_variables["_HEAD"]["_script_name"] = str(script_file)
     # pathlib.Path("dir").name for getting purely the root file name.
 
     timetable_information = []
