@@ -17,7 +17,7 @@ def _recurse_search_child_directory(desired_file_name: str, current_directory: P
     return None
 
 
-def find_path_of_file(desired_file_name: str) -> Path:
+def find_path_of_file(desired_file_name: str):
     complete_directory = Path(".").absolute()
     current_directory = complete_directory
 
