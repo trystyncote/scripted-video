@@ -24,7 +24,7 @@ def primary():
         "STRING":  {}
     }
 
-    script_file = find_path_of_file("scriptedvideo_sample_script_1.txt")
+    script_file = find_path_of_file("scriptedVideo_demoScript_1.txt")
     script = Scripter(Path(script_file))
     script_variables["_HEAD"]["_script_name"] = str(script_file)
     # pathlib.Path("dir").name for getting purely the root file name.
