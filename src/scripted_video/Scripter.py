@@ -1,7 +1,7 @@
 from pathlib import Path
 
 
-def _read_script(file_name: str):
+def _read_script(file_name: (Path | str)):
     with open(file_name, "r") as file_store:
         for line in file_store:
             yield line.rstrip()
