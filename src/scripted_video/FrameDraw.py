@@ -8,8 +8,7 @@ from moviepy.video.compositing.concatenate import concatenate_videoclips
 
 
 def create_video(timetable, object_information, encoder, log_master, **traits):
-    script_path = traits["_HEAD"]["_script_name"].rpartition("\\")[0]
-    folder_location = f"{script_path}\\{encoder}"
+    folder_location = traits["_HEAD"]["_script_name"].parent / encoder
     frame_rate = traits["_HEAD"]["frame_rate"]
 
     os.mkdir(folder_location)
@@ -78,7 +77,9 @@ def _collect_move_details(frame_index, object_index, object_information):
 
 
 def _stitch_video(folder_location, final_video_name, video_length_frames, frame_rate):
-    directory, encoder = folder_location.rsplit("\\", 1)
+    directory = folder_location.parent
+    encoder = folder_location.name
+
     clips = [(ImageClip(f"{folder_location}\\{encoder}__{m}.png")
               .set_duration(1 / frame_rate))
              for m in range(video_length_frames)]
