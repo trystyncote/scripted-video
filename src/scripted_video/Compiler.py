@@ -146,30 +146,12 @@ def _command_object_move(command: str, **traits):
     return keys_contained
 
 
-def _command_object_delete(current_line: str, **traits):
-    syntax_full = r"DELETE OBJECT [\w_]*: [\w_]*"
-    # DELETE OBJECT objectname: delete_time, ...
-    # ^^^^^^^^^^^^^^^^^^^^^^^^^~~~~~~~~~~~~~ ...
-    if not re.match(syntax_full, current_line):
-        # %&$ Raise exception for the script.
-        raise UserWarning("SyntaxIssue: DELETE OBJECT keyword")
+def _command_object_delete(command: str, **traits):
+    DELETE_OBJECT_ = command.find("DELETE OBJECT ") + 14
+    colon = command.find(":")
 
-    DELETE_OBJECT_ = re.search("DELETE OBJECT ", current_line)
-    # DELETE OBJECT objectname: filename, start_time, ...
-    # ^^^^^^^^^^^^^
-    if DELETE_OBJECT_ is None:
-        raise UserWarning("SyntaxIssue: DELETE OBJECT keyword; \'DELETE_OBJECT_\'.")
-
-    colon = re.search(":", current_line)
-    # DELETE OBJECT objectname: filename, start_time, ...
-    #                         ^
-    if colon is None:
-        raise UserWarning("SyntaxIssue: DELETE OBJECT keyword; \'colon\'.")
-
-    object_name = _collect_syntax_snapshot(current_line, DELETE_OBJECT_, colon)
-    # object_name = current_line[DELETE_OBJECT_.end():colon.start()]
-
-    keys = _split_by_keys(current_line[colon.end():], 1)
+    object_name = command[DELETE_OBJECT_:colon].strip()
+    keys = _split_by_keys(command[(colon + 1):], 1)
 
     keys_contained = [
         "D",
@@ -181,7 +163,6 @@ def _command_object_delete(current_line: str, **traits):
         keys_contained = _split_extra_keys(keys_contained, keys[1:])
 
     keys_contained = _evaluate_values(keys_contained, **traits)
-
     return keys_contained
 
 
