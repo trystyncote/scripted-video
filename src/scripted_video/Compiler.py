@@ -97,30 +97,12 @@ def _command_set(command: str, **traits):
     return traits
 
 
-def _command_object_create(current_line: str, **traits):
-    syntax_full = r"CREATE OBJECT [\w_]*: [\w_]*"
-    # CREATE OBJECT objectname: filename, start_time, ...
-    # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^~~~~~~~~~~~~~ ...
-    if not re.match(syntax_full, current_line):
-        # %&$ Raise exception for the script.
-        raise UserWarning("SyntaxIssue: CREATE OBJECT keyword")
+def _command_object_create(command: str, **traits):
+    CREATE_OBJECT_ = command.find("CREATE OBJECT ") + 14
+    colon = command.find(":")
 
-    CREATE_OBJECT_ = re.search("CREATE OBJECT ", current_line)
-    # CREATE OBJECT objectname: filename, start_time, ...
-    # ^^^^^^^^^^^^^
-    if CREATE_OBJECT_ is None:
-        raise UserWarning("SyntaxIssue: CREATE OBJECT keyword; \'CREATE_OBJECT_\'.")
-
-    colon = re.search(":", current_line)
-    # CREATE OBJECT objectname: filename, start_time, ...
-    #                         ^
-    if colon is None:
-        raise UserWarning("SyntaxIssue: CREATE OBJECT keyword; \'colon\'.")
-
-    object_name = _collect_syntax_snapshot(current_line, CREATE_OBJECT_, colon)
-    # object_name = current_line[CREATE_OBJECT_.end():colon.start()]
-
-    keys = _split_by_keys(current_line[colon.end():], 6)
+    object_name = command[CREATE_OBJECT_:colon].strip()
+    keys = _split_by_keys(command[(colon+1):], 6)
 
     keys_contained = [
         "C",
@@ -137,7 +119,6 @@ def _command_object_create(current_line: str, **traits):
         keys_contained = _split_extra_keys(keys_contained, keys[6:])
 
     keys_contained = _evaluate_values(keys_contained, **traits)
-
     return keys_contained
 
 
