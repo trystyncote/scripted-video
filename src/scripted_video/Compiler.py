@@ -122,30 +122,12 @@ def _command_object_create(command: str, **traits):
     return keys_contained
 
 
-def _command_object_move(current_line: str, **traits):
-    syntax_full = r"MOVE OBJECT [\w_]*: [\w_]*"
-    # MOVE OBJECT objectname: change_time, x_change, ...
-    # ^^^^^^^^^^^^^^^^^^^^^^^~~~~~~~~~~~~~~~~~~~~~~~ ...
-    if not re.match(syntax_full, current_line):
-        # %&$ Raise exception for the script.
-        raise UserWarning("SyntaxIssue: MOVE OBJECT keyword")
+def _command_object_move(command: str, **traits):
+    MOVE_OBJECT_ = command.find("MOVE OBJECT ") + 12
+    colon = command.find(":")
 
-    MOVE_OBJECT_ = re.search("MOVE OBJECT ", current_line)
-    # MOVE OBJECT objectname: move_time, x, y, ...
-    # ^^^^^^^^^^^
-    if MOVE_OBJECT_ is None:
-        raise UserWarning("SyntaxIssue: MOVE OBJECT keyword; \'MOVE_OBJECT_\'.")
-
-    colon = re.search(":", current_line)
-    # MOVE OBJECT objectname: move_time, x, y, ...
-    #                       ^
-    if colon is None:
-        raise UserWarning("SyntaxIssue: MOVE OBJECT keyword; \'colon\'.")
-
-    object_name = _collect_syntax_snapshot(current_line, MOVE_OBJECT_, colon)
-    # object_name = current_line[MOVE_OBJECT_.end():colon.start()]
-
-    keys = _split_by_keys(current_line[colon.end():], 5)
+    object_name = command[MOVE_OBJECT_:colon].strip()
+    keys = _split_by_keys(command[(colon + 1):], 5)
 
     keys_contained = [
         "M",
@@ -158,10 +140,9 @@ def _command_object_move(current_line: str, **traits):
     ]
 
     if len(keys) > 5:
-        keys_contained = _split_extra_keys(keys_contained, keys[5:])
+        keys_contained = _split_extra_keys(keys_contained, keys[6:])
 
     keys_contained = _evaluate_values(keys_contained, **traits)
-
     return keys_contained
 
 
