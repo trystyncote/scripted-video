@@ -58,64 +58,42 @@ def _command_head(command: str, **traits):
     return traits
 
 
-def _command_set(current_line: str, **traits):
-    syntax_full = r"SET [\w_]*(\s|)=(\s|)[\w.'\"\\]* AS [\w]*"
-    # SET variable = value AS type
-    # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    if not re.match(syntax_full, current_line):
-        # %&$ Raise exception for the script.
-        raise UserWarning("SyntaxIssue: SET keyword")
+def _command_set(command: str, **traits):
+    SET_ = command.find("SET ") + 4
+    equal_sign = command.find("=")
+    _AS_ = command.find(" AS ")
 
-    SET_ = re.search("SET ", current_line)
-    # SET variable = value AS type
-    # ^^^
-    if SET_ is None:
-        raise UserWarning("SyntaxIssue: SET keyword; \'SET_\'.")
+    name = command[SET_:equal_sign].strip()
+    value = command[(equal_sign+1):_AS_].strip()
+    type_ = command[(_AS_+4):].strip().upper()
 
-    equal_sign = re.search("=", current_line)
-    # SET variable = value AS type
-    #              ^
-    if equal_sign is None:
-        raise UserWarning("SyntaxIssue: SET keyword; \'equal_sign\'.")
-
-    classify_variable = current_line[SET_.end():equal_sign.start()].strip()
-    _AS_ = re.search(" AS ", current_line)
-    # SET variable = value AS type
-    #                      ^^
-    if _AS_ is None:
-        raise UserWarning("SyntaxIssue: SET keyword; \'_AS_\'.")
-
-    classify_value = current_line[equal_sign.end():_AS_.start()].strip()
-    classify_type = current_line[_AS_.end():].strip()
-
-    if classify_type.upper() == "INT":
-        classify_value = int(classify_value)
-
-    elif classify_type.upper() == "FLOAT":
-        classify_value = float(classify_value)
-
-    elif classify_type.upper() == "BOOL":
-        if classify_value.upper() == "TRUE":
-            classify_value = True
-        elif classify_value.upper() == "FALSE":
-            classify_value = False
+    if type_ == "ADDRESS":
+        if value == "__current_address__":
+            value = traits["_HEAD"]["_script_name"].parent
         else:
-            raise ValueError(f"Expected True or False, got {classify_value}")
+            value = Path(value)
 
-    elif classify_type.upper() == "STRING":
+    elif type_ == "BOOL":
+        if value.upper() == "TRUE":
+            value = True
+        elif value.upper() == "FALSE":
+            value = False
+        else:
+            raise ValueError
+
+    elif type_ == "FLOAT":
+        value = float(value)
+
+    elif type_ == "INT":
+        value = int(value)
+
+    elif type_ == "STRING":
         pass
 
-    elif classify_type.upper() == "ADDRESS":
-        if classify_value == "__current_address__":
-            classify_value = traits["_HEAD"]["_script_name"].parent
-        else:
-            classify_value = Path(classify_value)
-
     else:
-        # %&$ Raise exception for the script.
-        raise UserWarning("Variable 'classify_value' not valid.")
+        raise ValueError
 
-    traits[classify_type][classify_variable] = classify_value
+    traits[type_][name] = value
     return traits
 
 
