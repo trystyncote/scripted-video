@@ -40,35 +40,19 @@ def _collect_syntax_snapshot(full_line, re_match_instance: re.Match, re_match_in
     return full_line[re_match_instance.end():re_match_instance_additional.start()]
 
 
-def _command_head(current_line: str, **traits):
-    syntax_full = r"HEAD ((f((rame_rate)|(ile_name)))|(window_((width)|(height))))(\s|)=(\s|)[\w_]*"
-    # HEAD window_width = 852
-    # ^^^^^^^^^^^^^^^^^^^^^^^
-    if not re.match(syntax_full, current_line):
-        # %&$ Raise exception for the script.
-        raise UserWarning("SyntaxIssue: HEAD keyword")
+def _command_head(command: str, **traits):
+    HEAD_ = command.find("HEAD ") + 5
+    equal_sign = command.find("=")
 
-    syntax_keyword = r"f((rame_rate)|(ile_name))|(window_((width)|(height)))"
-    # HEAD window_width = 852
-    #      ^^^^^^^^^^^^
-    keyword = re.search(syntax_keyword, current_line)
-    keyword = _collect_syntax_snapshot(current_line, keyword).strip()
-
-    equal_sign = re.search("=", current_line)
-    # HEAD window_width = 852
-    #                   ^
-
-    syntax_contents = r"[[\w]\s-]*"
-    # (Only to be used for the part of the string after the equal sign.)
-    # HEAD window_width = 852
-    #                     ^^^
-    contents = re.search(syntax_contents, current_line[equal_sign.end():])
-    contents = _collect_syntax_snapshot(current_line[equal_sign.end():], contents).strip()
-    if contents.strip() == "":
-        raise ValueError
+    keyword = command[HEAD_:equal_sign].strip()
+    contents: (int | str) = command[equal_sign+1:].strip()
 
     if keyword == "window_width" or keyword == "window_height" or keyword == "frame_rate":
         contents = int(contents)
+    elif keyword == "file_name":
+        pass
+    else:
+        raise ValueError
 
     traits["_HEAD"][keyword] = contents
     return traits
