@@ -2,7 +2,8 @@ import re
 
 from pathlib import Path
 
-def define_prefix(current_line: str, traits: dict):
+
+def define_prefix(current_line: str, traits: dict[str, dict[str, (str | int | bool)]]):
     """
     Collects the information about the respective command from the
     'current_line' variable.
