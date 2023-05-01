@@ -69,6 +69,8 @@ def _command_set(command: str, **traits):
             value = Path(str(value))
 
     elif type_ == "BOOL":
+        assert isinstance(value, str)  # This 'assert' keyword is here to
+        # prevent mypy from raising a [union-attr] error.
         if value.upper() == "TRUE":
             value = True
         elif value.upper() == "FALSE":
@@ -83,7 +85,9 @@ def _command_set(command: str, **traits):
         value = int(str(value))
 
     elif type_ == "STRING":
-        pass
+        pass  # This section does nothing but allow the script to not evaluate
+        # the 'else' clause, which is for raising an error for when `type_` is
+        # invalid.
 
     else:
         raise ValueError
