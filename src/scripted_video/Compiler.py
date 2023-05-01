@@ -15,7 +15,7 @@ def define_prefix(current_line: str, traits: dict[str, dict[str, (str | int | bo
     if re.match(r"HEAD ((f((rame_rate)|(ile_name)))|(window_((width)|(height))))(\s|)=(\s|)[\w_]*", current_line):
         return _command_head(current_line, **traits), 1
 
-    elif re.match(r"SET [\w_]*(\s|)=(\s|)[\w.'\"\\]* AS [\w]*", current_line):
+    elif re.match(r"SET [\w_]*(\s|)=(\s|)[\w.'\"\\]* AS \w*", current_line):
         return _command_set(current_line, **traits), 1
 
     elif re.match(r"CREATE OBJECT [\w_]*: [\w_]*", current_line):
