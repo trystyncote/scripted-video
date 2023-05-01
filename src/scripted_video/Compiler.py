@@ -65,7 +65,7 @@ def _command_set(command: str, **traits):
     _AS_ = command.find(" AS ")
 
     name = command[SET_:equal_sign].strip()
-    value = command[(equal_sign+1):_AS_].strip()
+    value: (bool | float | int | Path | str) = command[(equal_sign+1):_AS_].strip()
     type_ = command[(_AS_+4):].strip().upper()
 
     if type_ == "ADDRESS":
