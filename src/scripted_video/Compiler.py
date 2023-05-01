@@ -66,7 +66,7 @@ def _command_set(command: str, **traits):
         if value == "__current_address__":
             value = traits["_HEAD"]["_script_name"].parent
         else:
-            value = Path(value)
+            value = Path(str(value))
 
     elif type_ == "BOOL":
         if value.upper() == "TRUE":
@@ -77,10 +77,10 @@ def _command_set(command: str, **traits):
             raise ValueError
 
     elif type_ == "FLOAT":
-        value = float(value)
+        value = float(str(value))
 
     elif type_ == "INT":
-        value = int(value)
+        value = int(str(value))
 
     elif type_ == "STRING":
         pass
