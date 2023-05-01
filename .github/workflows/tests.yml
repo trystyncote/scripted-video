@@ -14,6 +14,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+        with: ${{ github.repository }}
       - name: Set up Python ${{ matrix.python-version }}
         uses: ./
         with:
