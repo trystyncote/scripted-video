@@ -35,12 +35,6 @@ def define_prefix(current_line: str, traits: dict[str, dict[str, (str | int | bo
     raise UserWarning("Temporary exception for an unrecognized command.")
 
 
-def _collect_syntax_snapshot(full_line, re_match_instance: re.Match, re_match_instance_additional: re.Match = None):
-    if re_match_instance_additional is None:
-        return full_line[re_match_instance.start():re_match_instance.end()]
-    return full_line[re_match_instance.end():re_match_instance_additional.start()]
-
-
 def _command_head(command: str, **traits):
     HEAD_ = command.find("HEAD ") + 5
     equal_sign = command.find("=")
