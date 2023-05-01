@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 
 def define_prefix(current_line: str, traits: dict[str, dict[str, (str | int | bool)]]):
@@ -11,23 +12,19 @@ def define_prefix(current_line: str, traits: dict[str, dict[str, (str | int | bo
     :return: Returns the necessary information from the command without the
         extraneous content.
     """
-    split_current_line = current_line.split(" ")  # split_current_line houses
-    # the tuple with the information separated by whitespace. This is for
-    # readability purposes.
-
-    if split_current_line[0].upper() == "HEAD":
+    if re.match(r"HEAD ((f((rame_rate)|(ile_name)))|(window_((width)|(height))))(\s|)=(\s|)[\w_]*", current_line):
         return _command_head(current_line, **traits), 1
 
-    elif split_current_line[0] == "SET":
+    elif re.match(r"SET [\w_]*(\s|)=(\s|)[\w.'\"\\]* AS [\w]*", current_line):
         return _command_set(current_line, **traits), 1
 
-    elif split_current_line[0] == "CREATE" and split_current_line[1] == "OBJECT":
+    elif re.match(r"CREATE OBJECT [\w_]*: [\w_]*", current_line):
         return _command_object_create(current_line, **traits), 2
 
-    elif split_current_line[0] == "MOVE" and split_current_line[1] == "OBJECT":
+    elif re.match(r"MOVE OBJECT [\w_]*: [\w_]*", current_line):
         return _command_object_move(current_line, **traits), 2
 
-    elif split_current_line[0] == "DELETE" and split_current_line[1] == "OBJECT":
+    elif re.match(r"DELETE OBJECT [\w_]*: [\w_]*", current_line):
         return _command_object_delete(current_line, **traits), 2
 
     raise UserWarning("Temporary exception for an unrecognized command.")
