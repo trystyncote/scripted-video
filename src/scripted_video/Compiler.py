@@ -141,7 +141,7 @@ def _command_object_move(command: str, **traits):
     ]
 
     if len(keys) > 5:
-        keys_contained = _split_extra_keys(keys_contained, keys[6:])
+        keys_contained = _split_extra_keys(keys_contained, keys[5:])
 
     keys_contained = _evaluate_values(keys_contained, **traits)
     return keys_contained
