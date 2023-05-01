@@ -194,7 +194,7 @@ def _split_by_keys(string_keys: str, minimum: int):
     return keys
 
 
-def _split_extra_keys(keys_contained: list, keys_series: list):
+def _split_extra_keys(keys_contained, keys_series):
     for keys_item in keys_series:
         keys_contained.append(keys_item.split("=", 1))
         if len(keys_contained[-1]) != 2:
@@ -203,7 +203,7 @@ def _split_extra_keys(keys_contained: list, keys_series: list):
     return keys_contained
 
 
-def _evaluate_values(keys_contained: list, **traits):
+def _evaluate_values(keys_contained, **traits):
     value_types = {
         "object_name": "STRING",
         "file_name": "ADDRESS",
