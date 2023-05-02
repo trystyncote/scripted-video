@@ -1,8 +1,10 @@
+from scripted_video.variables.ScriptVariables import ScriptVariables
+
 from pathlib import Path
 import re
 
 
-def define_prefix(current_line: str, traits: dict[str, dict[str, (str | int | bool)]]):
+def define_prefix(current_line: str, traits: ScriptVariables):
     """
     Collects the information about the respective command from the
     'current_line' variable.
@@ -13,24 +15,24 @@ def define_prefix(current_line: str, traits: dict[str, dict[str, (str | int | bo
         extraneous content.
     """
     if re.match(r"HEAD ((f((rame_rate)|(ile_name)))|(window_((width)|(height))))(\s|)=(\s|)[\w_]*", current_line):
-        return _command_head(current_line, **traits), 1
+        return _command_head(current_line, traits), 1
 
     elif re.match(r"SET [\w_]*(\s|)=(\s|)[\w.'\"\\]* AS \w*", current_line):
-        return _command_set(current_line, **traits), 1
+        return _command_set(current_line, traits), 1
 
     elif re.match(r"CREATE OBJECT [\w_]*: [\w_]*", current_line):
-        return _command_object_create(current_line, **traits), 2
+        return _command_object_create(current_line, traits), 2
 
     elif re.match(r"MOVE OBJECT [\w_]*: [\w_]*", current_line):
-        return _command_object_move(current_line, **traits), 2
+        return _command_object_move(current_line, traits), 2
 
     elif re.match(r"DELETE OBJECT [\w_]*: [\w_]*", current_line):
-        return _command_object_delete(current_line, **traits), 2
+        return _command_object_delete(current_line, traits), 2
 
     raise UserWarning("Temporary exception for an unrecognized command.")
 
 
-def _command_head(command: str, **traits):
+def _command_head(command: str, traits: ScriptVariables):
     HEAD_ = command.find("HEAD ") + 5
     equal_sign = command.find("=")
 
@@ -44,11 +46,11 @@ def _command_head(command: str, **traits):
     else:
         raise ValueError
 
-    traits["_HEAD"][keyword] = contents
+    traits.metadata.update_value(keyword, contents)
     return traits
 
 
-def _command_set(command: str, **traits):
+def _command_set(command: str, traits: ScriptVariables):
     SET_ = command.find("SET ") + 4
     equal_sign = command.find("=")
     _AS_ = command.find(" AS ")
@@ -59,7 +61,7 @@ def _command_set(command: str, **traits):
 
     if type_ == "ADDRESS":
         if value == "__current_address__":
-            value = traits["_HEAD"]["_script_name"].parent
+            value = traits.metadata.script_name.parent
         else:
             value = Path(str(value))
 
@@ -87,11 +89,11 @@ def _command_set(command: str, **traits):
     else:
         raise ValueError
 
-    traits[type_][name] = value
+    traits.constants.call_relevant(type_).create_variable(name, value)
     return traits
 
 
-def _command_object_create(command: str, **traits):
+def _command_object_create(command: str, traits: ScriptVariables):
     CREATE_OBJECT_ = command.find("CREATE OBJECT ") + 14
     colon = command.find(":")
 
@@ -112,11 +114,11 @@ def _command_object_create(command: str, **traits):
     if len(keys) > 6:
         keys_contained = _split_extra_keys(keys_contained, keys[6:])
 
-    keys_contained = _evaluate_values(keys_contained, **traits)
+    keys_contained = _evaluate_values(keys_contained, traits)
     return keys_contained
 
 
-def _command_object_move(command: str, **traits):
+def _command_object_move(command: str, traits: ScriptVariables):
     MOVE_OBJECT_ = command.find("MOVE OBJECT ") + 12
     colon = command.find(":")
 
@@ -136,11 +138,11 @@ def _command_object_move(command: str, **traits):
     if len(keys) > 5:
         keys_contained = _split_extra_keys(keys_contained, keys[5:])
 
-    keys_contained = _evaluate_values(keys_contained, **traits)
+    keys_contained = _evaluate_values(keys_contained, traits)
     return keys_contained
 
 
-def _command_object_delete(command: str, **traits):
+def _command_object_delete(command: str, traits: ScriptVariables):
     DELETE_OBJECT_ = command.find("DELETE OBJECT ") + 14
     colon = command.find(":")
 
@@ -156,7 +158,7 @@ def _command_object_delete(command: str, **traits):
     if len(keys) > 1:
         keys_contained = _split_extra_keys(keys_contained, keys[1:])
 
-    keys_contained = _evaluate_values(keys_contained, **traits)
+    keys_contained = _evaluate_values(keys_contained, traits)
     return keys_contained
 
 
@@ -198,7 +200,7 @@ def _split_extra_keys(keys_contained, keys_series):
     return keys_contained
 
 
-def _evaluate_values(keys_contained, **traits):
+def _evaluate_values(keys_contained, traits: ScriptVariables):
     value_types = {
         "object_name": "STRING",
         "file_name": "ADDRESS",
@@ -221,19 +223,21 @@ def _evaluate_values(keys_contained, **traits):
             continue
 
         if value_types[name] == "TIME":
-            keys_contained[index][1] = _manage_time(contents, traits["_HEAD"]["frame_rate"])
+            keys_contained[index][1] = _manage_time(contents, traits.metadata.frame_rate)
             continue
 
         type_ = value_types[name]
-        for key in traits[type_]:
+        traits_of_type = [attr for attr in dir(traits.constants.call_relevant(type_)) if not attr.startswith("__")]
+        for key in traits_of_type:
             if contents.find(key) == -1:
                 continue
 
             if type_ == "ADDRESS" and contents.find(key) != -1:
-                keys_contained[index][1] = traits[type_][key] / contents.replace(key + "/", "q/")[2:]
+                keys_contained[index][1] = traits.constants.call_relevant(type_).get_variable(key) \
+                    / contents.replace(key + "/", "q/")[2:]
                 continue
 
-            keys_contained[index][1] = contents.replace(key, traits[type_][key])
+            keys_contained[index][1] = contents.replace(key, traits.constants.call_relevant(type_).get_variable(key))
 
         if type_ == "ADDRESS":
             continue
