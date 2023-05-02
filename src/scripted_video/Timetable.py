@@ -4,7 +4,6 @@
 from scripted_video.ImageObject import ImageObject
 
 
-
 def create_timetable(timetable_information: list[str | list[str]]):
     """
     Creates a timetable for the video.
@@ -27,8 +26,7 @@ def create_timetable(timetable_information: list[str | list[str]]):
         # Each command in timetable_information is a list that looks similar to
         # ["x", info, info, ...], with is then dissected into an instance of
         # the ImageObject class. Position of what goes where is hard-coded!
-        object_information = _collect_information(command, object_information,
-                                                  variable_data)
+        object_information = _collect_information(command, object_information)
 
     sorted_timetable = _define_dimensions(object_information)
     # sorted_timetable is a 2-d list that stores the name of an object in a
@@ -36,14 +34,13 @@ def create_timetable(timetable_information: list[str | list[str]]):
     # is for the layer it is on. Lower layer number is further back.
     sorted_timetable = _fill_timetable(sorted_timetable, object_information)
     # The timetable is filled second, to prevent any out-of-order errors.
-    # The first test script (scriptedvideo_sample_script_1.txt) doesn't have
+    # The first test script (scriptedVideo_demoScript_1.txt) doesn't have
     # this issue.
 
     return sorted_timetable, object_information
 
 
-def _collect_information(command: list, object_information: dict,
-                         variable_data: dict):
+def _collect_information(command: (str | list[str]), object_information: dict[str, ImageObject]):
     classification = command[0]  # "C" (Create), "M" (Move), or "D" (Delete).
     object_name = ""
     if command[1][0] == "object_name":
