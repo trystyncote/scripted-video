@@ -1,10 +1,10 @@
-from scripted_video.File import find_path_of_file, create_encoder
-from scripted_video.Scripter import Scripter
-from scripted_video.Compiler import define_prefix
-from scripted_video.Timetable import create_timetable
-from scripted_video.FrameDraw import create_video
+from src.scripted_video.File import find_path_of_file, create_encoder
+from src.scripted_video.Scripter import Scripter
+from src.scripted_video.Compiler import define_prefix
+from src.scripted_video.Timetable import create_timetable
+from src.scripted_video.FrameDraw import create_video
 
-from scripted_video.variables.ScriptVariables import ScriptVariables
+from src.scripted_video.variables.ScriptVariables import ScriptVariables
 
 import logging
 from pathlib import Path

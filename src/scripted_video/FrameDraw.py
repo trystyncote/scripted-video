@@ -1,4 +1,4 @@
-from scripted_video.variables.ScriptVariables import ScriptVariables
+from src.scripted_video.variables.ScriptVariables import ScriptVariables
 
 import os
 import shutil

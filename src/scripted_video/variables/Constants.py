@@ -1,4 +1,4 @@
-from scripted_video.variables._type import TypeAddress, TypeBool, TypeFloat, TypeInt, TypeString
+from src.scripted_video.variables._type import TypeAddress, TypeBool, TypeFloat, TypeInt, TypeString
 
 
 class ConstantVariables:

@@ -1,7 +1,7 @@
 # NOTE TO SELF: 2023-02-07  00:05
 #   Possible solution to custom exceptions is a class that contains each
 #   exception and prints it as an ExceptionGroup. "ExceptionCollection"?
-from scripted_video.ImageObject import ImageObject
+from src.scripted_video.ImageObject import ImageObject
 
 
 def create_timetable(timetable_information: list[str | list[str]]):
