@@ -1,17 +1,12 @@
 from scripted_video.Compiler import define_prefix
+from scripted_video.variables.ScriptVariables import ScriptVariables
 import pytest
 
 
 def return_traits_example():
-    return {
-        "_HEAD": {
-            "_script_name": "...",
-            "file_name": None,
-            "frame_rate": None,
-            "window_width": None,
-            "window_height": None
-        }
-    }
+    s = ScriptVariables()
+    s.metadata.script_file = r"src\script\Script.txt"
+    return s
 
 
 @pytest.mark.skip(reason="Functionality isn't set in stone.")

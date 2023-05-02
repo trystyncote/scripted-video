@@ -1,24 +1,19 @@
 from scripted_video.Compiler import define_prefix
+from scripted_video.variables.ScriptVariables import ScriptVariables
 import pytest
 
 
 def return_traits_example():
-    return {
-        "_HEAD": {
-            "_script_name":  r"src\script\Script.txt",
-            "file_name":     "Script_final",
-            "frame_rate":    24,
-            "window_width":  800,
-            "window_height": 600
-        },
-        "ADDRESS": {
-            "addr": "src\\Images\\"
-        },
-        "BOOL":    {},
-        "FLOAT":   {},
-        "INT":     {},
-        "STRING":  {}
-    }
+    s = ScriptVariables()
+
+    s.metadata.script_file = r"src\script\Script.txt"
+    s.metadata.file_name = "Script_final"
+    s.metadata.frame_rate = 24
+    s.metadata.window_width = 800
+    s.metadata.window_height = 600
+
+    s.constants.address.addr = "src\\Images\\"
+    return s
 
 
 def return_keys_contained_expected(object_name, file_name, start_time, x, y, scale, layer):
@@ -48,5 +43,5 @@ def return_keys_contained_expected(object_name, file_name, start_time, x, y, sca
      ("obj5", r"src\Images\img5.png", 86_400, 0, 0, 1.0, 5))
 ])
 def test_syntax_success(test_input, keys_list):
-    result, _ = define_prefix(test_input, return_traits_example())
+    result, _ = define_prefix(test_input)
     assert result == return_keys_contained_expected(*keys_list)
