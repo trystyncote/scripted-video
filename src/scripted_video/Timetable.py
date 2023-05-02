@@ -4,14 +4,13 @@
 from scripted_video.ImageObject import ImageObject
 
 
-def create_timetable(timetable_information: list, variable_data: dict = None):
+
+def create_timetable(timetable_information: list[str | list[str]]):
     """
     Creates a timetable for the video.
 
     :param timetable_information: The information about the objects as per the
         OBJECT keyword.
-    :param variable_data: The data about any variables that are created by the
-        SET keyword.
     :return sorted_timetable: The full timetable, with is a 2-d list with
         the names of the object that is on that frame (x-axis), on that layer.
         (y-axis)
@@ -19,9 +18,6 @@ def create_timetable(timetable_information: list, variable_data: dict = None):
         name refers to an instance of the ImageObject class, which stores each
         trait of the object, such as x-coordinate or scale.
     """
-    if variable_data is None:
-        # Mutable default.
-        variable_data = {}
 
     object_information = {}  # object_information will hold a reference to each
     # instance of a class with the information about an object to be drawn on
