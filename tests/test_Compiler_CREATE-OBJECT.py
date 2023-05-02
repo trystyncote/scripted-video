@@ -1,5 +1,5 @@
-from scripted_video.Compiler import define_prefix
-from scripted_video.variables.ScriptVariables import ScriptVariables
+from src.scripted_video.Compiler import define_prefix
+from src.scripted_video.variables.ScriptVariables import ScriptVariables
 import pytest
 
 

@@ -1,5 +1,5 @@
-from scripted_video.Scripter import Scripter
-from scripted_video.File import find_path_of_file
+from src.scripted_video.Scripter import Scripter
+from src.scripted_video.File import find_path_of_file
 import pytest
 
 
