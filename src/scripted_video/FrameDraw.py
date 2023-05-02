@@ -1,3 +1,5 @@
+from scripted_video.variables.ScriptVariables import ScriptVariables
+
 import os
 import shutil
 
@@ -7,15 +9,15 @@ from moviepy.editor import ImageClip
 from moviepy.video.compositing.concatenate import concatenate_videoclips
 
 
-def create_video(timetable, object_information, encoder, log_master, **traits):
-    folder_location = traits["_HEAD"]["_script_name"].parent / encoder
-    frame_rate = traits["_HEAD"]["frame_rate"]
+def create_video(timetable, object_information, encoder, log_master, traits: ScriptVariables):
+    folder_location = traits.metadata.script_name.parent / encoder
+    frame_rate = traits.metadata.frame_rate
 
     os.mkdir(folder_location)
 
     for index, contents in enumerate(timetable):
         _draw_frames(contents, index, object_information,
-                     (traits["_HEAD"]["window_width"], traits["_HEAD"]["window_height"]),
+                     (traits.metadata.window_width, traits.metadata.window_height),
                      folder_location, encoder)
 
         if (index + 1) % frame_rate == 0:
@@ -24,7 +26,7 @@ def create_video(timetable, object_information, encoder, log_master, **traits):
     video_length = index
     log_master.warning("Finished drawing the frames for the video.")
 
-    _stitch_video(folder_location, traits["_HEAD"]["file_name"], video_length, traits["_HEAD"]["frame_rate"])
+    _stitch_video(folder_location, traits.metadata.file_name, video_length, frame_rate)
 
     shutil.rmtree(folder_location)
 
