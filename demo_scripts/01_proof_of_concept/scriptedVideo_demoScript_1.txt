@@ -15,6 +15,8 @@ CREATE OBJECT obj2: abc/img2.png, 2s 15f, 0, 0, 1, 2; // Hello
 DELETE OBJECT obj2: 3s 15f, delay=0f;
 
 CREATE OBJECT obj3: abc/img3.png, 3s 15f, 0, 0, 1, 3;
+MOVE OBJECT obj3: 3s 16f, 60, 30, 0, 15f;
+MOVE OBJECT obj3: 3s 31s, 30, 60, 0, 15f;
 DELETE OBJECT obj3: 7s 15f, delay=0f;
 
 CREATE OBJECT obj4:
@@ -27,4 +29,4 @@ MOVE OBJECT obj5: 9s, 100, 100, 0, 15f;
 DELETE OBJECT obj5: 11s, delay=0f;
 
 CREATE OBJECT obj6: abc/img6.png, 11s, 0, 0, 1, 6;
-DELETE OBJECT obj6: 1m 11s, delay=0f;
+DELETE OBJECT obj6: 20s, delay=0f;
