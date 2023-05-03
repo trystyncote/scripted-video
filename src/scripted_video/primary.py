@@ -10,6 +10,21 @@ import logging
 from pathlib import Path
 
 
+def detect_performance():
+    # Code borrowed from mCoding. See the following link:
+    # https://github.com/mCodingLLC/VideosSampleCode/blob/master/videos/063_find_why_your_python_code_is_slow_using_this_essential_tool_dot___feat_dot__async_await_/needs_profiling.py
+    import cProfile
+    import pstats
+
+    with cProfile.Profile() as pr:
+        primary()
+
+    stats = pstats.Stats(pr)
+    stats.sort_stats(pstats.SortKey.TIME)
+    stats.print_stats()
+    # stats.dump_stats(filename='needs_profiling.prof')
+
+
 def primary():
     script_variables = ScriptVariables()
 
@@ -56,3 +71,4 @@ def primary():
 
 if __name__ == "__main__":
     primary()
+    # detect_performance()
