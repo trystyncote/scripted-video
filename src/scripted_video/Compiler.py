@@ -218,6 +218,7 @@ def _evaluate_values(keys_contained, traits: ScriptVariables):
         "delay": "TIME"  # optional
     }
 
+    constants = traits.constants
     for index, (name, contents) in enumerate(keys_contained[1:].copy(), start=1):
         if value_types[name] == "STRING":
             continue
@@ -227,17 +228,17 @@ def _evaluate_values(keys_contained, traits: ScriptVariables):
             continue
 
         type_ = value_types[name]
-        traits_of_type = [attr for attr in dir(traits.constants.call_relevant(type_)) if not attr.startswith("__")]
+        traits_of_type = [attr for attr in dir(constants.call_relevant(type_)) if not attr.startswith("__")]
         for key in traits_of_type:
             if contents.find(key) == -1:
                 continue
 
             if type_ == "ADDRESS" and contents.find(key) != -1:
-                keys_contained[index][1] = traits.constants.call_relevant(type_).get_variable(key) \
+                keys_contained[index][1] = constants.call_relevant(type_).get_variable(key) \
                     / contents.replace(key + "/", "q/")[2:]
                 continue
 
-            keys_contained[index][1] = contents.replace(key, traits.constants.call_relevant(type_).get_variable(key))
+            keys_contained[index][1] = contents.replace(key, constants.call_relevant(type_).get_variable(key))
 
         if type_ == "ADDRESS":
             continue
