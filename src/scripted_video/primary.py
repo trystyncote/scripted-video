@@ -21,7 +21,7 @@ def detect_performance():
     logger = logging.getLogger("")
 
     with cProfile.Profile() as pr:
-        generate_script(script)
+        generate_script(script, logger)
 
     stats = pstats.Stats(pr)
     stats.sort_stats(pstats.SortKey.TIME)
