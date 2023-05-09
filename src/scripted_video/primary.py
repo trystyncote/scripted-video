@@ -16,57 +16,83 @@ def detect_performance():
     import cProfile
     import pstats
 
+    script = Path(find_path_of_file("scriptedVideo_demoScript_1.txt"))
+    logging.basicConfig(">> %(message)s")
+    logger = logging.getLogger("")
+
     with cProfile.Profile() as pr:
-        primary()
+        generate_script(script)
 
     stats = pstats.Stats(pr)
     stats.sort_stats(pstats.SortKey.TIME)
     stats.print_stats()
-    # stats.dump_stats(filename='needs_profiling.prof')
 
 
-def primary():
-    script_variables = ScriptVariables()
+def receive_input(logger):
+    while True:
+        input_response = input("")
+        if input_response == "":
+            return None
+        logger.warning(f"Searching for file '{input_response}'.")
+        try:
+            file_path = find_path_of_file(input_response)
+        except FileNotFoundError:
+            logger.warning("Cannot find file. Try again.")
+        else:
+            logger.warning("Found the file!")
+            return file_path
 
-    logging.basicConfig(format=">> %(message)s")
-    log_master = logging.getLogger("")
-    log_master.warning("Starting looking for the script file.")
 
-    script_file = find_path_of_file("scriptedVideo_demoScript_1.txt")
-    script = Scripter(Path(script_file))
-    script_variables.metadata.script_name = script_file
-
+def cycle_over_script(script_file: Path, variables: ScriptVariables):
     timetable_information = []
-    object_information = {}
-    encoder = create_encoder()
 
-    log_master.warning("Finished looking for the script file.")
-    log_master.warning("Started reading script.")
-
-    for _ in script:
-        script.clear_comments()
-        script.find_line_end()
-
-        if not script.current_line:
-            continue
-
-        hold_value, classification = define_prefix(script.current_line, script_variables)
-
+    for line in Scripter(script_file, auto_clear_comments=True, auto_clear_end_line=True):
+        hold_value, classification = define_prefix(line, variables)
         if classification == 2:
             timetable_information.append(hold_value)
 
         hold_value = None
-        # More to come here?
 
-    log_master.warning("Finished reading script.")
-    log_master.warning("Started creating the timetable.")
+    return timetable_information
+
+
+def generate_script(script_file: Path, logger: logging.Logger):
+    variables = ScriptVariables()
+    variables.metadata.script_name = script_file
+
+    encoder = create_encoder()
+    # object_information = ObjectDict()
+
+    logger.warning("Starting compiling the script.")
+
+    timetable_information = cycle_over_script(script_file, variables)
+
+    logger.warning("Completed compiling the script.")
+    logger.warning("Started creating the timetable.")
 
     sorted_timetable, object_information = create_timetable(timetable_information)
 
-    log_master.warning("Finished creating the timetable.")
-    log_master.warning("Started drawing the frames for the video.")
+    logger.warning("Completed creating the timetable.")
+    logger.warning("Started drawing the frames for the video.")
 
-    create_video(sorted_timetable, object_information, encoder, log_master, script_variables)
+    create_video(sorted_timetable, object_information, encoder, logger, variables)
+
+
+def primary():
+    logging.basicConfig(format=">> %(message)s")
+    logger = logging.getLogger("")
+
+    while True:
+        logger.warning("Please input the name of your script. [To exit, leave blank.]")
+        script = receive_input(logger)
+        if script is None:
+            break
+        script = Path(script)
+
+        logger.warning(f"Started generating the script for '{script.name}'")
+        generate_script(script, logger)
+
+    logger.warning("Goodbye :)")
 
 
 if __name__ == "__main__":
