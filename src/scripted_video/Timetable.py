@@ -2,6 +2,7 @@
 #   Possible solution to custom exceptions is a class that contains each
 #   exception and prints it as an ExceptionGroup. "ExceptionCollection"?
 from src.scripted_video.ImageObject import ImageObject
+from src.scripted_video.objects.ObjectDict import ObjectDict
 
 
 def create_timetable(timetable_information: list[str | list[str]]):
@@ -18,9 +19,9 @@ def create_timetable(timetable_information: list[str | list[str]]):
         trait of the object, such as x-coordinate or scale.
     """
 
-    object_information = {}  # object_information will hold a reference to each
-    # instance of a class with the information about an object to be drawn on
-    # screen.
+    object_information = ObjectDict()  # object_information will hold a
+    # reference to each instance of a class with the information about an
+    # object to be drawn on screen.
 
     for command in timetable_information:
         # Each command in timetable_information is a list that looks similar to
@@ -40,7 +41,7 @@ def create_timetable(timetable_information: list[str | list[str]]):
     return sorted_timetable, object_information
 
 
-def _collect_information(command: (str | list[str]), object_information: dict[str, ImageObject]):
+def _collect_information(command: (str | list[str]), object_information: ObjectDict):
     classification = command[0]  # "C" (Create), "M" (Move), or "D" (Delete).
     object_name = ""
     if command[1][0] == "object_name":
@@ -56,7 +57,8 @@ def _collect_information(command: (str | list[str]), object_information: dict[st
     object_reference = object_information[object_name]  # object_reference
     # exists to prevent repetitive typing.
 
-    for name, contents in command[2:]:
+    commands_slice = command[1:]
+    for name, contents in commands_slice:
         object_reference.__setattr__(name, contents)
 
     if classification == "M":
@@ -65,10 +67,10 @@ def _collect_information(command: (str | list[str]), object_information: dict[st
     return object_information
 
 
-def _define_dimensions(object_information: dict):
-    sorted_timetable = []
-    find_max_frame = []  # find_max_frame and find_max_layer store each
-    find_max_layer = []  # occurrence of either number.
+def _define_dimensions(object_information: ObjectDict):
+    sorted_timetable: list[list[str]] = []
+    find_max_frame: list[int] = []  # find_max_frame and find_max_layer store each
+    find_max_layer: list[int] = []  # occurrence of either number.
 
     for key in object_information:
         find_max_frame.append(object_information[key].start_time)
@@ -87,7 +89,7 @@ def _define_dimensions(object_information: dict):
     return sorted_timetable
 
 
-def _fill_timetable(sorted_timetable: list, object_information: dict):
+def _fill_timetable(sorted_timetable: list[list[str]], object_information: ObjectDict):
     for key in object_information:
         object_reference = object_information[key]
         start = object_reference.start_time
