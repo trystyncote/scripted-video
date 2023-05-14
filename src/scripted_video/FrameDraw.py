@@ -60,24 +60,6 @@ def _draw_frames(frame_information, frame_index, object_information, window_dime
     frame.save(f"{folder_location}\\{encoder}__{frame_index}.png", "PNG")
 
 
-def _collect_move_details(frame_index, object_index, object_information):
-    x_alter = 0
-    y_alter = 0
-    scale_alter = 0.0
-    frame_difference = -1
-
-    for time, x, y, scale, rate in object_information[object_index]:
-        if frame_index > time:
-            frame_difference = (frame_index - time + 1)
-            if frame_index < time + rate:
-                frame_difference -= (frame_index - (time + rate))
-            x_alter += int(frame_difference * (x / rate))
-            y_alter += int(frame_difference * (y / rate))
-            scale_alter += int(frame_difference * (scale / rate))
-
-    return x_alter, y_alter, scale_alter
-
-
 def _stitch_video(folder_location, final_video_name, video_length_frames, frame_rate):
     directory = folder_location.parent
     encoder = folder_location.name
