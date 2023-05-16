@@ -58,7 +58,7 @@ def cycle_over_script(script_file: Path, variables: ScriptVariables):
 
 def generate_script(script_file: Path, logger: logging.Logger):
     variables = ScriptVariables()
-    variables.metadata.script_name = script_file
+    variables.metadata.script_file = script_file
 
     encoder = create_encoder()
     # object_information = ObjectDict()

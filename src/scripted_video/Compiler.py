@@ -61,7 +61,7 @@ def _command_set(command: str, traits: ScriptVariables):
 
     if type_ == "ADDRESS":
         if value == "__current_address__":
-            value = traits.metadata.script_name.parent
+            value = traits.metadata.script_file.parent
         else:
             value = Path(str(value))
 
