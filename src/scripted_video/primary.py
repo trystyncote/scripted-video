@@ -1,7 +1,6 @@
 from src.scripted_video.File import find_path_of_file, create_encoder
 from src.scripted_video.Scripter import Scripter
 from src.scripted_video.Compiler import define_prefix
-from src.scripted_video.Timetable import create_timetable
 from src.scripted_video.FrameDraw import generate_frames, draw_frames, stitch_video
 
 from src.scripted_video.variables.ScriptVariables import ScriptVariables
