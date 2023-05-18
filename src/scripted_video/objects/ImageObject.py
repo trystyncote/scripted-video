@@ -85,8 +85,6 @@ class Properties(PropertySlots):
 
 
 def _loop_over_type(value, constants):
-    pass
-
     for name in dir(constants):
         if name.startswith("__") or name.endswith("__"):
             continue
@@ -95,8 +93,6 @@ def _loop_over_type(value, constants):
 
 
 def _replace_by_variables(value, constants):
-    pass
-
     constant_type_list = [
         constants.address,
         constants.bool,
