@@ -7,8 +7,6 @@ import os
 # import shutil
 from operator import itemgetter
 
-from PIL import Image
-
 from moviepy.editor import ImageClip
 from moviepy.video.compositing.concatenate import concatenate_videoclips
 
@@ -80,8 +78,6 @@ def _evaluate_move_details(relevant_objects, object_information, frame_index):
 
 
 def draw_frames(frames, encoder, object_information: ObjectDict, variables: ScriptVariables):
-    frame_rate = variables.metadata.frame_rate
-
     folder_location = variables.metadata.script_file.parent / encoder
     os.mkdir(folder_location)
     video_length = 0
@@ -111,7 +107,6 @@ def draw_frames(frames, encoder, object_information: ObjectDict, variables: Scri
 
 def stitch_video(folder_location, final_video_name, video_length_frames, frame_rate):
     directory = folder_location.parent
-    encoder = folder_location.name
 
     clips = [(ImageClip(f"{folder_location}\\{m}.png")
               .set_duration(1 / frame_rate))
