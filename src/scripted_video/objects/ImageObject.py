@@ -1,6 +1,5 @@
 from src.scripted_video.variables.ScriptVariables import ScriptVariables
 from src.scripted_video.apply import apply
-from src.scripted_video.File import find_path_of_file
 
 from pathlib import Path
 import weakref
@@ -12,7 +11,7 @@ from PIL import Image
 class PropertySlots:
     __slots__ = ("layer", "move_rate", "move_scale", "move_time", "move_x", "move_y", "scale", "x", "y",
                  "start_time", "delete_time", "delay")  # The latter three
-                # properties are eventually going to be defunct.
+    # properties are eventually going to be defunct.
 
 
 class Originals(PropertySlots):
@@ -268,7 +267,6 @@ class ImageObject:
     def open(self):
         if self._filename is None:
             raise ReferenceError("Attribute 'file-name' not defined before call to open image.")
-        # self._loaded_image = Image.open(find_path_of_file(self._filename))
         self._loaded_image = Image.open(self._filename)
         if hasattr(self._properties, "scale"):
             width, height = self._loaded_image.size
