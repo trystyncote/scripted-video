@@ -10,7 +10,7 @@ from moviepy.video.compositing.concatenate import concatenate_videoclips
 
 
 def create_video(timetable, object_information, encoder, log_master, traits: ScriptVariables):
-    folder_location = traits.metadata.script_name.parent / encoder
+    folder_location = traits.metadata.script_file.parent / encoder
     frame_rate = traits.metadata.frame_rate
 
     os.mkdir(folder_location)
