@@ -2,12 +2,15 @@ from src.scripted_video.File import find_path_of_file, create_encoder
 from src.scripted_video.Scripter import Scripter
 from src.scripted_video.Compiler import define_prefix
 from src.scripted_video.Timetable import create_timetable
-from src.scripted_video.FrameDraw import create_video
+from src.scripted_video.FrameDraw import generate_frames, draw_frames, stitch_video
 
 from src.scripted_video.variables.ScriptVariables import ScriptVariables
 
+from src.scripted_video.objects.ObjectDict import ObjectDict
+
 import logging
 from pathlib import Path
+import shutil
 
 
 def detect_performance():
@@ -44,38 +47,37 @@ def receive_input(logger):
 
 
 def cycle_over_script(script_file: Path, variables: ScriptVariables):
-    timetable_information = []
+    object_information = ObjectDict()
 
     for line in Scripter(script_file, auto_clear_comments=True, auto_clear_end_line=True):
-        hold_value, classification = define_prefix(line, variables)
-        if classification == 2:
-            timetable_information.append(hold_value)
+        define_prefix(line, variables, object_information)
 
-        hold_value = None
-
-    return timetable_information
+    return object_information
 
 
 def generate_script(script_file: Path, logger: logging.Logger):
     variables = ScriptVariables()
     variables.metadata.script_file = script_file
-
     encoder = create_encoder()
-    # object_information = ObjectDict()
 
     logger.warning("Starting compiling the script.")
 
-    timetable_information = cycle_over_script(script_file, variables)
+    object_information = cycle_over_script(script_file, variables)
 
     logger.warning("Completed compiling the script.")
-    logger.warning("Started creating the timetable.")
-
-    sorted_timetable, object_information = create_timetable(timetable_information)
-
-    logger.warning("Completed creating the timetable.")
     logger.warning("Started drawing the frames for the video.")
 
-    create_video(sorted_timetable, object_information, encoder, logger, variables)
+    frames = generate_frames(object_information, variables)
+    folder_location, video_length = draw_frames(frames, encoder, object_information, variables)
+
+    logger.warning("Completed drawing the frames for the video.")
+    logger.warning("Started stitching the video together.")
+
+    stitch_video(folder_location, variables.metadata.file_name, video_length, variables.metadata.frame_rate)
+    shutil.rmtree(folder_location)
+
+    logger.warning("Completed stitching the video together.")
+    logger.warning(f"The video from '{script_file.name}' is done generating.")
 
 
 def primary():
@@ -89,7 +91,7 @@ def primary():
             break
         script = Path(script)
 
-        logger.warning(f"Started generating the script for '{script.name}'")
+        logger.warning(f"Started generating the video for '{script.name}'")
         generate_script(script, logger)
 
     logger.warning("Goodbye :)")
