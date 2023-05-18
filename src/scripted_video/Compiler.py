@@ -1,35 +1,41 @@
 from src.scripted_video.variables.ScriptVariables import ScriptVariables
 
+from src.scripted_video.objects.ObjectDict import ObjectDict
+from src.scripted_video.objects.ImageObject import ImageObject
+
 from pathlib import Path
 import re
 
 
-def define_prefix(current_line: str, traits: ScriptVariables):
+def define_prefix(current_line: str, traits: ScriptVariables, object_information: ObjectDict):
     """
     Collects the information about the respective command from the
     'current_line' variable.
 
     :param current_line: The line with the command in it.
     :param traits: The video's traits, such as frame_rate.
+    :param object_information: An ObjectDict that contains various object
+        classes, such as ImageObject.
     :return: Returns the necessary information from the command without the
         extraneous content.
     """
     if re.match(r"HEAD ((f((rame_rate)|(ile_name)))|(window_((width)|(height))))(\s|)=(\s|)[\w_]*", current_line):
-        return _command_head(current_line, traits), 1
+        _command_head(current_line, traits)
 
     elif re.match(r"SET [\w_]*(\s|)=(\s|)[\w.'\"\\]* AS \w*", current_line):
-        return _command_set(current_line, traits), 1
+        _command_set(current_line, traits)
 
     elif re.match(r"CREATE OBJECT [\w_]*: [\w_]*", current_line):
-        return _command_object_create(current_line, traits), 2
+        _command_object_create(current_line, traits, object_information)
 
     elif re.match(r"MOVE OBJECT [\w_]*: [\w_]*", current_line):
-        return _command_object_move(current_line, traits), 2
+        _command_object_move(current_line, traits, object_information)
 
     elif re.match(r"DELETE OBJECT [\w_]*: [\w_]*", current_line):
-        return _command_object_delete(current_line, traits), 2
+        _command_object_delete(current_line, traits, object_information)
 
-    raise UserWarning("Temporary exception for an unrecognized command.")
+    else:
+        raise UserWarning(f"Temporary exception for an unrecognized command, {current_line!r}")
 
 
 def _command_head(command: str, traits: ScriptVariables):
@@ -47,7 +53,7 @@ def _command_head(command: str, traits: ScriptVariables):
         raise ValueError
 
     traits.metadata.update_value(keyword, contents)
-    return traits
+    # return traits
 
 
 def _command_set(command: str, traits: ScriptVariables):
@@ -90,76 +96,79 @@ def _command_set(command: str, traits: ScriptVariables):
         raise ValueError
 
     traits.constants.call_relevant(type_).create_variable(name, value)
-    return traits
+    # return traits
 
 
-def _command_object_create(command: str, traits: ScriptVariables):
+def _command_object_create(command: str, traits: ScriptVariables, object_information: ObjectDict):
     CREATE_OBJECT_ = command.find("CREATE OBJECT ") + 14
     colon = command.find(":")
 
     object_name = command[CREATE_OBJECT_:colon].strip()
-    keys = _split_by_keys(command[(colon+1):], 6)
+    keys = _split_by_keys(command[(colon + 1):], 6)
 
-    keys_contained = [
-        "C",
-        ["object_name", object_name],
-        ["file_name", keys[0]],
-        ["start_time", keys[1]],
-        ["x", keys[2]],
-        ["y", keys[3]],
-        ["scale", keys[4]],
-        ["layer", keys[5]]
-    ]
+    relevant_object = ImageObject(object_name)
+    relevant_object.init_variables_instance(traits)
+
+    relevant_object.add_property("file-name", keys[0])
+    relevant_object.add_property("start-time", keys[1])
+    relevant_object.add_property("x", keys[2])
+    relevant_object.add_property("y", keys[3])
+    relevant_object.add_property("scale", keys[4])
+    relevant_object.add_property("layer", keys[5])
 
     if len(keys) > 6:
-        keys_contained = _split_extra_keys(keys_contained, keys[6:])
+        extra_keys = _split_extra_keys(keys[6:])
 
-    keys_contained = _evaluate_values(keys_contained, traits)
-    return keys_contained
+        for key, value in extra_keys:
+            relevant_object.add_property(key, value)
+
+    object_information[relevant_object.object_name] = relevant_object
+    # return object_information
 
 
-def _command_object_move(command: str, traits: ScriptVariables):
+def _command_object_move(command: str, traits: ScriptVariables, object_information: ObjectDict):
     MOVE_OBJECT_ = command.find("MOVE OBJECT ") + 12
     colon = command.find(":")
 
     object_name = command[MOVE_OBJECT_:colon].strip()
     keys = _split_by_keys(command[(colon + 1):], 5)
 
-    keys_contained = [
-        "M",
-        ["object_name", object_name],
-        ["move_time", keys[0]],
-        ["move_x", keys[1]],
-        ["move_y", keys[2]],
-        ["move_scale", keys[3]],
-        ["move_rate", keys[4]]
-    ]
+    relevant_object = object_information[object_name]
+
+    relevant_object.add_property("move-time", keys[0])
+    relevant_object.add_property("move-x", keys[1])
+    relevant_object.add_property("move-y", keys[2])
+    relevant_object.add_property("move-scale", keys[3])
+    relevant_object.add_property("move-rate", keys[4])
 
     if len(keys) > 5:
-        keys_contained = _split_extra_keys(keys_contained, keys[5:])
+        extra_keys = _split_extra_keys(keys[5:])
 
-    keys_contained = _evaluate_values(keys_contained, traits)
-    return keys_contained
+        for key, value in extra_keys:
+            relevant_object.add_property(f"{'move-' if key[0:4] != 'move' else ''}{key}", value)
+
+    relevant_object.check_move_alignment()
+    # return object_information
 
 
-def _command_object_delete(command: str, traits: ScriptVariables):
+def _command_object_delete(command: str, traits: ScriptVariables, object_information: ObjectDict):
     DELETE_OBJECT_ = command.find("DELETE OBJECT ") + 14
     colon = command.find(":")
 
     object_name = command[DELETE_OBJECT_:colon].strip()
     keys = _split_by_keys(command[(colon + 1):], 1)
 
-    keys_contained = [
-        "D",
-        ["object_name", object_name],
-        ["delete_time", keys[0]]
-    ]
+    relevant_object = object_information[object_name]
+
+    relevant_object.add_property("delete-time", keys[0])
 
     if len(keys) > 1:
-        keys_contained = _split_extra_keys(keys_contained, keys[1:])
+        extra_keys = _split_extra_keys(keys[1:])
 
-    keys_contained = _evaluate_values(keys_contained, traits)
-    return keys_contained
+        for key, value in extra_keys:
+            relevant_object.add_property(key, value)
+
+    # return object_information
 
 
 def _manage_time(time_string: str, frame_rate: int):
@@ -191,63 +200,11 @@ def _split_by_keys(string_keys: str, minimum: int):
     return keys
 
 
-def _split_extra_keys(keys_contained, keys_series):
-    for keys_item in keys_series:
-        keys_contained.append(keys_item.split("=", 1))
-        if len(keys_contained[-1]) != 2:
+def _split_extra_keys(keys_series):
+    keys = []
+    for item in keys_series:
+        keys.append(item.split("=", 1))
+        if len(keys[-1]) != 2:
             raise UserWarning("Temporary exception for excess keys or multiple equal signs.")
-        keys_contained[-1][0] = keys_contained[-1][0].lower()
-    return keys_contained
-
-
-def _evaluate_values(keys_contained, traits: ScriptVariables):
-    value_types = {
-        "object_name": "STRING",
-        "file_name": "ADDRESS",
-        "start_time": "TIME",
-        "x": "INT",
-        "y": "INT",
-        "scale": "FLOAT",
-        "layer": "INT",
-        "move_time": "TIME",
-        "move_x": "INT",
-        "move_y": "INT",
-        "move_scale": "FLOAT",
-        "move_rate": "TIME",
-        "delete_time": "TIME",
-        "delay": "TIME"  # optional
-    }
-
-    constants = traits.constants
-    for index, (name, contents) in enumerate(keys_contained[1:].copy(), start=1):
-        if value_types[name] == "STRING":
-            continue
-
-        if value_types[name] == "TIME":
-            keys_contained[index][1] = _manage_time(contents, traits.metadata.frame_rate)
-            continue
-
-        type_ = value_types[name]
-        traits_of_type = [attr for attr in dir(constants.call_relevant(type_)) if not attr.startswith("__")]
-        for key in traits_of_type:
-            if contents.find(key) == -1:
-                continue
-
-            if type_ == "ADDRESS" and contents.find(key) != -1:
-                keys_contained[index][1] = constants.call_relevant(type_).get_variable(key) \
-                    / contents.replace(key + "/", "q/")[2:]
-                continue
-
-            keys_contained[index][1] = contents.replace(key, constants.call_relevant(type_).get_variable(key))
-
-        if type_ == "ADDRESS":
-            continue
-
-        if type_ == "INT":
-            keys_contained[index][1] = int(keys_contained[index][1])
-        elif type_ == "FLOAT":
-            keys_contained[index][1] = float(keys_contained[index][1])
-        elif type_ == "BOOL":
-            keys_contained[index][1] = bool(keys_contained[index][1])
-
-    return keys_contained
+        keys[-1][0] = keys[-1][0].lower()
+    return keys
