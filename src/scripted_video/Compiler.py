@@ -29,10 +29,10 @@ def define_prefix(current_line: str, traits: ScriptVariables, object_information
         _command_object_create(current_line, traits, object_information)
 
     elif re.match(r"MOVE OBJECT [\w_]*: [\w_]*", current_line):
-        _command_object_move(current_line, traits, object_information)
+        _command_object_move(current_line, object_information)
 
     elif re.match(r"DELETE OBJECT [\w_]*: [\w_]*", current_line):
-        _command_object_delete(current_line, traits, object_information)
+        _command_object_delete(current_line, object_information)
 
     else:
         raise UserWarning(f"Temporary exception for an unrecognized command, {current_line!r}")
@@ -126,7 +126,7 @@ def _command_object_create(command: str, traits: ScriptVariables, object_informa
     # return object_information
 
 
-def _command_object_move(command: str, traits: ScriptVariables, object_information: ObjectDict):
+def _command_object_move(command: str, object_information: ObjectDict):
     MOVE_OBJECT_ = command.find("MOVE OBJECT ") + 12
     colon = command.find(":")
 
@@ -151,7 +151,7 @@ def _command_object_move(command: str, traits: ScriptVariables, object_informati
     # return object_information
 
 
-def _command_object_delete(command: str, traits: ScriptVariables, object_information: ObjectDict):
+def _command_object_delete(command: str, object_information: ObjectDict):
     DELETE_OBJECT_ = command.find("DELETE OBJECT ") + 14
     colon = command.find(":")
 
