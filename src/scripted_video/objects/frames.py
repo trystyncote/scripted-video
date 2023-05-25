@@ -33,9 +33,6 @@ class Frame:
         frame_pixel = frame.load()
 
         for obj in object_set:
-            if obj.moves:
-                obj.move_object(self.index)
-
             obj_x = obj.get_property("x")
             obj_y = obj.get_property("y")
 
