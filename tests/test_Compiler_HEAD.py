@@ -1,4 +1,4 @@
-from src.scripted_video.Compiler import define_prefix
+from src.scripted_video.compile_time import define_prefix
 from src.scripted_video.variables.ScriptVariables import ScriptVariables
 import pytest
 
