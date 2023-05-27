@@ -35,10 +35,8 @@ class Scripter:
         # from returning an empty line.
         self._allow_rereading = allow_rereading  # allow_rereading is a
         # boolean for whether a script can be re-run if the script has already
-        # finished running. Note: The Scripter class is unable to tell if the
-        # script has been run on a previous running of the full program; it
-        # doesn't have a means to tell that. This is merely a preventative
-        # measure for accidentally trying to read a script twice.
+        # finished running. This is a preventative measure for accidentally
+        # trying to read a script twice.
         self._at_end_of_line = False  # at_end_of_line is a boolean for whether
         # the end-line character has been found. The end-line character is ';'.
         self._auto_clear_comments = auto_clear_comments  # auto_clear_comments
