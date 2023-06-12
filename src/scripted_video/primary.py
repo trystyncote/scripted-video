@@ -1,6 +1,6 @@
 from src.scripted_video.File import find_path_of_file, create_encoder
 from src.scripted_video.Scripter import Scripter
-from src.scripted_video.compile_time import define_prefix
+from src.scripted_video.compile_time import create_syntax_tree_root, dissect_syntax, navigate_syntax_tree
 from src.scripted_video.FrameDraw import generate_frames, draw_frames, stitch_video
 
 from src.scripted_video.variables.ScriptVariables import ScriptVariables
@@ -47,9 +47,12 @@ def receive_input(logger):
 
 def cycle_over_script(script_file: Path, variables: ScriptVariables):
     object_information = ObjectDict()
+    syntax_tree = create_syntax_tree_root(str(script_file.name))
 
     for line in Scripter(script_file, auto_clear_comments=True, auto_clear_end_line=True):
-        define_prefix(line, variables, object_information)
+        dissect_syntax(line, syntax_tree)
+
+    navigate_syntax_tree(syntax_tree, object_information, variables)
 
     return object_information
 
