@@ -148,7 +148,7 @@ class Scripter:
             return
 
         clearing_index = 0  # clearing_index is a variable for holding a value
-        # to be for clearing a comment later. This is used for when a multiline
+        # to be for clearing a comment later. This is used for when a multi
         # comment prefix is found, when it'll hold the value it was at until
         # the suffix is found, if at all.
 
@@ -168,28 +168,25 @@ class Scripter:
             elif (self._outstanding != OutstandingState.multiline_comment
                     and (self._line_current[index:index+len(prefix_multiline)]
                          == prefix_multiline)):
-                # When the multi-line prefix has been found, the index variable
-                # holds onto the current character's index and sets the
-                # outstanding_multiline... variable to True to begin looking
-                # for the suffix.
-                self._outstanding = OutstandingState.multiline_comment
+                # When the multi-comment prefix has been found, the index
+                # variable holds onto the current character's index.
+                self._outstanding = OutstandingState.multi_comment
                 clearing_index = index
 
             elif (self._outstanding == OutstandingState.multiline_comment
                     and (self._line_current[index:index+len(suffix_multiline)]
                          == suffix_multiline)):
-                # When the multi-line suffix has been found, the line is
+                # When the multi-comment suffix has been found, the line is
                 # cleared from the index to the current index, and the search
-                # for the suffix is over, so the outstanding_multiline...
-                # variable is reset to False.
+                # for the suffix is concluded.
                 self._line_current = _clear_line(self._line_current, clearing_index, index+len(suffix_multiline))
                 self._outstanding = OutstandingState.empty
 
         if self._outstanding == OutstandingState.multiline_comment:
-            # If the multi-line suffix has not yet been found, then the program
-            # presumes that it's on a future line, so it clears the remainder
-            # of the current line and leaves outstanding_multiline... to True
-            # to allow future lines to search for it.
+            # If the multi-comment suffix has not yet been found, then the
+            # program presumes that it's on a future line, so it clears the
+            # remainder of the current line and leaves _outstanding as its
+            # current state to continue the search on the next line.
             self._line_current = _clear_line(self._line_current, clearing_index, len(self._line_current))
 
     def find_line_end(self, syntax_end_line: str = ";"):
