@@ -14,7 +14,7 @@ def _clear_line(string: str, start_index: int, end_index: int):
 
 class OutstandingState(Enum):
     empty = enum_auto()
-    multiline_comment = enum_auto()
+    multi_comment = enum_auto()
 
 
 class Scripter:
@@ -157,7 +157,7 @@ class Scripter:
                 # There are no [more?] comments in an empty line.
                 return
 
-            if (self._outstanding != OutstandingState.multiline_comment
+            if (self._outstanding != OutstandingState.multi_comment
                     and (self._line_current[index:index+len(prefix_single_line)]
                          == prefix_single_line)):
                 # When the single-line prefix has been found, the rest of the
@@ -165,7 +165,7 @@ class Scripter:
                 # remainder of the line is cleared.
                 self._line_current = _clear_line(self._line_current, index, len(self._line_current))
 
-            elif (self._outstanding != OutstandingState.multiline_comment
+            elif (self._outstanding != OutstandingState.multi_comment
                     and (self._line_current[index:index+len(prefix_multiline)]
                          == prefix_multiline)):
                 # When the multi-comment prefix has been found, the index
@@ -173,7 +173,7 @@ class Scripter:
                 self._outstanding = OutstandingState.multi_comment
                 clearing_index = index
 
-            elif (self._outstanding == OutstandingState.multiline_comment
+            elif (self._outstanding == OutstandingState.multi_comment
                     and (self._line_current[index:index+len(suffix_multiline)]
                          == suffix_multiline)):
                 # When the multi-comment suffix has been found, the line is
@@ -182,7 +182,7 @@ class Scripter:
                 self._line_current = _clear_line(self._line_current, clearing_index, index+len(suffix_multiline))
                 self._outstanding = OutstandingState.empty
 
-        if self._outstanding == OutstandingState.multiline_comment:
+        if self._outstanding == OutstandingState.multi_comment:
             # If the multi-comment suffix has not yet been found, then the
             # program presumes that it's on a future line, so it clears the
             # remainder of the current line and leaves _outstanding as its
