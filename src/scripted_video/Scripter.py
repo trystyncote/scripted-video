@@ -1,3 +1,4 @@
+from enum import auto as enum_auto, Enum
 from pathlib import Path
 
 
@@ -9,6 +10,11 @@ def _read_script(file_name: (Path | str)):
 
 def _clear_line(string: str, start_index: int, end_index: int):
     return string[:start_index] + string[end_index:]
+
+
+class OutstandingState(Enum):
+    empty = enum_auto()
+    multiline_comment = enum_auto()
 
 
 class Scripter:
@@ -61,9 +67,10 @@ class Scripter:
         # previous lines that occur without an end-line character at the end.
         # This allows the previous lines to be preserved to allow multi-line
         # commands.
-        self._outstanding_multiline_comment = False  # outstanding_multiline...
-        # is a boolean that determines if a multi-line comment (/* contents */)
-        # is still in effect.
+        self._outstanding = OutstandingState.empty  # outstanding is a status
+        # variable for determining when there is a wrapper object, such as a
+        # comment. This currently only manages the outermost wrapper, with no
+        # internal wrappers up for debate.
         self._script_reader = _read_script(file)  # script_reader is the
         # variable that stores the generator that iterates over the text file
         # that is being read.
@@ -150,7 +157,7 @@ class Scripter:
                 # There are no [more?] comments in an empty line.
                 return
 
-            if (self._outstanding_multiline_comment is False
+            if (self._outstanding != OutstandingState.multiline_comment
                     and (self._line_current[index:index+len(prefix_single_line)]
                          == prefix_single_line)):
                 # When the single-line prefix has been found, the rest of the
@@ -158,17 +165,17 @@ class Scripter:
                 # remainder of the line is cleared.
                 self._line_current = _clear_line(self._line_current, index, len(self._line_current))
 
-            elif (self._outstanding_multiline_comment is False
+            elif (self._outstanding != OutstandingState.multiline_comment
                     and (self._line_current[index:index+len(prefix_multiline)]
                          == prefix_multiline)):
                 # When the multi-line prefix has been found, the index variable
                 # holds onto the current character's index and sets the
                 # outstanding_multiline... variable to True to begin looking
                 # for the suffix.
-                self._outstanding_multiline_comment = True
+                self._outstanding = OutstandingState.multiline_comment
                 clearing_index = index
 
-            elif (self._outstanding_multiline_comment is True
+            elif (self._outstanding == OutstandingState.multiline_comment
                     and (self._line_current[index:index+len(suffix_multiline)]
                          == suffix_multiline)):
                 # When the multi-line suffix has been found, the line is
@@ -176,9 +183,9 @@ class Scripter:
                 # for the suffix is over, so the outstanding_multiline...
                 # variable is reset to False.
                 self._line_current = _clear_line(self._line_current, clearing_index, index+len(suffix_multiline))
-                self._outstanding_multiline_comment = False
+                self._outstanding = OutstandingState.empty
 
-        if self._outstanding_multiline_comment:
+        if self._outstanding == OutstandingState.multiline_comment:
             # If the multi-line suffix has not yet been found, then the program
             # presumes that it's on a future line, so it clears the remainder
             # of the current line and leaves outstanding_multiline... to True
