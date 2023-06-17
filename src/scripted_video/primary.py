@@ -1,5 +1,5 @@
 from src.scripted_video.File import find_path_of_file, create_encoder
-from src.scripted_video.Scripter import script_parser
+from src.scripted_video.parser import script_parser
 from src.scripted_video.compile_time import create_syntax_tree_root, dissect_syntax, navigate_syntax_tree
 from src.scripted_video.FrameDraw import generate_frames, draw_frames, stitch_video
 

@@ -1,5 +1,5 @@
 from src.scripted_video.File import find_path_of_file
-from src.scripted_video.Scripter import script_parser
+from src.scripted_video.parser import script_parser
 
 
 def test_parser_default():
