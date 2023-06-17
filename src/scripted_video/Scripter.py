@@ -1,4 +1,5 @@
 from enum import auto as enum_auto, Enum
+from io import StringIO
 from pathlib import Path
 
 
@@ -12,260 +13,87 @@ def _clear_line(string: str, start_index: int, end_index: int):
     return string[:start_index] + string[end_index:]
 
 
-class OutstandingState(Enum):
+def _combine_previous_lines(*lines):
+    combined = StringIO()
+    for line in lines:
+        if line.strip() == "":
+            continue
+        combined.write(line + " ")
+    return combined.getvalue()
+
+
+class _OutstandingState(Enum):
     empty = enum_auto()
-    multi_comment = enum_auto()
+    block_comment = enum_auto()
 
 
-class Scripter:
-    def __init__(self, file: (Path | str), *, allow_empty_lines: bool = False, allow_rereading: bool = False,
-                 auto_clear_comments: bool = False, auto_clear_end_line: bool = False):
-        """
-        The Scripter class manages a text file and reads it one line at a time,
-        which can be iterated over. The syntax of the file is not part of the
-        class. The main purpose of the class is to read the script and clear
-        the comments and allow multi-line commands.
+def script_parser(file: (Path | str), /, *,
+                  block_comment_characters: tuple[str, str] | str | None = None, end_line_character: str = "\n",
+                  inline_comment_character: str | None = None):
+    pass
+    """
+    Features list:
+    X Determine end-lines.
+        X Deletes after end-line!
+        X If not found, preserves previous contents.
+    X Clear comments.
+        X Deletes the comments!
+    - Ignore objects inside wrappers. (NEW)
+    """
+    if type(block_comment_characters) == str:
+        block_comment_characters = (block_comment_characters, block_comment_characters)
 
-        :param file: The name of the file containing the script to be run. If
-            the file is not available in the same folder as the python script
-            file running the class, the file must be provided with the full
-            path. Must be in string form.
-        :param allow_rereading: OPTIONAL: A boolean for whether the script can
-            be read multiple times in different for-loops. If True, then the
-            script will allow itself to reread the script when another
-            iteration is required. Default is False.
-        """
-        self._allow_empty_lines = allow_empty_lines  # allow_empty_lines is a
-        # flag variable for whether the script should return an empty line when
-        # it is asked to iterate. By default, the behaviour prevents the script
-        # from returning an empty line.
-        self._allow_rereading = allow_rereading  # allow_rereading is a
-        # boolean for whether a script can be re-run if the script has already
-        # finished running. This is a preventative measure for accidentally
-        # trying to read a script twice.
-        self._at_end_of_line = False  # at_end_of_line is a boolean for whether
-        # the end-line character has been found. The end-line character is ';'.
-        self._auto_clear_comments = auto_clear_comments  # auto_clear_comments
-        # is a flag variable for whether the script will automatically call
-        # .clear_comments() on each iteration.
-        self._auto_clear_end_line = auto_clear_end_line  # auto_clear_end_line
-        # is a flag variable for whether the script will automatically call
-        # .find_end_line() on each iteration.
-        self._file_name = file  # file_name is the name of the text file being
-        # read.
-        self._finished_reading = False  # finished_reading is for whether the
-        # script has been read in full. This variable may become unhelpful if
-        # allow_rereading is set to True, where this variable doesn't prevent
-        # re-reading.
-        self._line_current = ""  # line_current refers to the current line of
-        # the file being read. Outside the class, it's referred to as
-        # 'current_line'.
-        self._line_number = 0  # line_number is the number of the line of the
-        # file being read. *The variable starts at 1 while the class is being
-        # iterated over.*
-        self._line_previous: list[str] = []  # line_previous stores any
-        # previous lines that occur without an end-line character at the end.
-        # This allows the previous lines to be preserved to allow multi-line
-        # commands.
-        self._outstanding = OutstandingState.empty  # outstanding is a status
-        # variable for determining when there is a wrapper object, such as a
-        # comment. This currently only manages the outermost wrapper, with no
-        # internal wrappers up for debate.
-        self._script_reader = _read_script(file)  # script_reader is the
-        # variable that stores the generator that iterates over the text file
-        # that is being read.
+    at_end_of_line = False
+    line_previous = []
+    outstanding_state = _OutstandingState.empty
+    script_pointer = _read_script(file)
 
-    def __iter__(self):
-        self._check_rereading()
-        self.reset_script()
-        self._script_reader = _read_script(self._file_name)
-        return self
+    try:
+        line_current = next(script_pointer)
+    except StopIteration:
+        return
 
-    def __next__(self):
+    while script_pointer:
+        if block_comment_characters:
+            if outstanding_state is not _OutstandingState.block_comment:
+                index_block_comment_start = line_current.find(block_comment_characters[0])
+                if index_block_comment_start != -1:
+                    outstanding_state = _OutstandingState.block_comment
+
+            if outstanding_state is _OutstandingState.block_comment:
+                index_block_comment_end = line_current.find(block_comment_characters[1], index_block_comment_start)
+                if index_block_comment_end != -1:
+                    outstanding_state = _OutstandingState.empty
+                    length_block_end = len(block_comment_characters[1])
+                    line_current = _clear_line(line_current, index_block_comment_start,
+                                               index_block_comment_end+length_block_end)
+                else:
+                    line_current = _clear_line(line_current, index_block_comment_start, len(line_current))
+                    index_block_comment_start = 0
+
+        index_end_line = line_current.find(end_line_character)
+        if index_end_line != -1:
+            at_end_of_line = True
+            line_current = line_current[:index_end_line]
+        else:
+            line_previous.append(line_current.strip())
+
+        if inline_comment_character and outstanding_state is not _OutstandingState.block_comment:
+            index_inline_comment = line_current.find(inline_comment_character)
+            if index_inline_comment != -1:
+                line_current = line_current[:index_inline_comment]
+
+        line_current = line_current.strip()
+        if at_end_of_line:
+            if line_previous:
+                yield _combine_previous_lines(*line_previous, line_current).strip()
+                line_previous = []
+            elif line_current:
+                yield line_current
+
         try:
-            while True:
-                self._line_current = next(self._script_reader).strip()
-
-                if self._auto_clear_comments:  # If the flag is set to True, then the
-                    self.clear_comments()  # script calls .clear_comments() without the
-                    # user being required to call it.
-                if self._auto_clear_end_line:  # If the flag is set to True, then the
-                    self.find_line_end()  # script calls .find_line_end() without the
-                    # user being required to call it.
-                    if self._line_previous:
-                        continue
-                if self._line_current.strip() == "" and not self._allow_empty_lines:
-                    continue
-                break
-
+            line_current = next(script_pointer)
         except StopIteration:
-            self._finished_reading = True  # The script changes the
-            # finished_reading variable to show that the script has been fully
-            # read.
-            self.reset_script()
-            raise StopIteration  # Re-raises the StopIteration exception to
-            # allow it to work with a for-loop, as it is intended to be used.
-
-        self._line_number += 1  # Increases line_number by 1.
-        return self._line_current  # Only returns line_current because it's the
-        # only required variable to return.
-
-    def __index__(self):
-        # __index__ is used to allow the enumerate function with the class.
-        # Calling enumerate would cause the index (line_number) to be returned.
-        return self._line_number
-
-    @property
-    def current_line(self):
-        """ Get current_line unless the end-line character is not found. """
-        # line_current is referred to as current_line externally because it is
-        # more clear that way. Internally, line_current is called that because
-        # of naming symmetry with other variables (line_number, line_previous).
-        if self._line_previous:
-            return None
-
-        return self._line_current
-
-    def clear_comments(self, prefix_single_line: str = "//",
-                       prefix_multiline: str = "/*",
-                       suffix_multiline: str = "*/"):
-        """
-        clear_comments() goes through the line and looks for any indicator of
-        a comment and clears the contents of the line accordingly.
-
-        :param prefix_single_line: The syntax for the single-line comment's
-            beginning. Default is '//'.
-        :param prefix_multiline: The syntax for the multi-line comment's
-            beginning. Default is '/*'.
-        :param suffix_multiline:  The syntax for the multi-line comment's end.
-            Default is '*/'.
-        :return: Has no return.
-        """
-        if self._line_current == "":
-            # There are no comments in an empty line.
             return
 
-        clearing_index = 0  # clearing_index is a variable for holding a value
-        # to be for clearing a comment later. This is used for when a multi
-        # comment prefix is found, when it'll hold the value it was at until
-        # the suffix is found, if at all.
-
-        for index, _ in enumerate(self._line_current):
-            if self._line_current == "":
-                # There are no [more?] comments in an empty line.
-                return
-
-            if (self._outstanding != OutstandingState.multi_comment
-                    and (self._line_current[index:index+len(prefix_single_line)]
-                         == prefix_single_line)):
-                # When the single-line prefix has been found, the rest of the
-                # line is the contents of the rest of the comment, so the
-                # remainder of the line is cleared.
-                self._line_current = _clear_line(self._line_current, index, len(self._line_current))
-
-            elif (self._outstanding != OutstandingState.multi_comment
-                    and (self._line_current[index:index+len(prefix_multiline)]
-                         == prefix_multiline)):
-                # When the multi-comment prefix has been found, the index
-                # variable holds onto the current character's index.
-                self._outstanding = OutstandingState.multi_comment
-                clearing_index = index
-
-            elif (self._outstanding == OutstandingState.multi_comment
-                    and (self._line_current[index:index+len(suffix_multiline)]
-                         == suffix_multiline)):
-                # When the multi-comment suffix has been found, the line is
-                # cleared from the index to the current index, and the search
-                # for the suffix is concluded.
-                self._line_current = _clear_line(self._line_current, clearing_index, index+len(suffix_multiline))
-                self._outstanding = OutstandingState.empty
-
-        if self._outstanding == OutstandingState.multi_comment:
-            # If the multi-comment suffix has not yet been found, then the
-            # program presumes that it's on a future line, so it clears the
-            # remainder of the current line and leaves _outstanding as its
-            # current state to continue the search on the next line.
-            self._line_current = _clear_line(self._line_current, clearing_index, len(self._line_current))
-
-    def find_line_end(self, syntax_end_line: str = ";"):
-        """
-        find_line_end() looks for the end-line character and determines if the
-        current line has the conclusion to a 'command'. This exists to allow
-        multi-line commands to work properly.
-
-        :param syntax_end_line: The character(s) that are used as the end-line
-            character(s). Default is ';'.
-        :return: Has no return.
-        """
-        if self._line_current == "":
-            # There isn't an end-line character in an empty line.
-            return
-
-        for index, _ in enumerate(self._line_current):
-            if (self._line_current[index:index+len(syntax_end_line)]
-                == syntax_end_line) \
-                    and self._at_end_of_line is False:
-                # This monstrosity of an if-statement is simply checking for
-                # the end-line character when at_end_of_line is False, meaning
-                # not found.
-                if (self._line_current[index-1] == "\\"
-                        and self._line_current[index-2] != "\\"
-                        and index > 0):
-                    # This statement allows the use of backslashes to prevent
-                    # the program misinterpreting a use of it as an end-line
-                    # character when not intended.
-                    continue
-
-                # The program clears the end-line character from the current
-                # line, and set at_end_of_line to True to show it's been found.
-                self._line_current = _clear_line(self._line_current, index, index+len(syntax_end_line))
-                self._at_end_of_line = True
-                break
-
-        # at_end_of_line being False means that the end-line character was not
-        # found, meaning the program should add the current line to
-        # line_previous to preserve it for when the end-line character *is*
-        # found.
-        if self._at_end_of_line is False:
-            self._line_previous.append(self._line_current)
-            return
-
-        # at_end_of_line is reset here because it needs to be reset after it's
-        # used, and it is no longer needed.
-        self._at_end_of_line = False
-
-        # If there are no previous line to find, then there's no point in
-        # adding them to the current line, so there's another early return.
-        if not self._line_previous:
-            return
-
-        line_combined = ""  # line_combined is used to strap the strings of the
-        # previous line and the current one together.
-        for previous_item in self._line_previous:
-            line_combined += previous_item + " "  # A space is added to prevent
-            # any issues with resulting syntax, ie "HEADframe_rate" being
-            # incorrect syntax, but not intended.
-
-        # The program then pastes the previous lines, through line_combined, to
-        # line_current, and resets line_previous to an empty list.
-        self._line_current = line_combined + self._line_current
-        self._line_previous = []
-
-    def reset_script(self):
-        """
-        reset_script() clears the current generator object that the class is
-        reading from. If the allow_rereading attribute has been left at False,
-        then this function may raise a UserWarning exception.
-
-        :return: Has no return.
-        """
-        self._script_reader = None  # The class resets the generator object
-        # to allow it to make a new generator class if the script wants to
-        # read the file a second time without making a new instance of the
-        # class.
-        self._line_number = 0  # ._line_number is also reset since there is
-        # no longer a script to have a line number for.
-
-    def _check_rereading(self):
-        if self._finished_reading and not self._allow_rereading:
-            raise UserWarning("Scripter has not been allowed to read the script more than once.")
+        at_end_of_line = False
