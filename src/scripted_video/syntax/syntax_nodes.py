@@ -1,6 +1,6 @@
-from src.scripted_video.syntax._attribute_superclass import _SVST_Attribute_Body, _SVST_Attribute_BodySubjects, \
-    _SVST_Attribute_Name, _SVST_Attribute_NameValue
-from src.scripted_video.syntax._functions import create_string_from_sequence, define_indent_sequence, gatekeep_indent
+from ._attribute_superclass import _SVST_Attribute_Body, _SVST_Attribute_BodySubjects, _SVST_Attribute_Name, \
+    _SVST_Attribute_NameValue
+from ._functions import create_string_from_sequence, define_indent_sequence, gatekeep_indent
 
 from abc import abstractmethod
 from re import Match as re_Match
