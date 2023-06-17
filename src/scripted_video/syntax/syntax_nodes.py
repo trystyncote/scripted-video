@@ -3,7 +3,7 @@ from src.scripted_video.syntax._attribute_superclass import _SVST_Attribute_Body
 from src.scripted_video.syntax._functions import create_string_from_sequence, define_indent_sequence, gatekeep_indent
 
 from abc import abstractmethod
-import re
+from re import Match as re_Match
 from typing import Self
 
 
@@ -23,7 +23,7 @@ class Metadata(_SVST_Attribute_NameValue):
     _syntax = r"HEAD ([\w_]+)[\s| ]*={1}[\s| ]*([\w_]+)"
 
     @classmethod
-    def evaluate_syntax(cls, match_object: re.Match) -> Self:
+    def evaluate_syntax(cls, match_object: re_Match) -> Self:
         attribute_name = match_object.group(1)
         attribute_value = match_object.group(2)
         return cls(attribute_name, attribute_value)
@@ -67,7 +67,7 @@ class Declare(_SVST_Attribute_NameValue):
         )
 
     @classmethod
-    def evaluate_syntax(cls, match_object: re.Match) -> Self:
+    def evaluate_syntax(cls, match_object: re_Match) -> Self:
         variable_name = match_object.group(1)
         variable_value = match_object.group(2)
         variable_type = match_object.group(3)
@@ -84,7 +84,7 @@ class Object(_SVST_Attribute_Name):
 
     @classmethod
     @abstractmethod
-    def evaluate_syntax(cls, match_object: re.Match) -> Self:
+    def evaluate_syntax(cls, match_object: re_Match) -> Self:
         return NotImplemented
 
 
@@ -98,7 +98,7 @@ class Property(_SVST_Attribute_NameValue):
 
     @classmethod
     @abstractmethod
-    def evaluate_syntax(cls, match_object: re.Match) -> Self:
+    def evaluate_syntax(cls, match_object: re_Match) -> Self:
         return NotImplemented
 
 
@@ -119,7 +119,7 @@ class Create(_SVST_Attribute_BodySubjects):
     _syntax = r"CREATE OBJECT ([\w\-_]+):[\s| ]*((?:[\w\s\$\-_\/.]*,[\s| ]){5}[\w\s\$\-_\/.]*)"
 
     @classmethod
-    def evaluate_syntax(cls, match_object: re.Match) -> Self:
+    def evaluate_syntax(cls, match_object: re_Match) -> Self:
         class_object = cls()
         class_object.subjects.append(Object(match_object.group(1)))
 
@@ -150,7 +150,7 @@ class Move(_SVST_Attribute_BodySubjects):
     #           r"(?:\s| )[\w_]*[(](\${1}[\w_]*(?:,(?:\s| )\${1}[\w_]*)*)*[)])*);"
 
     @classmethod
-    def evaluate_syntax(cls, match_object: re.Match) -> Self:
+    def evaluate_syntax(cls, match_object: re_Match) -> Self:
         """
         The MOVE keyword will eventually be changed to call a movement function
         on its object starting at its call time. This will not be the same as
@@ -185,7 +185,7 @@ class Delete(_SVST_Attribute_BodySubjects):
     _syntax = r"DELETE OBJECT ([\w\-_]+):[\s| ]*([\w\s\$\-_\/.]*)"
 
     @classmethod
-    def evaluate_syntax(cls, match_object: re.Match) -> Self:
+    def evaluate_syntax(cls, match_object: re_Match) -> Self:
         class_object = cls()
         class_object.subjects.append(Object(match_object.group(1)))
         value = match_object.group(2)
@@ -227,5 +227,5 @@ class TimelineModule(_SVST_Attribute_Body):
 
     @classmethod
     @abstractmethod
-    def evaluate_syntax(cls, match_object: re.Match) -> Self:
+    def evaluate_syntax(cls, match_object: re_Match) -> Self:
         return NotImplemented
