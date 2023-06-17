@@ -5,7 +5,7 @@ from pathlib import Path
 def _read_script(file_name: (Path | str)):
     with open(file_name, "r") as file_store:
         for line in file_store:
-            yield line.rstrip()
+            yield line
 
 
 def _clear_line(string: str, start_index: int, end_index: int):
@@ -84,9 +84,7 @@ class Scripter:
     def __next__(self):
         try:
             while True:
-                self._line_current = next(self._script_reader)  # line_current is
-                # updated by calling next on script_reader, which yields the next line
-                # of the text file.
+                self._line_current = next(self._script_reader).strip()
 
                 if self._auto_clear_comments:  # If the flag is set to True, then the
                     self.clear_comments()  # script calls .clear_comments() without the
