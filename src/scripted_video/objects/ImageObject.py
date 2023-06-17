@@ -1,5 +1,4 @@
 from src.scripted_video.variables.ScriptVariables import ScriptVariables
-from src.scripted_video.apply import apply
 
 from pathlib import Path
 import weakref
@@ -80,7 +79,7 @@ class Properties(PropertySlots):
         if property_type == "TIME":
             value = _manage_time(value, self._variables_access.metadata.frame_rate)
         else:
-            value = apply(property_type, value)
+            value = property_type(value)
         return value
 
 
