@@ -1,10 +1,37 @@
 from ._attribute_superclass import _SVST_Attribute_Body, _SVST_Attribute_BodySubjects, _SVST_Attribute_Name, \
     _SVST_Attribute_NameValue
 from ._functions import create_string_from_sequence, define_indent_sequence, gatekeep_indent
+from .root_node import SVST_RootNode
 
 from abc import abstractmethod
 from re import Match as re_Match
 from typing import Self
+
+
+class Doctype(SVST_RootNode):
+    __slots__ = ("_doctype",)
+    _syntax = r"@DOCTYPE [\s| ]*(scripted-video){1}"
+    # syntax = r"@DOCTYPE [\s| ]*(scripted-video){1}[\s| ]+((?:TIMELINE)|(?:MASTER[-]*SCRIPT)|(?:DESIGN)){1};"
+
+    def __init__(self, doctype: str):
+        self._doctype = doctype
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(_doctype={self._doctype})"
+
+    @property
+    def doctype(self) -> str:
+        return self._doctype
+
+    def convert_to_string(self, *, indent: int = 0, _previous_indent: int = 0) -> str:
+        gatekeep_indent(indent)
+        return f"{' ' * _previous_indent}{self.__class__.__name__}({self._doctype!r})"
+
+    @classmethod
+    def evaluate_syntax(cls, match_object: re_Match) -> Self:
+        doctype = match_object.group(1)
+        class_object = cls(doctype)
+        return class_object
 
 
 class Metadata(_SVST_Attribute_NameValue):
