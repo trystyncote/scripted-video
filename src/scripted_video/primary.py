@@ -7,6 +7,8 @@ from src.scripted_video.variables.ScriptVariables import ScriptVariables
 
 from src.scripted_video.objects.ObjectDict import ObjectDict
 
+from scripted_video.qualms.force_exit import svForceExit
+
 import logging
 from pathlib import Path
 import shutil
@@ -101,5 +103,8 @@ def primary():
 
 
 if __name__ == "__main__":
-    primary()
-    # detect_performance()
+    try:
+        primary()
+        # detect_performance()
+    except svForceExit:
+        input("")
