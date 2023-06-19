@@ -20,5 +20,5 @@ class DoctypeNotAtBeginning(BaseCrash):
                 ]
             ):
                 return
-            case __wildcard__:
+            case _:
                 qualm_group.add_qualm(cls())
