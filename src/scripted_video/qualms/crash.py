@@ -17,8 +17,7 @@ class DoctypeNotAtBeginning(BaseCrash):
                 body=[
                     syntax.Doctype(doctype="scripted-video"),
                     *_
-                ],
-                script_name=_
+                ]
             ):
                 return
             case __wildcard__:
