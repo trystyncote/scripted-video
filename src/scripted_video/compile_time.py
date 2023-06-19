@@ -1,5 +1,7 @@
 import src.scripted_video.syntax as svSyntax
 
+from src.scripted_video.qualms.group import QualmGroup
+
 import re
 
 
@@ -17,9 +19,15 @@ def dissect_syntax(command: str, syntax_tree):
 
 
 def navigate_syntax_tree(syntax_tree, object_information, script_variables):
+    qualm_group = QualmGroup()
+
     visitor = svSyntax.NodeVisitor()
     visitor.visit(
         syntax_tree,
         objects=object_information,
-        variables=script_variables
+        variables=script_variables,
+        qualms=qualm_group
     )
+
+    if qualm_group.has_qualms:
+        qualm_group.raise_qualms()
