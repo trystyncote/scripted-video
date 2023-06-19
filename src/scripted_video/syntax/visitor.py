@@ -9,6 +9,8 @@ from .root_node import SVST_RootNode
 
 from src.scripted_video.objects.ImageObject import ImageObject
 
+from src.scripted_video.qualms.crash import DoctypeNotAtBeginning
+
 from pathlib import Path
 from typing import Callable
 
@@ -24,16 +26,17 @@ def _iter_fields(node):
 
 
 class SVST_NodeVisitor:
-    def visit(self, node, /, *, objects, variables):
+    def visit(self, node, /, *, objects, variables, qualms):
         method = 'visit_' + node.__class__.__name__
         visitor = getattr(self, method, self.generic_visit)
         return visitor(
             node,
             objects=objects,
-            variables=variables
+            variables=variables,
+            qualms=qualms
         )
 
-    def generic_visit(self, node, /, *, objects, variables):
+    def generic_visit(self, node, /, *, objects, variables, qualms):
         for attribute in _iter_fields(node):
             if isinstance(attribute, list):
                 for item in attribute:
@@ -41,16 +44,18 @@ class SVST_NodeVisitor:
                         self.visit(
                             item,
                             objects=objects,
-                            variables=variables
+                            variables=variables,
+                            qualms=qualms
                         )
             elif isinstance(attribute, SVST_RootNode):
                 self.visit(
                     attribute,
                     objects=objects,
-                    variables=variables
+                    variables=variables,
+                    qualms=qualms
                 )
 
-    def visit_Create(self, node, /, *, objects, variables):
+    def visit_Create(self, node, /, *, objects, variables, qualms):
         for subject in node.subjects:
             if not isinstance(subject, Object):
                 continue
@@ -66,10 +71,11 @@ class SVST_NodeVisitor:
         return self.generic_visit(
             node,
             objects=objects,
-            variables=variables
+            variables=variables,
+            qualms=qualms
         )
 
-    def visit_Declare(self, node, /, *, objects, variables):
+    def visit_Declare(self, node, /, *, objects, variables, qualms):
         name = node.name
         value = node.value
         type_ = node.type
@@ -109,10 +115,11 @@ class SVST_NodeVisitor:
         return self.generic_visit(
             node,
             objects=objects,
-            variables=variables
+            variables=variables,
+            qualms=qualms
         )
 
-    def visit_Delete(self, node, /, *, objects, variables):
+    def visit_Delete(self, node, /, *, objects, variables, qualms):
         for subject in node.subjects:
             if not isinstance(subject, Object):
                 continue
@@ -128,10 +135,11 @@ class SVST_NodeVisitor:
         return self.generic_visit(
             node,
             objects=objects,
-            variables=variables
+            variables=variables,
+            qualms=qualms
         )
 
-    def visit_Metadata(self, node, /, *, objects, variables):
+    def visit_Metadata(self, node, /, *, objects, variables, qualms):
         name = node.name
         value = node.value
 
@@ -143,10 +151,11 @@ class SVST_NodeVisitor:
         return self.generic_visit(
             node,
             objects=objects,
-            variables=variables
+            variables=variables,
+            qualms=qualms
         )
 
-    def visit_Move(self, node, /, *, objects, variables):
+    def visit_Move(self, node, /, *, objects, variables, qualms):
         for subject in node.subjects:
             if not isinstance(subject, Object):
                 continue
@@ -162,5 +171,16 @@ class SVST_NodeVisitor:
         return self.generic_visit(
             node,
             objects=objects,
-            variables=variables
+            variables=variables,
+            qualms=qualms
+        )
+
+    def visit_TimelineModule(self, node, /, *, objects, variables, qualms):
+        DoctypeNotAtBeginning.check(node, qualms)
+
+        return self.generic_visit(
+            node,
+            objects=objects,
+            variables=variables,
+            qualms=qualms
         )
