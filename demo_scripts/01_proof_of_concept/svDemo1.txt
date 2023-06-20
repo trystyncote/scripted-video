@@ -1,0 +1,74 @@
+@DOCTYPE scripted-video;
+
+HEAD window_width = 852;
+HEAD window_height = 480;
+HEAD frame_rate = 30;
+HEAD file_name = scripted_sampleVideo_final;
+/*
+Hello
+*/
+
+SET abc = __current_address__ AS ADDRESS; /* Hello */
+ 
+CREATE *obj1 {
+    file-name: $abc/img1.png;
+    start-time: 0s;
+    x: 0;
+    y: 0;
+    scale: 1;
+    layer: 1;
+};
+DELETE OBJECT *obj1: 2s 15f;
+
+CREATE *obj2 {
+    file-name: $abc/img2.png;  // Hello
+    start-time: 2s 15f;
+    x: 0;
+    y: 0;
+    scale: 1;
+    layer: 2;
+};
+DELETE OBJECT *obj2: 3s 15f;
+
+CREATE *obj3 {
+    file-name: $abc/img3.png;
+    start-time: 3s 15f;
+    x: 0;
+    y: 0;
+    scale: 1;
+    layer: 3;
+};
+MOVE OBJECT *obj3: 3s 16f, 60, 30, 0, 15f;
+MOVE OBJECT *obj3: 3s 32f, 30, 60, 0, 15f;
+DELETE OBJECT *obj3: 7s 15f;
+
+CREATE *obj4 {
+    file-name: $abc/img4.png;
+    start-time: 7s 15f;
+    x: 0;
+    y: 0;
+    scale: 1;
+    layer: 4;
+};
+DELETE OBJECT *obj4: 8s;
+
+CREATE *obj5 {
+    file-name: $abc/img5.png;
+    start-time: 8s;
+    x: 0;
+    y: 0;
+    scale: 1;
+    layer: 5;
+};
+MOVE OBJECT *obj5: 9s, 100, 100, 0, 15f;
+DELETE OBJECT *obj5: 11s;
+
+CREATE *obj6 {
+    file-name: $abc/img6.png;
+    start-time: 11s;
+    x: 0;
+    y: 0;
+    scale: 1;
+    layer: 6;
+};
+DELETE OBJECT *obj6: 20s;
