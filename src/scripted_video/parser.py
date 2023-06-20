@@ -84,6 +84,8 @@ def script_parser(file: (Path | str), /, *,
         try:
             line_current = next(script_pointer)
         except StopIteration:
+            if line_previous:
+                yield _combine_previous_lines(*line_previous).strip()
             return
 
         at_end_of_line = False
