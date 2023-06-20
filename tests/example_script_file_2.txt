@@ -1,0 +1,16 @@
+aAAaAA - bBBbBB {
+    cCCcCC
+};
+
+dDDdDD;
+eEEeEE;
+// Commented out.
+fFFfFF;
+
+/* Commented out. */
+
+gGGgGG {
+    hHHhHH {
+        iIIiII;
+    };
+};
