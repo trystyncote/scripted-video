@@ -30,16 +30,6 @@ class _OutstandingState(Enum):
 def script_parser(file: (Path | str), /, *,
                   block_comment_characters: tuple[str, str] | str | None = None, end_line_character: str = "\n",
                   inline_comment_character: str | None = None):
-    pass
-    """
-    Features list:
-    X Determine end-lines.
-        X Deletes after end-line!
-        X If not found, preserves previous contents.
-    X Clear comments.
-        X Deletes the comments!
-    - Ignore objects inside wrappers. (NEW)
-    """
     if type(block_comment_characters) == str:
         block_comment_characters = (block_comment_characters, block_comment_characters)
 
