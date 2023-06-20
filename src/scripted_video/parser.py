@@ -22,9 +22,58 @@ def _combine_previous_lines(*lines):
     return combined.getvalue()
 
 
-class _OutstandingState(Enum):
+def _evaluate_wrappers(line_current, nesting_status, wrapper_type, char):
+    index_nesting_start = line_current.find(char[0])
+    if index_nesting_start != -1:
+        nesting_status.increase_nesting(wrapper_type)
+
+    if nesting_status.latest_nesting is wrapper_type:
+        index_nesting_end = line_current.find(char[1])
+        if index_nesting_start < index_nesting_end:  # if index_nesting_end is
+            # -1, then this cannot evaluate to True.
+            nesting_status.decrease_nesting()
+
+
+class _NestingStatus:
+    __slots__ = ("_stack",)
+
+    def __init__(self):
+        self._stack = []
+
+    @property
+    def is_not_nested(self):
+        return not self._stack
+
+    @property
+    def latest_nesting(self):
+        if not self._stack:
+            return None
+        else:
+            return self._stack[-1]
+
+    def has_no_wrappers(self):
+        if not self._stack:
+            return True
+
+        for item in self._stack:
+            if item in [_NestingState.parenthesis, _NestingState.brackets, _NestingState.braces]:
+                return False
+
+        return True
+
+    def increase_nesting(self, layer):
+        self._stack.append(layer)
+
+    def decrease_nesting(self):
+        _ = self._stack.pop(-1)
+
+
+class _NestingState(Enum):
     empty = enum_auto()
     block_comment = enum_auto()
+    parenthesis = enum_auto()
+    brackets = enum_auto()
+    braces = enum_auto()
 
 
 def script_parser(file: (Path | str), /, *,
@@ -36,7 +85,7 @@ def script_parser(file: (Path | str), /, *,
     at_end_of_line = False
     index_block_comment_start = -1
     line_previous = []
-    outstanding_state = _OutstandingState.empty
+    nesting_status = _NestingStatus()
     script_pointer = _read_script(file)
 
     try:
@@ -46,15 +95,15 @@ def script_parser(file: (Path | str), /, *,
 
     while script_pointer:
         if block_comment_characters:
-            if outstanding_state is not _OutstandingState.block_comment:
+            if nesting_status.latest_nesting is not _NestingState.block_comment:
                 index_block_comment_start = line_current.find(block_comment_characters[0])
                 if index_block_comment_start != -1:
-                    outstanding_state = _OutstandingState.block_comment
+                    nesting_status.increase_nesting(_NestingState.block_comment)
 
-            if outstanding_state is _OutstandingState.block_comment:
+            if nesting_status.latest_nesting is _NestingState.block_comment:
                 index_block_comment_end = line_current.find(block_comment_characters[1], index_block_comment_start)
                 if index_block_comment_end != -1:
-                    outstanding_state = _OutstandingState.empty
+                    nesting_status.decrease_nesting()
                     length_block_end = len(block_comment_characters[1])
                     line_current = _clear_line(line_current, index_block_comment_start,
                                                index_block_comment_end+length_block_end)
@@ -62,17 +111,21 @@ def script_parser(file: (Path | str), /, *,
                     line_current = _clear_line(line_current, index_block_comment_start, len(line_current))
                     index_block_comment_start = 0
 
-        index_end_line = line_current.find(end_line_character)
-        if index_end_line != -1:
-            at_end_of_line = True
-            line_current = line_current[:index_end_line]
-        else:
-            line_previous.append(line_current.strip())
+        if nesting_status.latest_nesting is not _NestingState.block_comment:
+            _evaluate_wrappers(line_current, nesting_status, _NestingState.parenthesis, ("(", ")"))
+            _evaluate_wrappers(line_current, nesting_status, _NestingState.brackets, ("[", "]"))
+            _evaluate_wrappers(line_current, nesting_status, _NestingState.braces, ("{", "}"))
 
-        if inline_comment_character and outstanding_state is not _OutstandingState.block_comment:
-            index_inline_comment = line_current.find(inline_comment_character)
-            if index_inline_comment != -1:
-                line_current = line_current[:index_inline_comment]
+        if nesting_status.has_no_wrappers():
+            index_end_line = line_current.find(end_line_character)
+            if index_end_line != -1:
+                at_end_of_line = True
+                line_current = line_current[:index_end_line]
+
+            if inline_comment_character:
+                index_inline_comment = line_current.find(inline_comment_character)
+                if index_inline_comment != -1:
+                    line_current = line_current[:index_inline_comment]
 
         line_current = line_current.strip()
         if at_end_of_line:
@@ -81,6 +134,8 @@ def script_parser(file: (Path | str), /, *,
                 line_previous = []
             elif line_current:
                 yield line_current
+        else:
+            line_previous.append(line_current)
 
         try:
             line_current = next(script_pointer)
