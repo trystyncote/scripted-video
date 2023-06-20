@@ -4,7 +4,7 @@ from ._functions import create_string_from_sequence, define_indent_sequence, gat
 from .root_node import SVST_RootNode
 
 from abc import abstractmethod
-from re import Match as re_Match
+from re import Match as re_Match, finditer as re_finditer
 from typing import Self
 
 
@@ -134,27 +134,24 @@ class Create(_SVST_Attribute_BodySubjects):
     The Create node refers to the 'CREATE' keyword. The syntax looks
     approximately as follows:
 
-    CREATE <object>: <keywords>, ...;
-
-    Previous syntax will soon be deprecated, and converted into:
-
-    CREATE *<object>[, *<object> ...] {
+    CREATE *<object> {
         <property>: <value>; ...
     };
     """
     __slots__ = ()
-    _syntax = r"CREATE OBJECT ([\w\-_]+):[\s| ]*((?:[\w\s\$\-_\/.]*,[\s| ]){5}[\w\s\$\-_\/.]*)"
+    _syntax = r"CREATE (\*[\w_-]*)[\s|]*{([\w\s_\-;:.$\/]*)}"
+    _sub_syntax = r"([\w_-]+)[\s|]*:[\s|]*([\w$\/\-_\. ]+)[\s|]*;"
 
     @classmethod
     def evaluate_syntax(cls, match_object: re_Match) -> Self:
         class_object = cls()
         class_object.subjects.append(Object(match_object.group(1)))
 
-        properties_expected = ["file-name", "start-time", "x", "y", "scale", "layer"]
-        properties_literal = match_object.group(2).split(",")
-
-        for name, value in zip(properties_expected, properties_literal, strict=True):
-            class_object.body.append(Property(name, value.strip()))
+        property_string = match_object.group(2)
+        for property_pattern in re_finditer(cls._sub_syntax, property_string):
+            name = property_pattern.group(1)
+            value = property_pattern.group(2)
+            class_object.body.append(Property(name, value))
 
         return class_object
 
@@ -171,7 +168,7 @@ class Move(_SVST_Attribute_BodySubjects):
     MOVE *<object>[, *<object> ...] <function>(<parameters>, ...);
     """
     __slots__ = ()
-    _syntax = r"MOVE OBJECT ([\w\-_]+):[\s| ]*((?:[\w\s\$\-_\/.]*,[\s| ]){4}[\w\s\$\-_\/.]*)"
+    _syntax = r"MOVE OBJECT (\*[\w\-_]+):[\s| ]*((?:[\w\s\$\-_\/.]*,[\s| ]){4}[\w\s\$\-_\/.]*)"
 
     # _syntax = r"MOVE (\*[\w_]*[,(\s| )\*[\w_]*]*)[\s| ]([\w_]*[(](\${1}[\w_]*(?:,(?:\s| )\${1}[\w_]*)*)*[)](?:," \
     #           r"(?:\s| )[\w_]*[(](\${1}[\w_]*(?:,(?:\s| )\${1}[\w_]*)*)*[)])*);"
@@ -209,7 +206,7 @@ class Delete(_SVST_Attribute_BodySubjects):
     Deprecated functionality and will eventually be deleted.
     """
     __slots__ = ()
-    _syntax = r"DELETE OBJECT ([\w\-_]+):[\s| ]*([\w\s\$\-_\/.]*)"
+    _syntax = r"DELETE OBJECT (\*[\w\-_]+):[\s| ]*([\w\s\$\-_\/.]*)"
 
     @classmethod
     def evaluate_syntax(cls, match_object: re_Match) -> Self:
