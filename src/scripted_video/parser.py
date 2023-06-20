@@ -34,6 +34,7 @@ def script_parser(file: (Path | str), /, *,
         block_comment_characters = (block_comment_characters, block_comment_characters)
 
     at_end_of_line = False
+    index_block_comment_start = -1
     line_previous = []
     outstanding_state = _OutstandingState.empty
     script_pointer = _read_script(file)
