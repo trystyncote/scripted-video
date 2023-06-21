@@ -7,13 +7,14 @@ import io
 from PIL import Image
 
 
-class PropertySlots:
-    __slots__ = ("layer", "move_rate", "move_scale", "move_time", "move_x", "move_y", "scale", "x", "y",
-                 "start_time", "delete_time", "delay")  # The latter three
-    # properties are eventually going to be defunct.
+def _property_slots():
+    return ("layer", "move_rate", "move_scale", "move_time", "move_x", "move_y", "scale", "x", "y",
+            "start_time", "delete_time", "delay")  # The latter three properties are eventually going to be defunct.
 
 
-class Originals(PropertySlots):
+class Originals:
+    __slots__ = _property_slots()
+
     def get_property(self, name):
         return self.__getattribute__(name)
 
@@ -21,8 +22,8 @@ class Originals(PropertySlots):
         self.__setattr__(name, value)
 
 
-class Properties(PropertySlots):
-    __slots__ = ("_original", "_variables_access")
+class Properties:
+    __slots__ = (*_property_slots(), "_original", "_variables_access")
 
     type_classifications = {
         "file_name": str,
