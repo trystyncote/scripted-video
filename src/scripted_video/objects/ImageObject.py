@@ -128,8 +128,8 @@ def _manage_time(time_string: str, frame_rate: int):
 
 
 class ImageObject:
-    __slots__ = ("_filename", "_finalizer", "_loaded_image", "_moves", "_new_properties", "_object_name",
-                 "_loaded_pixels", "_properties", "__weakref__")
+    __slots__ = ("_filename", "_finalizer", "_loaded_image", "_moves", "_object_name", "_loaded_pixels", "_properties",
+                 "__weakref__")
 
     def __init__(self, object_name: str):
         self._filename = None
@@ -137,7 +137,6 @@ class ImageObject:
         self._loaded_image = None
         self._loaded_pixels = None
         self._moves = False
-        self._new_properties = []
         self._object_name = object_name
         self._properties = Properties()
 
@@ -177,7 +176,6 @@ class ImageObject:
             self._moves = True
         elif hasattr(self._properties, name):
             raise KeyError(f"({self.__class__.__name__}) - Duplicate property name \'{name}\'.")
-        self._new_properties.append(name)
         self._properties.add_property(name, value)
 
     def check_move_alignment(self):
