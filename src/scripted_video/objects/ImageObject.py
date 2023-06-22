@@ -107,15 +107,17 @@ def _replace_by_variables(value, constants):
 
 
 class ImageObject:
-    __slots__ = ("_filename", "_finalizer", "_loaded_image", "_moves", "_object_name", "_loaded_pixels", "_properties",
-                 "__weakref__")
+    __slots__ = ("_adjustments", "_filename", "_finalizer", "_loaded_image", "_object_name", "_loaded_pixels",
+                 "_properties", "__weakref__")
+
+    _adjustments: list[MoveInstruction]
 
     def __init__(self, object_name: str):
+        self._adjustments = []
         self._filename = None
         self._finalizer = weakref.finalize(self, self.close)
         self._loaded_image = None
         self._loaded_pixels = None
-        self._moves = False
         self._object_name = object_name
         self._properties = Properties()
 
@@ -123,8 +125,12 @@ class ImageObject:
         return hash(self._object_name)
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(object_name={self._object_name!r}, filename={self._filename!r}, " \
-               f"properties={self._properties!r})"
+        return f"{self.__class__.__name__}(filename={self._filename!r}, object_name={self._object_name!r}, " \
+               f"properties={self._properties!r} )"
+
+    @property
+    def adjustments(self):
+        return self._adjustments
 
     @property
     def is_opened(self):
@@ -132,7 +138,7 @@ class ImageObject:
 
     @property
     def moves(self):
-        return self._moves
+        return bool(self._adjustments)
 
     @property
     def object_name(self):
@@ -141,6 +147,12 @@ class ImageObject:
     @property
     def properties(self):
         return self._properties
+
+    def add_adjustment(self, adjustment):
+        if adjustment.bound_object != self._object_name:
+            raise AttributeError(f"Bound object of \'{adjustment.__class__}\' ({adjustment.bound_object}) doesn't match"
+                                 f" object name of \'{self.__class__}\' ({self._object_name})")
+        self._adjustments.append(adjustment)
 
     def add_property(self, name, value):
         name = name.replace("-", "_")
@@ -151,8 +163,6 @@ class ImageObject:
                 return
             else:
                 raise KeyError(f"({self.__class__.__name__}) - Duplicate property name \'{name}\'.")
-        elif name[0:4] == "move":
-            self._moves = True
         elif hasattr(self._properties, name):
             raise KeyError(f"({self.__class__.__name__}) - Duplicate property name \'{name}\'.")
         self._properties.add_property(name, value)
@@ -196,17 +206,13 @@ class ImageObject:
         alter_y = 0
         alter_scale = 0.0
 
-        while True:
-            move_index += 1
-            try:
-                move_time = self._properties.move_time[move_index]
-                move_rate = self._properties.move_rate[move_index]
-                if move_time < frame_index < (move_time + move_rate):
-                    alter_x += int(self._properties.move_x[move_index] / move_rate)
-                    alter_y += int(self._properties.move_y[move_index] / move_rate)
-                    alter_scale += float(self._properties.move_scale[move_index] / move_rate)
-            except IndexError:
-                break
+        for instruction in self._adjustments:
+            move_time = instruction.time
+            move_rate = instruction.rate
+            if move_time < frame_index < (move_time + move_rate):
+                alter_x += int(instruction.x / move_rate)
+                alter_y += int(instruction.y / move_rate)
+                alter_scale += float(instruction.scale / move_rate)
 
         self._properties.x += alter_x
         self._properties.y += alter_y
