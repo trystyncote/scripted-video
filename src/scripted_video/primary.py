@@ -20,7 +20,7 @@ def detect_performance():
     import cProfile
     import pstats
 
-    script = Path(find_path_of_file("scriptedVideo_demoScript_1.txt"))
+    script = Path(find_path_of_file("svDemo1.txt"))
     logging.basicConfig(format=">> %(message)s")
     logger = logging.getLogger("")
 
