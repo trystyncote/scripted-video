@@ -30,11 +30,6 @@ class Properties:
 
     file_name: str
     layer: int
-    move_rate: TIME
-    move_scale: float
-    move_time: TIME
-    move_x: int
-    move_y: int
     scale: float
     x: int
     y: int
