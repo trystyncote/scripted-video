@@ -1,3 +1,9 @@
+from typing import TypeVar
+
+
+TIME = TypeVar("TIME")
+
+
 def _manage_time(time_string: str, frame_rate: int):
     time_string_list = (time_string + " ").split(" ")  # time_string splits itself
     # by the whitespace because the full command must be split that way by

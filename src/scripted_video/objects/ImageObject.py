@@ -1,4 +1,4 @@
-from _time import _manage_time
+from src.scripted_video.objects._time import _manage_time, TIME
 
 from src.scripted_video.variables.ScriptVariables import ScriptVariables
 
@@ -27,21 +27,18 @@ class Originals:
 class Properties:
     __slots__ = (*_property_slots(), "_original", "_variables_access")
 
-    type_classifications = {
-        "file_name": str,
-        "layer": int,
-        "move_rate": "TIME",
-        "move_scale": float,
-        "move_time": "TIME",
-        "move_x": int,
-        "move_y": int,
-        "scale": float,
-        "x": int,
-        "y": int,
-        "start_time": "TIME",
-        "delete_time": "TIME",
-        "delay": "TIME"
-    }
+    layer: int
+    move_rate: TIME
+    move_scale: float
+    move_time: TIME
+    move_x: int
+    move_y: int
+    scale: float
+    x: int
+    y: int
+    start_time: TIME
+    delete_time: TIME
+    delay: TIME
 
     def __init__(self):
         self._variables_access: ScriptVariables = None
@@ -78,11 +75,11 @@ class Properties:
 
     def validate_property(self, name, value):
         value = _replace_by_variables(value, self._variables_access.constants)
-        property_type = self.type_classifications[name]
-        if property_type == "TIME":
+        annotation = self.__annotations__[name]
+        if annotation == TIME:
             value = _manage_time(value, self._variables_access.metadata.frame_rate)
         else:
-            value = property_type(value)
+            value = annotation(value)
         return value
 
 
@@ -147,7 +144,6 @@ class ImageObject:
     def add_property(self, name, value):
         name = name.replace("-", "_")
         if name == "file_name":
-            value = Properties.validate_property(self._properties, "file_name", value)
             if self._filename is None:
                 self._filename = Path(value) if isinstance(value, str) else value
                 return
