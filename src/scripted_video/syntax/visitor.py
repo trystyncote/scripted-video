@@ -8,6 +8,7 @@ from .syntax_nodes import Object, Property
 from .root_node import SVST_RootNode
 
 from src.scripted_video.objects.ImageObject import ImageObject
+from src.scripted_video.objects.MoveInstruction import MoveInstruction
 
 from src.scripted_video.qualms.crash import DoctypeNotAtBeginning
 
@@ -161,12 +162,14 @@ class SVST_NodeVisitor:
                 continue
             if subject.name not in objects:
                 continue  # TODO: Add error handling for when Move is called before Create.
-            relevant_object = objects[subject.name]
+            instruction = MoveInstruction(subject.name, variables.metadata.frame_rate)
 
             for body_element in node.body:
                 if not isinstance(body_element, Property):
                     continue
-                relevant_object.add_property(body_element.name, body_element.value)
+                instruction.set_attribute(body_element.name, body_element.value)
+
+            objects[subject.name].add_adjustment(instruction)
 
         return self.generic_visit(
             node,
