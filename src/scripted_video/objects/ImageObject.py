@@ -27,6 +27,7 @@ class Originals:
 class Properties:
     __slots__ = (*_property_slots(), "_original", "_variables_access")
 
+    file_name: str
     layer: int
     move_rate: TIME
     move_scale: float
@@ -144,6 +145,7 @@ class ImageObject:
     def add_property(self, name, value):
         name = name.replace("-", "_")
         if name == "file_name":
+            value = self._properties.validate_property(name, value)
             if self._filename is None:
                 self._filename = Path(value) if isinstance(value, str) else value
                 return
