@@ -202,7 +202,6 @@ class ImageObject:
         return self._properties.get_property(name)
 
     def move_object(self, frame_index):
-        move_index = -1
         alter_x = 0
         alter_y = 0
         alter_scale = 0.0
