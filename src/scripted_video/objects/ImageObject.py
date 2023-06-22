@@ -1,4 +1,5 @@
 from src.scripted_video.objects._time import _manage_time, TIME
+from src.scripted_video.objects.MoveInstruction import MoveInstruction
 
 from src.scripted_video.variables.ScriptVariables import ScriptVariables
 
@@ -10,8 +11,8 @@ from PIL import Image
 
 
 def _property_slots():
-    return ("layer", "move_rate", "move_scale", "move_time", "move_x", "move_y", "scale", "x", "y",
-            "start_time", "delete_time", "delay")  # The latter three properties are eventually going to be defunct.
+    return ("layer", "scale", "x", "y", "start_time", "delete_time", "delay")  # The latter three properties are
+    # eventually going to be defunct.
 
 
 class Originals:
