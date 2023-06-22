@@ -70,9 +70,9 @@ def generate_frames(object_information: ObjectDict, variables: ScriptVariables):
 def _evaluate_move_details(relevant_objects, object_information, frame_index):
     for objects in relevant_objects:
         if objects[3] is True:
-            move_time = object_information[objects[0]].get_property("move-time")
-            move_rate = object_information[objects[0]].get_property("move-rate")
-            for time, rate in zip(move_time, move_rate, strict=True):
+            for adjustment in object_information[objects[0]].adjustments:
+                time = adjustment.time
+                rate = adjustment.rate
                 if time <= frame_index < (time + rate):
                     return True
 
