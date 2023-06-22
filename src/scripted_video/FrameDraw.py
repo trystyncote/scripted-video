@@ -93,9 +93,10 @@ def draw_frames(frames, encoder, object_information: ObjectDict, variables: Scri
         for objects in relevant_objects:
             if not objects.moves:
                 continue
-            move_time = objects.get_property("move-time")
-            move_rate = objects.get_property("move-rate")
-            for time, rate in zip(move_time, move_rate):
+
+            for adjustment in objects.adjustments:
+                time = adjustment.time
+                rate = adjustment.rate
                 if time <= frame.index < (time + rate):
                     objects.move_object(frame.index)
 
