@@ -159,31 +159,6 @@ class ImageObject:
             raise KeyError(f"({self.__class__.__name__}) - Duplicate property name \'{name}\'.")
         self._properties.add_property(name, value)
 
-    def check_move_alignment(self):
-        expected_length = len(self._properties.move_time)
-
-        # These if-statements are temporary, since the commands require these
-        # parameters, so these if-statements are useless. This is a test part
-        # of the code, since there are currently no optional parameters to the
-        # MOVE OBJECT statement.
-        while True:
-            full_loop = True
-            if len(self._properties.move_x) < expected_length:
-                self._properties.move_x.append(0)
-                full_loop = False
-            if len(self._properties.move_y) < expected_length:
-                self._properties.move_y.append(0)
-                full_loop = False
-            if len(self._properties.move_scale) < expected_length:
-                self._properties.move_scale.append(0.0)
-                full_loop = False
-            if len(self._properties.move_rate) < expected_length:
-                self._properties.move_rate.append(1)
-                full_loop = False
-
-            if full_loop:
-                break
-
     def close(self):
         if self._loaded_image is None:
             return
