@@ -15,6 +15,12 @@ class RootInstruction:
     def bound_object(self):
         return self._bound_object
 
+    def confirm_all_attributes_exists(self) -> bool:
+        for attr in self.__slots__:
+            if getattr(self, attr, None) is None:
+                return False
+        return True
+
     def set_attribute(self, name: str, value: str):
         value = self.validate_attribute(name, value)
         self.__setattr__(name, value)
@@ -26,12 +32,6 @@ class RootInstruction:
         else:
             value = annotation(value)
         return value
-
-    def evaluate_attributes(self) -> bool:
-        for attr in self.__slots__:
-            if getattr(self, attr, None) is None:
-                return False
-        return True
 
 
 class MoveInstruction(RootInstruction):
