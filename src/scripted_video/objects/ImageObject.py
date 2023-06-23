@@ -1,7 +1,5 @@
-from src.scripted_video.objects._time import _manage_time, TIME
 from src.scripted_video.objects.MoveInstruction import MoveInstruction
-
-from src.scripted_video.variables.ScriptVariables import ScriptVariables
+from src.scripted_video.objects.properties import Properties
 
 from pathlib import Path
 import weakref
