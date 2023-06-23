@@ -1,4 +1,4 @@
-from src.scripted_video.objects.MoveInstruction import MoveInstruction
+from src.scripted_video.objects.instruction import MoveInstruction
 from src.scripted_video.objects.properties import Properties
 
 from pathlib import Path
