@@ -1,4 +1,4 @@
-from ._time import _manage_time, TIME
+from src.scripted_video.objects._time import _manage_time, TIME
 
 import io
 
@@ -56,16 +56,17 @@ class Properties:
         self._variables_access = None
 
     def __repr__(self):
-        string = io.StringIO(f"{self.__class__.__name__}(")
-        first = True
-        last = False
-        for k, v in dir(self):
-            if k.startswith("__") or k.endswith("__"):
-                continue
-            if not first and not last:
+        existing_attr = [slots_attr for slots_attr in self.__slots__ if hasattr(self, slots_attr)]
+        if not existing_attr:
+            return f"{self.__class__.__name__}()"
+        string = io.StringIO()
+        string.write(f"{self.__class__.__name__}(")
+        last_element = existing_attr[-1]
+        for attr_name in existing_attr:
+            attr_value = getattr(self, attr_name)
+            string.write(f"{attr_name}={attr_value}")
+            if attr_name != last_element:
                 string.write(", ")
-            string.write(f"{k}={v}")
-            first = False
         string.write(")")
         return string.getvalue()
 
