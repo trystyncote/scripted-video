@@ -11,7 +11,7 @@ from typing import Self
 class Doctype(SVST_RootNode):
     __slots__ = ("_doctype",)
     _syntax = r"@DOCTYPE [\s| ]*(scripted-video){1}"
-    # syntax = r"@DOCTYPE [\s| ]*(scripted-video){1}[\s| ]+((?:TIMELINE)|(?:MASTER[-]*SCRIPT)|(?:DESIGN)){1};"
+    # svst = r"@DOCTYPE [\s| ]*(scripted-video){1}[\s| ]+((?:TIMELINE)|(?:MASTER[-]*SCRIPT)|(?:DESIGN)){1};"
 
     def __init__(self, doctype: str):
         self._doctype = doctype
@@ -36,12 +36,12 @@ class Doctype(SVST_RootNode):
 
 class Metadata(_SVST_Attribute_NameValue):
     """
-    The Metadata node refers to the HEAD keyword. The syntax looks
+    The Metadata node refers to the HEAD keyword. The svst looks
     approximately as follows:
 
     HEAD <attribute> = <value>;
 
-    Previous syntax will soon be deprecated, and converted into:
+    Previous svst will soon be deprecated, and converted into:
 
     META <attribute> = <value>;
     """
@@ -58,17 +58,17 @@ class Metadata(_SVST_Attribute_NameValue):
 
 class Declare(_SVST_Attribute_NameValue):
     """
-    The Declare node refers to the SET keyword. The syntax looks
+    The Declare node refers to the SET keyword. The svst looks
     approximately as follows:
 
     SET <variable-name> = <value> AS <type>;
 
-    Previous syntax will soon be deprecated, and converted into:
+    Previous svst will soon be deprecated, and converted into:
 
     DECLARE <type> <variable-name> = <value>;
     """
     __slots__ = ("_type",)
-    # _syntax = r"DECLARE ([\w_]+)[\s| ]{1}([\w_]+)[\s| ]*={1}[\s| ]*([\w_]_)"
+    # _syntax = r"DECLARE ([\w_]+)[\s| ]{1}([\w_]+)[\s| ]*={1}[\s| ]*([\w_]+)"
     _syntax = r"SET ([\w_]+)[\s| ]*=[\s| ]*([\w_]+)[\s| ]* AS ([\w_]+)"
 
     def __init__(self, name: str, value: str, type_: str):
@@ -104,7 +104,7 @@ class Declare(_SVST_Attribute_NameValue):
 class Object(_SVST_Attribute_Name):
     """
     The Object node refers to a reference to an object, via the approximate
-    syntax [*<object>]. The name of the object is referenced as the 'name'.
+    svst [*<object>]. The name of the object is referenced as the 'name'.
     Meant to be referred as a subject of another node.
     """
     __slots__ = ()
@@ -131,7 +131,7 @@ class Property(_SVST_Attribute_NameValue):
 
 class Create(_SVST_Attribute_BodySubjects):
     """
-    The Create node refers to the 'CREATE' keyword. The syntax looks
+    The Create node refers to the 'CREATE' keyword. The svst looks
     approximately as follows:
 
     CREATE *<object> {
@@ -158,12 +158,12 @@ class Create(_SVST_Attribute_BodySubjects):
 
 class Move(_SVST_Attribute_BodySubjects):
     """
-    The Move node refers to the 'MOVE' keyword. The syntax looks approximately
+    The Move node refers to the 'MOVE' keyword. The svst looks approximately
     as follows:
 
     MOVE <object>: <keywords>, ...;
 
-    Previous syntax will soon be deprecated, and converted into:
+    Previous svst will soon be deprecated, and converted into:
 
     MOVE *<object>[, *<object> ...] <function>(<parameters>, ...);
     """
@@ -198,7 +198,7 @@ class Move(_SVST_Attribute_BodySubjects):
 
 class Delete(_SVST_Attribute_BodySubjects):
     """
-    The Delete node refers to the 'DELETE' keyword. The syntax looks
+    The Delete node refers to the 'DELETE' keyword. The svst looks
     approximately as follows:
 
     DELETE <object>: <keywords>, ...
@@ -219,7 +219,7 @@ class Delete(_SVST_Attribute_BodySubjects):
 
 class TimelineModule(_SVST_Attribute_Body):
     """
-    The TimelineModule node is the outermost member of the syntax tree (similar
+    The TimelineModule node is the outermost member of the svst tree (similar
     to the 'Module' node of the built-in AST). It has a body attribute that is
     meant to carry all of the blocks in the given script. The script's name
     (without suffix) is referred to as the 'script_name' attribute.

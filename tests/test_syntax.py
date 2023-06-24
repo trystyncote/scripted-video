@@ -1,8 +1,7 @@
 from tests._syntax_match_functions import match_Create, match_Declare, match_Delete, match_Doctype, match_Metadata, \
     match_Move
 
-from src.scripted_video.syntax.root_node import SVST_RootNode as RootNode
-from src.scripted_video.syntax.syntax_nodes import Create, Declare, Delete, Doctype, Metadata, Move
+import src.scripted_video.svst as svst
 
 import pytest
 import re
@@ -18,14 +17,14 @@ class Expected:
 
 
 @pytest.mark.parametrize("command,cls,match_callable,expected_attr", [
-    ("@DOCTYPE scripted-video", Doctype, match_Doctype, "doc:scripted-video"),
-    ("HEAD window_width = 852", Metadata, match_Metadata, "name:window_width;value:852"),
-    ("SET abc = def AS ghi", Declare, match_Declare, "name:abc;value:def;type:ghi"),
-    ("CREATE *obj { x: 100; y: 100; }", Create, match_Create,
+    ("@DOCTYPE scripted-video", svst.Doctype, match_Doctype, "doc:scripted-video"),
+    ("HEAD window_width = 852", svst.Metadata, match_Metadata, "name:window_width;value:852"),
+    ("SET abc = def AS ghi", svst.Declare, match_Declare, "name:abc;value:def;type:ghi"),
+    ("CREATE *obj { x: 100; y: 100; }", svst.Create, match_Create,
      "o_name:*obj;p_name_A:x;p_value_A:100;p_name_B:y;p_value_B:100"),
-    ("MOVE OBJECT *obj: val1, val2, val3, val4, val5", Move, match_Move,
+    ("MOVE OBJECT *obj: val1, val2, val3, val4, val5", svst.Move, match_Move,
      "o_name:*obj;p_value_A:val1;p_value_B:val2;p_value_C:val3;p_value_D:val4;p_value_E:val5"),
-    ("DELETE OBJECT *obj: val", Delete, match_Delete, "o_name:*obj;p_value:val")
+    ("DELETE OBJECT *obj: val", svst.Delete, match_Delete, "o_name:*obj;p_value:val")
 ])
 def test_syntax_evaluate(command, cls, match_callable, expected_attr):
     expected = Expected()
@@ -33,7 +32,7 @@ def test_syntax_evaluate(command, cls, match_callable, expected_attr):
         expected.set(*attr.split(":"))  # assume that the result will be of
         # length 2.
 
-    query = RootNode.syntax_list[cls]
+    query = svst.RootNode.syntax_list[cls]
     match = re.match(query, command)
     if match is None:
         assert False

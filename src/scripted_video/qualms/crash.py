@@ -1,6 +1,6 @@
 from src.scripted_video.qualms._root_pseudo_error import RootPseudoError
 
-import src.scripted_video.syntax as syntax
+import src.scripted_video.svst as svst
 
 
 class BaseCrash(RootPseudoError):
@@ -13,9 +13,9 @@ class DoctypeNotAtBeginning(BaseCrash):
     @classmethod
     def check(cls, node, qualm_group):
         match node:
-            case syntax.TimelineModule(
+            case svst.TimelineModule(
                 body=[
-                    syntax.Doctype(doctype="scripted-video"),
+                    svst.Doctype(doctype="scripted-video"),
                     *_
                 ]
             ):

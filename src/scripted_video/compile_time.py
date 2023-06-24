@@ -1,16 +1,16 @@
-import src.scripted_video.syntax as svSyntax
+import src.scripted_video.svst as svst
 
 from src.scripted_video.qualms.group import QualmGroup
 
 import re
 
 
-def create_syntax_tree_root(script_name: str) -> svSyntax.TimelineModule:
-    return svSyntax.TimelineModule(script_name)
+def create_syntax_tree_root(script_name: str) -> svst.TimelineModule:
+    return svst.TimelineModule(script_name)
 
 
 def dissect_syntax(command: str, syntax_tree):
-    for respective_class, syntax_command in svSyntax.RootNode.syntax_list.items():
+    for respective_class, syntax_command in svst.RootNode.syntax_list.items():
         match = re.match(syntax_command, command)
         if not match:
             continue
@@ -21,7 +21,7 @@ def dissect_syntax(command: str, syntax_tree):
 def navigate_syntax_tree(syntax_tree, object_information, script_variables):
     qualm_group = QualmGroup()
 
-    visitor = svSyntax.NodeVisitor(object_information, script_variables, qualm_group)
+    visitor = svst.NodeVisitor(object_information, script_variables, qualm_group)
     visitor.visit(syntax_tree)
 
     if qualm_group.has_qualms:

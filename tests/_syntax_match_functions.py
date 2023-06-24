@@ -1,14 +1,14 @@
-import src.scripted_video.syntax as syntax
+import src.scripted_video.svst as svst
 
 
 def match_Create(node, exp):
     match node:
-        case syntax.Create(
+        case svst.Create(
             body=[
-                syntax.Property(name=exp.p_name_A, value=exp.p_value_A),
-                syntax.Property(name=exp.p_name_B, value=exp.p_value_B)
+                svst.Property(name=exp.p_name_A, value=exp.p_value_A),
+                svst.Property(name=exp.p_name_B, value=exp.p_value_B)
             ],
-            subjects=[syntax.Object(name=exp.o_name)]
+            subjects=[svst.Object(name=exp.o_name)]
         ):
             assert True
         case _:
@@ -17,7 +17,7 @@ def match_Create(node, exp):
 
 def match_Declare(node, exp):
     match node:
-        case syntax.Declare(name=exp.name, value=exp.value, type=exp.type):
+        case svst.Declare(name=exp.name, value=exp.value, type=exp.type):
             assert True
         case _:
             assert False
@@ -25,9 +25,9 @@ def match_Declare(node, exp):
 
 def match_Delete(node, exp):
     match node:
-        case syntax.Delete(
-            body=[syntax.Property(name="delete-time", value=exp.p_value)],
-            subjects=[syntax.Object(name=exp.o_name)]
+        case svst.Delete(
+            body=[svst.Property(name="delete-time", value=exp.p_value)],
+            subjects=[svst.Object(name=exp.o_name)]
         ):
             assert True
         case _:
@@ -36,7 +36,7 @@ def match_Delete(node, exp):
 
 def match_Doctype(node, exp):
     match node:
-        case syntax.Doctype(doctype=exp.doc):
+        case svst.Doctype(doctype=exp.doc):
             assert True
         case _:
             assert False
@@ -44,7 +44,7 @@ def match_Doctype(node, exp):
 
 def match_Metadata(node, exp):
     match node:
-        case syntax.Metadata(name=exp.name, value=exp.value):
+        case svst.Metadata(name=exp.name, value=exp.value):
             assert True
         case _:
             assert False
@@ -52,15 +52,15 @@ def match_Metadata(node, exp):
 
 def match_Move(node, exp):
     match node:
-        case syntax.Move(
+        case svst.Move(
             body=[
-                syntax.Property(name="time", value=exp.p_value_A),
-                syntax.Property(name="x", value=exp.p_value_B),
-                syntax.Property(name="y", value=exp.p_value_C),
-                syntax.Property(name="scale", value=exp.p_value_D),
-                syntax.Property(name="rate", value=exp.p_value_E)
+                svst.Property(name="time", value=exp.p_value_A),
+                svst.Property(name="x", value=exp.p_value_B),
+                svst.Property(name="y", value=exp.p_value_C),
+                svst.Property(name="scale", value=exp.p_value_D),
+                svst.Property(name="rate", value=exp.p_value_E)
             ],
-            subjects=[syntax.Object(name=exp.o_name)]
+            subjects=[svst.Object(name=exp.o_name)]
         ):
             assert True
         case _:
