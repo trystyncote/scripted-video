@@ -1,6 +1,8 @@
 from .File import find_path_of_file
 from .primary import generate_script
 
+from .qualms.force_exit import svForceExit
+
 import argparse
 import logging
 
@@ -25,7 +27,11 @@ def main():
     logging.basicConfig(format=">> %(message)s")
     logger = logging.getLogger("")
 
-    generate_script(args.script_file, logger)
+    try:
+        generate_script(args.script_file, logger)
+    except svForceExit:
+        import sys
+        sys.exit(1)
 
 
 if __name__ == "__main__":
