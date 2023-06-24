@@ -1,4 +1,4 @@
-from src.scripted_video.objects.instruction import MoveInstruction
+from src.scripted_video.objects.instruction import RootInstruction
 from src.scripted_video.objects.properties import Properties
 
 from pathlib import Path
@@ -11,7 +11,7 @@ class ImageObject:
     __slots__ = ("_adjustments", "_filename", "_finalizer", "_loaded_image", "_object_name", "_loaded_pixels",
                  "_properties", "__weakref__")
 
-    _adjustments: list[MoveInstruction]
+    _adjustments: list[RootInstruction]
 
     def __init__(self, object_name: str):
         self._adjustments = []
