@@ -1,11 +1,8 @@
 from src.scripted_video.File import find_path_of_file, create_encoder
-from src.scripted_video.parser import script_parser
-from src.scripted_video.compile_time import create_syntax_tree_root, dissect_syntax, navigate_syntax_tree
+from src.scripted_video.compile_time import cycle_over_script
 from src.scripted_video.FrameDraw import generate_frames, draw_frames, stitch_video
 
 from src.scripted_video.variables.ScriptVariables import ScriptVariables
-
-from src.scripted_video.objects.ObjectDict import ObjectDict
 
 from scripted_video.qualms.force_exit import svForceExit
 
@@ -45,19 +42,6 @@ def receive_input(logger):
         else:
             logger.warning("Found the file!")
             return file_path
-
-
-def cycle_over_script(script_file: Path, variables: ScriptVariables):
-    object_information = ObjectDict()
-    syntax_tree = create_syntax_tree_root(str(script_file.name))
-
-    for line in script_parser(script_file, block_comment_characters=("/*", "*/"), end_line_character=";",
-                              inline_comment_character="//"):
-        dissect_syntax(line, syntax_tree)
-
-    navigate_syntax_tree(syntax_tree, object_information, variables)
-
-    return object_information
 
 
 def generate_script(script_file: Path, logger: logging.Logger):
