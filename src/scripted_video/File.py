@@ -29,13 +29,4 @@ def find_path_of_file(desired_file_name: str):
 
 
 def create_encoder():
-    while True:
-        encoder = ''.join(random.choices(string.ascii_uppercase + string.digits,
-                          k=32))
-
-        try:
-            find_path_of_file(encoder)
-        except FileNotFoundError:
-            break
-
-    return encoder
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=32))
