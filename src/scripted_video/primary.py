@@ -11,24 +11,6 @@ from pathlib import Path
 import shutil
 
 
-def detect_performance():
-    # Code borrowed from mCoding. See the following link:
-    # https://github.com/mCodingLLC/VideosSampleCode/blob/master/videos/063_find_why_your_python_code_is_slow_using_this_essential_tool_dot___feat_dot__async_await_/needs_profiling.py
-    import cProfile
-    import pstats
-
-    script = Path(find_path_of_file("svDemo1.txt"))
-    logging.basicConfig(format=">> %(message)s")
-    logger = logging.getLogger("")
-
-    with cProfile.Profile() as pr:
-        generate_script(script, logger)
-
-    stats = pstats.Stats(pr)
-    stats.sort_stats(pstats.SortKey.TIME)
-    stats.print_stats()
-
-
 def receive_input(logger):
     while True:
         input_response = input("")
@@ -89,6 +71,5 @@ def primary():
 if __name__ == "__main__":
     try:
         primary()
-        # detect_performance()
     except svForceExit:
         input("")
