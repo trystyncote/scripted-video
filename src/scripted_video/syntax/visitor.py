@@ -27,63 +27,50 @@ def _iter_fields(node):
 
 
 class SVST_NodeVisitor:
-    def visit(self, node, /, *, objects, variables, qualms):
+    __slots__ = ("_objects", "_variables", "_qualms")
+
+    def __init__(self, objects, variables, qualms):
+        self._objects = objects
+        self._variables = variables
+        self._qualms = qualms
+
+    def visit(self, node, /):
         method = 'visit_' + node.__class__.__name__
         visitor = getattr(self, method, self.generic_visit)
-        return visitor(
-            node,
-            objects=objects,
-            variables=variables,
-            qualms=qualms
-        )
+        return visitor(node)
 
-    def generic_visit(self, node, /, *, objects, variables, qualms):
+    def generic_visit(self, node, /):
         for attribute in _iter_fields(node):
             if isinstance(attribute, list):
                 for item in attribute:
                     if isinstance(item, SVST_RootNode):
-                        self.visit(
-                            item,
-                            objects=objects,
-                            variables=variables,
-                            qualms=qualms
-                        )
+                        self.visit(item)
             elif isinstance(attribute, SVST_RootNode):
-                self.visit(
-                    attribute,
-                    objects=objects,
-                    variables=variables,
-                    qualms=qualms
-                )
+                self.visit(attribute)
 
-    def visit_Create(self, node, /, *, objects, variables, qualms):
+    def visit_Create(self, node, /):
         for subject in node.subjects:
             if not isinstance(subject, Object):
                 continue
             new_object = ImageObject(subject.name)
-            new_object.init_variables_instance(variables)
-            objects[subject.name] = new_object
+            new_object.init_variables_instance(self._variables)
+            self._objects[subject.name] = new_object
 
             for body_element in node.body:
                 if not isinstance(body_element, Property):
                     continue
                 new_object.add_property(body_element.name, body_element.value)
 
-        return self.generic_visit(
-            node,
-            objects=objects,
-            variables=variables,
-            qualms=qualms
-        )
+        return self.generic_visit(node)
 
-    def visit_Declare(self, node, /, *, objects, variables, qualms):
+    def visit_Declare(self, node, /):
         name = node.name
         value = node.value
         type_ = node.type
 
         if type_ == "ADDRESS":
             if value == "__current_address__":
-                value = variables.metadata.script_file.parent
+                value = self._variables.metadata.script_file.parent
             else:
                 value = Path(str(value))
 
@@ -111,79 +98,54 @@ class SVST_NodeVisitor:
         else:
             pass  # TODO: Add error handling for when type attribute of Declare is invalid.
 
-        variables.constants.call_relevant(type_).create_variable(name, value)
+        self._variables.constants.call_relevant(type_).create_variable(name, value)
 
-        return self.generic_visit(
-            node,
-            objects=objects,
-            variables=variables,
-            qualms=qualms
-        )
+        return self.generic_visit(node)
 
-    def visit_Delete(self, node, /, *, objects, variables, qualms):
+    def visit_Delete(self, node, /):
         for subject in node.subjects:
             if not isinstance(subject, Object):
                 continue
-            if subject.name not in objects:
+            if subject.name not in self._objects:
                 continue  # TODO: Add error handling for when Delete is called before Create.
-            relevant_object = objects[subject.name]
+            relevant_object = self._objects[subject.name]
 
             for body_element in node.body:
                 if not isinstance(body_element, Property):
                     continue
                 relevant_object.add_property(body_element.name, body_element.value)
 
-        return self.generic_visit(
-            node,
-            objects=objects,
-            variables=variables,
-            qualms=qualms
-        )
+        return self.generic_visit(node)
 
-    def visit_Metadata(self, node, /, *, objects, variables, qualms):
+    def visit_Metadata(self, node, /):
         name = node.name
         value = node.value
 
         if name in ("frame_rate", "window_height", "window_width"):
             value = int(value)
 
-        variables.metadata.update_value(name, value)
+        self._variables.metadata.update_value(name, value)
 
-        return self.generic_visit(
-            node,
-            objects=objects,
-            variables=variables,
-            qualms=qualms
-        )
+        return self.generic_visit(node)
 
-    def visit_Move(self, node, /, *, objects, variables, qualms):
+    def visit_Move(self, node, /):
         for subject in node.subjects:
             if not isinstance(subject, Object):
                 continue
-            if subject.name not in objects:
+            if subject.name not in self._objects:
                 continue  # TODO: Add error handling for when Move is called before Create.
-            instruction = MoveInstruction(subject.name, variables.metadata.frame_rate)
+            instruction = MoveInstruction(subject.name, self._variables.metadata.frame_rate)
 
             for body_element in node.body:
                 if not isinstance(body_element, Property):
                     continue
                 instruction.set_attribute(body_element.name, body_element.value)
 
-            objects[subject.name].add_adjustment(instruction)
+            self._objects[subject.name].add_adjustment(instruction)
 
-        return self.generic_visit(
-            node,
-            objects=objects,
-            variables=variables,
-            qualms=qualms
-        )
+        return self.generic_visit(node)
 
-    def visit_TimelineModule(self, node, /, *, objects, variables, qualms):
-        DoctypeNotAtBeginning.check(node, qualms)
+    def visit_TimelineModule(self, node, /):
+        DoctypeNotAtBeginning.check(node, self._qualms)
 
-        return self.generic_visit(
-            node,
-            objects=objects,
-            variables=variables,
-            qualms=qualms
-        )
+        return self.generic_visit(node)
