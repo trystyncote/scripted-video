@@ -7,6 +7,11 @@ import argparse
 import logging
 
 
+def end_program():
+    import sys
+    sys.exit(1)
+
+
 def main():
     parser = argparse.ArgumentParser()
 
@@ -21,8 +26,7 @@ def main():
         args.script_file = find_path_of_file(args.script_file)
     except FileNotFoundError:
         print(f"FileNotFound: {args.script_file}")
-        import sys
-        sys.exit(1)
+        end_program()
 
     logging.basicConfig(format=">> %(message)s")
     logger = logging.getLogger("")
@@ -30,8 +34,7 @@ def main():
     try:
         generate_script(args.script_file, logger)
     except svForceExit:
-        import sys
-        sys.exit(1)
+        end_program()
 
 
 if __name__ == "__main__":
