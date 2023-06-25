@@ -3,8 +3,6 @@ from src.scripted_video.variables.ScriptVariables import ScriptVariables
 from src.scripted_video.objects.ObjectDict import ObjectDict
 from src.scripted_video.objects.frames import Frame
 
-import os
-# import shutil
 from operator import itemgetter
 
 from moviepy.editor import ImageClip
@@ -77,15 +75,13 @@ def _evaluate_move_details(relevant_objects, object_information, frame_index):
                     return True
 
 
-def draw_frames(frames, encoder, object_information: ObjectDict, variables: ScriptVariables):
-    folder_location = variables.metadata.script_file.parent / encoder
-    os.mkdir(folder_location)
+def draw_frames(frames, directory, object_information: ObjectDict):
     video_length = 0
 
     for index, frame in enumerate(frames):
         if isinstance(frame, int):
             for _ in range(frame):
-                frames[index-1].draw_frame(object_information, folder_location)
+                frames[index-1].draw_frame(object_information, directory)
             video_length += frame
             continue
 
@@ -100,10 +96,10 @@ def draw_frames(frames, encoder, object_information: ObjectDict, variables: Scri
                 if time <= frame.index < (time + rate):
                     objects.move_object(frame.index)
 
-        frame.draw_frame(object_information, folder_location)
+        frame.draw_frame(object_information, directory)
         video_length += 1
 
-    return folder_location, video_length
+    return video_length
 
 
 def stitch_video(folder_location, final_video_name, video_length_frames, frame_rate):

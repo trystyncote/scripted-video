@@ -1,4 +1,4 @@
-from src.scripted_video.utils import find_path_of_file, create_encoder
+from src.scripted_video.utils import find_path_of_file, create_encoder, TemporaryDirectory
 from src.scripted_video.compile_time import cycle_over_script
 from src.scripted_video.FrameDraw import generate_frames, draw_frames, stitch_video
 
@@ -8,7 +8,6 @@ from scripted_video.qualms.force_exit import svForceExit
 
 import logging
 from pathlib import Path
-import shutil
 
 
 def receive_input(logger):
@@ -39,13 +38,15 @@ def generate_script(script_file: Path, logger: logging.Logger):
     logger.warning("Started drawing the frames for the video.")
 
     frames = generate_frames(object_information, variables)
-    folder_location, video_length = draw_frames(frames, encoder, object_information, variables)
 
-    logger.warning("Completed drawing the frames for the video.")
-    logger.warning("Started stitching the video together.")
+    dir = variables.metadata.script_file.parent / encoder
+    with TemporaryDirectory(dir) as tempdir:
+        video_length = draw_frames(frames, tempdir.dir, object_information)
 
-    stitch_video(folder_location, variables.metadata.file_name, video_length, variables.metadata.frame_rate)
-    shutil.rmtree(folder_location)
+        logger.warning("Completed drawing the frames for the video.")
+        logger.warning("Started stitching the video together.")
+
+        stitch_video(tempdir.dir, variables.metadata.file_name, video_length, variables.metadata.frame_rate)
 
     logger.warning("Completed stitching the video together.")
     logger.warning(f"The video from '{script_file.name}' is done generating.")

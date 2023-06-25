@@ -1,5 +1,7 @@
+import os
 from pathlib import Path
 import random
+import shutil
 import string
 
 
@@ -30,3 +32,15 @@ def find_path_of_file(desired_file_name: str):
 
 def create_encoder():
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=32))
+
+
+class TemporaryDirectory:
+    def __init__(self, folder_location: Path):
+        self.dir = folder_location
+
+    def __enter__(self):
+        os.mkdir(self.dir)
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        shutil.rmtree(self.dir)
