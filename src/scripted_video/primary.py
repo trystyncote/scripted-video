@@ -1,4 +1,4 @@
-from src.scripted_video.File import find_path_of_file, create_encoder
+from src.scripted_video.utils import find_path_of_file, create_encoder
 from src.scripted_video.compile_time import cycle_over_script
 from src.scripted_video.FrameDraw import generate_frames, draw_frames, stitch_video
 

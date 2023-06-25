@@ -1,4 +1,4 @@
-from src.scripted_video.File import find_path_of_file
+from src.scripted_video.utils import find_path_of_file
 from src.scripted_video.parser import script_parser
 
 import pytest

@@ -1,4 +1,4 @@
-from .File import find_path_of_file
+from .utils import find_path_of_file
 from .primary import generate_script
 
 from .qualms.force_exit import svForceExit
