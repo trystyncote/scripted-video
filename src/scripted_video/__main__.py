@@ -1,4 +1,4 @@
-from .utils import find_path_of_file
+from .utils import find_path_of_file, Options
 from .primary import generate_script
 
 from .qualms.force_exit import svForceExit
@@ -27,8 +27,11 @@ def main():
         print(f"FileNotFound: {args.script_file}")
         end_program()
 
+    options = Options.from_argparse(args)
+    print(f">> Started generating the video for '{args.script_file.name}'.")
+
     try:
-        generate_script(args.script_file)
+        generate_script(args.script_file, options)
     except svForceExit:
         end_program()
 

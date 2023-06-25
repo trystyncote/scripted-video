@@ -1,4 +1,4 @@
-from src.scripted_video.utils import find_path_of_file, create_encoder, TemporaryDirectory
+from src.scripted_video.utils import find_path_of_file, create_encoder, Options, TemporaryDirectory
 from src.scripted_video.compile_time import cycle_over_script
 from src.scripted_video.FrameDraw import generate_frames, draw_frames, stitch_video
 
@@ -24,34 +24,30 @@ def receive_input():
             return file_path
 
 
-def generate_script(script_file: Path):
+def generate_script(script_file: Path, options: Options):
     variables = ScriptVariables()
     variables.metadata.script_file = script_file
     encoder = create_encoder()
 
-    print(">> Starting compiling the script.")
-
     object_information = cycle_over_script(script_file, variables)
-
-    print(">> Completed compiling the script.")
-    print(">> Started drawing the frames for the video.")
+    if options.verbose:
+        print(">> Completed compiling the script.")
 
     frames = generate_frames(object_information, variables)
 
     dir = variables.metadata.script_file.parent / encoder
     with TemporaryDirectory(dir) as tempdir:
         video_length = draw_frames(frames, tempdir.dir, object_information)
-
-        print(">> Completed drawing the frames for the video.")
-        print(">> Started stitching the video together.")
-
         stitch_video(tempdir.dir, variables.metadata.file_name, video_length, variables.metadata.frame_rate)
 
-    print(">> Completed stitching the video together.")
-    print(f">> The video from '{script_file.name}' is done generating.")
+    if options.verbose:
+        print(">> Completed stitching the video together.")
 
 
 def primary():
+    options = Options()
+    options.verbose = False
+
     while True:
         print("Please input the name of your script. [To exit, leave blank.]")
         script = receive_input()

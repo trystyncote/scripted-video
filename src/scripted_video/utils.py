@@ -1,3 +1,4 @@
+import argparse
 import os
 from pathlib import Path
 import random
@@ -44,3 +45,17 @@ class TemporaryDirectory:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         shutil.rmtree(self.dir)
+
+
+class Options:
+    __slots__ = ("verbose",)
+
+    @classmethod
+    def from_argparse(cls, arg_parser: argparse.Namespace):
+        class_object = cls()
+        for attr in arg_parser.__dict__:
+            if attr == "script_file":
+                continue
+            value = getattr(arg_parser, attr)
+            class_object.__setattr__(attr, value)
+        return class_object
