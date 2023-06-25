@@ -1,4 +1,4 @@
-from src.scripted_video.File import find_path_of_file
+from src.scripted_video.utils import find_path_of_file
 from src.scripted_video.primary import generate_script
 
 import cProfile
