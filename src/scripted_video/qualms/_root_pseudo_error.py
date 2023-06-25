@@ -1,8 +1,6 @@
 from .force_exit import svForceExit
 from ._traceback_functions import write_cause_line, write_header, write_message, write_pinpoint
 
-from logging import Formatter as loggingFormatter, StreamHandler as loggingHandler, getLogger
-
 
 PINPOINT_TUPLE = tuple[tuple[int, int], tuple[int, int]] | tuple[int, int] | None
 # This is an unreadable type hinting variable for the following cases:
@@ -36,13 +34,6 @@ class RootPseudoError:
         # SOME COMMAND
         #      ^^^^^^^
 
-        handler = loggingHandler()
-        handler.setFormatter(loggingFormatter("%(message)s"))
-        logger = getLogger("QUALM_LOGGER")
-        logger.propagate = False
-        logger.handlers.clear()
-        logger.addHandler(handler)
-
         if _series is None:
             _series = [
                 write_header(self.type, self.__class__.__name__, self.line_number, self.file_name),
@@ -55,4 +46,4 @@ class RootPseudoError:
                     _series.append(write_pinpoint(self.pinpoint, len(self.cause)))
 
         for string in _series:
-            logger.log(50, string)
+            print(string)

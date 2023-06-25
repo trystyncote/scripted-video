@@ -6,36 +6,35 @@ from src.scripted_video.variables.ScriptVariables import ScriptVariables
 
 from scripted_video.qualms.force_exit import svForceExit
 
-import logging
 from pathlib import Path
 
 
-def receive_input(logger):
+def receive_input():
     while True:
         input_response = input("")
         if input_response == "":
             return None
-        logger.warning(f"Searching for file '{input_response}'.")
+        print(f">> Searching for file '{input_response}'.")
         try:
             file_path = find_path_of_file(input_response)
         except FileNotFoundError:
-            logger.warning("Cannot find file. Try again.")
+            print("  >> Cannot find file. Try again.")
         else:
-            logger.warning("Found the file!")
+            print("  >> Found the file!")
             return file_path
 
 
-def generate_script(script_file: Path, logger: logging.Logger):
+def generate_script(script_file: Path):
     variables = ScriptVariables()
     variables.metadata.script_file = script_file
     encoder = create_encoder()
 
-    logger.warning("Starting compiling the script.")
+    print(">> Starting compiling the script.")
 
     object_information = cycle_over_script(script_file, variables)
 
-    logger.warning("Completed compiling the script.")
-    logger.warning("Started drawing the frames for the video.")
+    print(">> Completed compiling the script.")
+    print(">> Started drawing the frames for the video.")
 
     frames = generate_frames(object_information, variables)
 
@@ -43,30 +42,27 @@ def generate_script(script_file: Path, logger: logging.Logger):
     with TemporaryDirectory(dir) as tempdir:
         video_length = draw_frames(frames, tempdir.dir, object_information)
 
-        logger.warning("Completed drawing the frames for the video.")
-        logger.warning("Started stitching the video together.")
+        print(">> Completed drawing the frames for the video.")
+        print(">> Started stitching the video together.")
 
         stitch_video(tempdir.dir, variables.metadata.file_name, video_length, variables.metadata.frame_rate)
 
-    logger.warning("Completed stitching the video together.")
-    logger.warning(f"The video from '{script_file.name}' is done generating.")
+    print(">> Completed stitching the video together.")
+    print(f">> The video from '{script_file.name}' is done generating.")
 
 
 def primary():
-    logging.basicConfig(format=">> %(message)s")
-    logger = logging.getLogger("")
-
     while True:
-        logger.warning("Please input the name of your script. [To exit, leave blank.]")
-        script = receive_input(logger)
+        print("Please input the name of your script. [To exit, leave blank.]")
+        script = receive_input()
         if script is None:
             break
         script = Path(script)
 
-        logger.warning(f"Started generating the video for '{script.name}'")
-        generate_script(script, logger)
+        print(f">> Started generating the video for '{script.name}'")
+        generate_script(script)
 
-    logger.warning("Goodbye :)")
+    print("Goodbye :)")
 
 
 if __name__ == "__main__":

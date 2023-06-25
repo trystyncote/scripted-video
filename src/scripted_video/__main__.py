@@ -4,7 +4,6 @@ from .primary import generate_script
 from .qualms.force_exit import svForceExit
 
 import argparse
-import logging
 
 
 def end_program():
@@ -28,11 +27,8 @@ def main():
         print(f"FileNotFound: {args.script_file}")
         end_program()
 
-    logging.basicConfig(format=">> %(message)s")
-    logger = logging.getLogger("")
-
     try:
-        generate_script(args.script_file, logger)
+        generate_script(args.script_file)
     except svForceExit:
         end_program()
 
