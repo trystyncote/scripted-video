@@ -55,7 +55,7 @@ def primary():
         script = Path(script)
 
         print(f">> Started generating the video for '{script.name}'")
-        generate_script(script)
+        generate_script(script, options)
 
     print("Goodbye :)")
 
