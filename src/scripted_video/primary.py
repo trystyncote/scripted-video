@@ -27,7 +27,6 @@ def receive_input():
 def generate_script(script_file: Path, options: Options):
     variables = ScriptVariables()
     variables.metadata.script_file = script_file
-    encoder = create_encoder()
 
     object_information = cycle_over_script(script_file, variables)
     if options.verbose:
@@ -35,7 +34,7 @@ def generate_script(script_file: Path, options: Options):
 
     frames = generate_frames(object_information, variables)
 
-    dir = variables.metadata.script_file.parent / encoder
+    dir = variables.metadata.script_file.parent / create_encoder()
     with TemporaryDirectory(dir) as tempdir:
         video_length = draw_frames(frames, tempdir.dir, object_information)
         stitch_video(tempdir.dir, variables.metadata.file_name, video_length, variables.metadata.frame_rate)
