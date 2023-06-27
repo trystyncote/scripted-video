@@ -111,6 +111,10 @@ class ImageObject:
             self._properties.y += alter_y
             self._properties.scale += alter_scale
 
+        self._properties.x = int(self._properties.x)
+        self._properties.y = int(self._properties.y)
+        self._properties.scale = float(self._properties.scale)
+
     def open(self):
         if self._filename is None:
             raise ReferenceError("Attribute 'file-name' not defined before call to open image.")

@@ -61,3 +61,5 @@ class MoveInstruction(RootInstruction):
             raise AttributeError(f"{self.__class__.__name__}: Not all attributes exist.")
         elif self.time < frame_index < (self.time + self.rate):
             return (self.x / self.rate), (self.y / self.rate), (self.scale / self.rate)
+        else:
+            return 0, 0, 0
