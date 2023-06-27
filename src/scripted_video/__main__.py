@@ -16,9 +16,6 @@ def main():
 
     parser.add_argument("script_file", help="the file that you would like to compile and generate into a video.")
     parser.add_argument("-v", "--verbose", help="increase output verbosity.", action="store_true")
-    # currently, the verbose flag is unused. this is a test to allow optional
-    # parameters while I work on this feature as the eventual entry point to the
-    # program.
 
     args = parser.parse_args()
     try:
@@ -27,11 +24,14 @@ def main():
         print(f"FileNotFound: {args.script_file}")
         end_program()
 
+    script_file = args.script_file
     options = Options.from_argparse(args)
-    print(f">> Started generating the video for '{args.script_file.name}'.")
+    del args  # prevention to calling two variables interchangeably.
+    if options.verbose:
+        print(f">> Started generating the video for '{script_file.name}'.")
 
     try:
-        generate_script(args.script_file, options)
+        generate_script(script_file, options)
     except svForceExit:
         end_program()
 
