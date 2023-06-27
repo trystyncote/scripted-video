@@ -102,21 +102,14 @@ class ImageObject:
         return self._properties.get_property(name)
 
     def move_object(self, frame_index):
-        alter_x = 0
-        alter_y = 0
-        alter_scale = 0.0
-
         for instruction in self._adjustments:
-            move_time = instruction.time
-            move_rate = instruction.rate
-            if move_time < frame_index < (move_time + move_rate):
-                alter_x += int(instruction.x / move_rate)
-                alter_y += int(instruction.y / move_rate)
-                alter_scale += float(instruction.scale / move_rate)
-
-        self._properties.x += alter_x
-        self._properties.y += alter_y
-        self._properties.scale += alter_scale
+            alter_x, alter_y, alter_scale = instruction.carry_out_instruction(frame_index)
+            # This representation of .carry_out_instruction() is not fully
+            # set in stone. This needs to be renovated if multiple types of
+            # instructions are going to be added.
+            self._properties.x += alter_x
+            self._properties.y += alter_y
+            self._properties.scale += alter_scale
 
     def open(self):
         if self._filename is None:

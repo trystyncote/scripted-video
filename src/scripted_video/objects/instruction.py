@@ -1,5 +1,7 @@
 from src.scripted_video.objects._time import TIME, _manage_time
 
+from abc import abstractmethod
+
 
 class RootInstruction:
     __slots__ = ("_bound_object", "_frame_rate")
@@ -14,6 +16,10 @@ class RootInstruction:
     @property
     def bound_object(self):
         return self._bound_object
+
+    @abstractmethod
+    def carry_out_instruction(self, frame_index: int):
+        return NotImplemented
 
     def confirm_all_attributes_exists(self) -> bool:
         for attr in self.__slots__:
@@ -49,3 +55,9 @@ class MoveInstruction(RootInstruction):
         self.scale = 0.0
         self.x = 0
         self.y = 0
+
+    def carry_out_instruction(self, frame_index: int):
+        if not self.confirm_all_attributes_exists():
+            raise AttributeError(f"{self.__class__.__name__}: Not all attributes exist.")
+        elif self.time < frame_index < (self.time + self.rate):
+            return (self.x / self.rate), (self.y / self.rate), (self.scale / self.rate)
