@@ -115,7 +115,7 @@ def test_parser_header_identity(file, end_line_char, header_id, list_of_expected
     """ Tests the usage of header_identity. """
     # This makes use of the end-line character because the header_identity
     # doesn't change the default behaviour on its own.
-    for actual, expected in zip(script_parser(file, end_line_character=";", header_identity=header_id),
+    for actual, expected in zip(script_parser(file, end_line_character=end_line_char, header_identity=header_id),
                                 list_of_expected):
         assert actual == expected
 
@@ -131,7 +131,8 @@ def test_parser_header_identity_with_comments(file, end_line_char, header_id, in
         with compatibility with comments. """
     # This makes use of the end-line character because the header_identity
     # doesn't change the default behaviour on its own.
-    for actual, expected in zip(script_parser(file, block_comment_characters=block_char, end_line_character=";",
+    for actual, expected in zip(script_parser(file, block_comment_characters=block_char,
+                                              end_line_character=end_line_char,
                                               inline_comment_character=inline_char, header_identity=header_id),
                                 list_of_expected):
         assert actual == expected
