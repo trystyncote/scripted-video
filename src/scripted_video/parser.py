@@ -51,6 +51,11 @@ class _NestingStatus:
         else:
             return self._stack[-1]
 
+    @property
+    def has_wrappers(self):
+        return _NestingState.parenthesis in self._stack or _NestingState.brackets in self._stack \
+            or _NestingState.braces in self._stack
+
     def has_no_wrappers(self):
         if not self._stack:
             return True
@@ -116,7 +121,7 @@ def script_parser(file: (Path | str), /, *,
             _evaluate_wrappers(line_current, nesting_status, _NestingState.brackets, ("[", "]"))
             _evaluate_wrappers(line_current, nesting_status, _NestingState.braces, ("{", "}"))
 
-        if nesting_status.has_no_wrappers():
+        if not nesting_status.has_wrappers:
             index_end_line = line_current.find(end_line_character)
             if index_end_line != -1:
                 at_end_of_line = True
