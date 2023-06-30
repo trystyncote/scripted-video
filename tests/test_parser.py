@@ -125,5 +125,13 @@ def test_parser_header_identity(file, end_line_char, header_id, list_of_expected
      ["aaaaA", "-_-+-+-_-", "bbbbB", "ccccC ddddD eeeeE", "-_-+-+-_-", "ffffF (( ggggG; ), hhhhH )", "[iiiiI]",
       "-_-+-+-_-", "jjjjJ", "k"])
 ])
-def test_parser(file, end_line_char, header_id, inline_char, block_char, list_of_expected):
-    pass
+def test_parser_header_identity_with_comments(file, end_line_char, header_id, inline_char, block_char,
+                                              list_of_expected):
+    """ Tests the usage of header_identity
+        with compatibility with comments. """
+    # This makes use of the end-line character because the header_identity
+    # doesn't change the default behaviour on its own.
+    for actual, expected in zip(script_parser(file, block_comment_characters=block_char, end_line_character=";",
+                                              inline_comment_character=inline_char, header_identity=header_id),
+                                list_of_expected):
+        assert actual == expected
