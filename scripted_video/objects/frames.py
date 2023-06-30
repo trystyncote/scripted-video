@@ -1,4 +1,4 @@
-from src.scripted_video.objects.ObjectDict import ObjectDict
+from scripted_video.objects.ObjectDict import ObjectDict
 
 from PIL import Image
 

@@ -1,7 +1,7 @@
 from tests._syntax_match_functions import match_Create, match_Declare, match_Delete, match_Doctype, match_Metadata, \
     match_Move
 
-import src.scripted_video.svst as svst
+import scripted_video.svst as svst
 
 import pytest
 import re

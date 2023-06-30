@@ -1,5 +1,5 @@
-from src.scripted_video.variables.Metadata import Metadata
-from src.scripted_video.variables.Constants import ConstantVariables
+from scripted_video.variables.Metadata import Metadata
+from scripted_video.variables.Constants import ConstantVariables
 
 
 class ScriptVariables:

@@ -1,5 +1,5 @@
-from src.scripted_video.utils import find_path_of_file, Options
-from src.scripted_video.primary import generate_script
+from scripted_video.utils import find_path_of_file, Options
+from scripted_video.primary import generate_script
 
 import cProfile
 from pathlib import Path

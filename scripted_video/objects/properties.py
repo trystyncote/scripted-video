@@ -1,4 +1,4 @@
-from src.scripted_video.objects._time import _manage_time, TIME
+from scripted_video.objects._time import _manage_time, TIME
 
 import io
 

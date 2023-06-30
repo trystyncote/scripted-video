@@ -1,4 +1,4 @@
-import src.scripted_video.svst as svst
+import scripted_video.svst as svst
 
 
 def match_Create(node, exp):

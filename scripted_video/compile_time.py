@@ -1,12 +1,12 @@
-from src.scripted_video.parser import script_parser
+from scripted_video.parser import script_parser
 
-from src.scripted_video.objects.ObjectDict import ObjectDict
+from scripted_video.objects.ObjectDict import ObjectDict
 
-from src.scripted_video.qualms.group import QualmGroup
+from scripted_video.qualms.group import QualmGroup
 
-import src.scripted_video.svst as svst
+import scripted_video.svst as svst
 
-from src.scripted_video.variables.ScriptVariables import ScriptVariables
+from scripted_video.variables.ScriptVariables import ScriptVariables
 
 from pathlib import Path
 import re

@@ -7,10 +7,10 @@ original source.
 from .syntax_nodes import Object, Property
 from .root_node import SVST_RootNode
 
-from src.scripted_video.objects.ImageObject import ImageObject
-from src.scripted_video.objects.instruction import MoveInstruction
+from scripted_video.objects.ImageObject import ImageObject
+from scripted_video.objects.instruction import MoveInstruction
 
-from src.scripted_video.qualms.crash import DoctypeNotAtBeginning
+from scripted_video.qualms.crash import DoctypeNotAtBeginning
 
 from pathlib import Path
 from typing import Callable

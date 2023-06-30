@@ -1,6 +1,6 @@
-from src.scripted_video.qualms._root_pseudo_error import RootPseudoError
+from scripted_video.qualms._root_pseudo_error import RootPseudoError
 
-import src.scripted_video.svst as svst
+import scripted_video.svst as svst
 
 
 class BaseCrash(RootPseudoError):

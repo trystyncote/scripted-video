@@ -1,4 +1,4 @@
-from src.scripted_video.objects._time import TIME, _manage_time
+from scripted_video.objects._time import TIME, _manage_time
 
 from abc import abstractmethod
 

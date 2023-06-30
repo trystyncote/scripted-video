@@ -1,7 +1,7 @@
-from src.scripted_video.variables.ScriptVariables import ScriptVariables
+from scripted_video.variables.ScriptVariables import ScriptVariables
 
-from src.scripted_video.objects.ObjectDict import ObjectDict
-from src.scripted_video.objects.frames import Frame
+from scripted_video.objects.ObjectDict import ObjectDict
+from scripted_video.objects.frames import Frame
 
 from operator import itemgetter
 

@@ -1,4 +1,4 @@
-from src.scripted_video.objects.ImageObject import ImageObject
+from scripted_video.objects.ImageObject import ImageObject
 
 
 class ObjectDict(dict):
