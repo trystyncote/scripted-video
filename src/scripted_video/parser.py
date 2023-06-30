@@ -46,6 +46,13 @@ def _evaluate_block_comments(line_current, block_comment_characters, index_block
     return line_current, index_block_comment_start
 
 
+def _evaluate_header_identity(line_current, header_identity):
+    for callable_, parameter in header_identity:
+        if callable_(line_current, parameter):
+            return True
+    return False
+
+
 def _evaluate_wrappers(line_current, nesting_status):
     base_index = 0
     nesting_elements = [
@@ -143,7 +150,7 @@ class _NestingState(Enum):
 
 def script_parser(file: (Path | str), /, *,
                   block_comment_characters: tuple[str, str] | str | None = None, end_line_character: str = "\n",
-                  inline_comment_character: str | None = None):
+                  header_identity=None, inline_comment_character: str | None = None):
     """
     script_parser parses a text file and dissects its immediate syntax.
 
@@ -153,6 +160,9 @@ def script_parser(file: (Path | str), /, *,
         two strings (beginning, end), or as a string (used for both sides).
     :param end_line_character: Optional. The character(s) used to signify the
         end of a line. Default is the new-line character.
+    :param header_identity: Optional. A length-2 tuple, where the first element
+        is a callable from the built-in string, and the second is the sequence
+        to be passed in. Designed to be compatible with str.startswith.
     :param inline_comment_character: Optional. The character(s) signifying an
         inline comment.
     :return: Yields each line in the order of the file.
@@ -179,6 +189,10 @@ def script_parser(file: (Path | str), /, *,
 
         if nesting_status.latest_nesting is not _NestingState.block_comment:
             _evaluate_wrappers(line_current, nesting_status)
+
+        if header_identity and not nesting_status.has_wrappers \
+                and _evaluate_header_identity(line_current, header_identity):
+            at_end_of_line = True
 
         if not nesting_status.has_wrappers:
             index_end_line = line_current.find(end_line_character)
