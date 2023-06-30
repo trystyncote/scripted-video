@@ -130,10 +130,10 @@ def script_parser(file: (Path | str), /, *,
                 at_end_of_line = True
                 line_current = line_current[:index_end_line]
 
-            if inline_comment_character:
-                index_inline_comment = line_current.find(inline_comment_character)
-                if index_inline_comment != -1:
-                    line_current = line_current[:index_inline_comment]
+        if inline_comment_character:
+            index_inline_comment = line_current.find(inline_comment_character)
+            if index_inline_comment != -1:
+                line_current = line_current[:index_inline_comment]
 
         line_current = line_current.strip()
         if at_end_of_line:
