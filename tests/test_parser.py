@@ -104,3 +104,26 @@ def test_parser_end_line_with_comments(file, end_line_char, inline_char, block_c
                                               inline_comment_character=inline_char),
                                 list_of_expected):
         assert actual == expected
+
+
+@pytest.mark.parametrize("file,end_line_char,header_id,list_of_expected", [
+    (find_path_of_file("example_script_file_3.txt"), ";", [(str.startswith, "-_-+-+-_-")],
+     ["aaaaA", "-_-+-+-_-", "bbbbB", "ccccC ddddD // Commented out. eeeeE", "-_-+-+-_-",
+      "ffffF (( ggggG; ), hhhhH /* Commented out. */ )", "[iiiiI]", "-_-+-+-_-", "jjjjJ", "k"])
+])
+def test_parser_header_identity(file, end_line_char, header_id, list_of_expected):
+    """ Tests the usage of header_identity. """
+    # This makes use of the end-line character because the header_identity
+    # doesn't change the default behaviour on its own.
+    for actual, expected in zip(script_parser(file, end_line_character=";", header_identity=header_id),
+                                list_of_expected):
+        assert actual == expected
+
+
+@pytest.mark.parametrize("file,end_line_char,header_id,inline_char,block_char,list_of_expected", [
+    (find_path_of_file("example_script_file_3.txt"), ";", [(str.startswith, "-_-+-+-_-")], "//", ("/*", "*/"),
+     ["aaaaA", "-_-+-+-_-", "bbbbB", "ccccC ddddD eeeeE", "-_-+-+-_-", "ffffF (( ggggG; ), hhhhH )", "[iiiiI]",
+      "-_-+-+-_-", "jjjjJ", "k"])
+])
+def test_parser(file, end_line_char, header_id, inline_char, block_char, list_of_expected):
+    pass
