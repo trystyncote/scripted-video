@@ -3,6 +3,10 @@ from io import StringIO
 from pathlib import Path
 
 
+class svParserError(SyntaxError):
+    pass
+
+
 def _read_script(file_name: (Path | str)):
     with open(file_name, "r", encoding="utf-8") as file_pointer:
         for line in file_pointer:
@@ -42,16 +46,62 @@ def _evaluate_block_comments(line_current, block_comment_characters, index_block
     return line_current, index_block_comment_start
 
 
-def _evaluate_wrappers(line_current, nesting_status, wrapper_type, char):
-    index_nesting_start = line_current.find(char[0])
-    if index_nesting_start != -1:
-        nesting_status.increase_nesting(wrapper_type)
+def _evaluate_wrappers(line_current, nesting_status):
+    base_index = 0
+    nesting_elements = [
+        _NestingElements(_NestingState.parenthesis, "(", ")"),
+        _NestingElements(_NestingState.brackets, "[", "]"),
+        _NestingElements(_NestingState.braces, "{", "}")
+    ]
+    element_effect = {
+        # char: (open/close, nesting_elements[index], _NestingState.STATE),
+        "(": ("open", 0, _NestingState.parenthesis),
+        ")": ("close", 0, _NestingState.parenthesis),
+        "[": ("open", 1, _NestingState.brackets),
+        "]": ("close", 1, _NestingState.brackets),
+        "{": ("open", 2, _NestingState.braces),
+        "}": ("close", 2, _NestingState.braces)
+    }
 
-    if nesting_status.latest_nesting is wrapper_type:
-        index_nesting_end = line_current.find(char[1])
-        if index_nesting_start < index_nesting_end:  # if index_nesting_end is
-            # -1, then this cannot evaluate to True.
+    while True:
+        for nesting_element in nesting_elements:
+            nesting_element.find_open(line_current, base_index)
+            nesting_element.find_close(line_current, base_index)
+
+        open_index_series = [x.index_open for x in nesting_elements if x.index_open != -1]
+        close_index_series = [x.index_close for x in nesting_elements if x.index_close != -1]
+        index_series = [*open_index_series, *close_index_series]
+        if not index_series:
+            return
+
+        base_index = min(index_series)
+        base_index_element = line_current[base_index:base_index+1]
+        direction, nesting_index, status = element_effect[base_index_element]
+        if direction == "open":
+            nesting_status.increase_nesting(status)
+        elif direction == "close":
+            if status != nesting_status.latest_nesting:
+                raise svParserError
             nesting_status.decrease_nesting()
+
+        base_index += 1
+
+
+class _NestingElements:
+    __slots__ = ("closing", "index_close", "index_open", "opening", "state")
+
+    def __init__(self, state, opening, closing):
+        self.state = state
+        self.opening = opening
+        self.closing = closing
+        self.index_close = 0
+        self.index_open = 0
+
+    def find_close(self, line_current, base_index):
+        self.index_close = line_current.find(self.closing, base_index)
+
+    def find_open(self, line_current, base_index):
+        self.index_open = line_current.find(self.opening, base_index)
 
 
 class _NestingStatus:
@@ -128,9 +178,7 @@ def script_parser(file: (Path | str), /, *,
                                                                                nesting_status)
 
         if nesting_status.latest_nesting is not _NestingState.block_comment:
-            _evaluate_wrappers(line_current, nesting_status, _NestingState.parenthesis, ("(", ")"))
-            _evaluate_wrappers(line_current, nesting_status, _NestingState.brackets, ("[", "]"))
-            _evaluate_wrappers(line_current, nesting_status, _NestingState.braces, ("{", "}"))
+            _evaluate_wrappers(line_current, nesting_status)
 
         if not nesting_status.has_wrappers:
             index_end_line = line_current.find(end_line_character)
@@ -138,7 +186,7 @@ def script_parser(file: (Path | str), /, *,
                 at_end_of_line = True
                 line_current = line_current[:index_end_line]
 
-        if inline_comment_character:
+        if inline_comment_character and nesting_status.latest_nesting is not _NestingState.block_comment:
             index_inline_comment = line_current.find(inline_comment_character)
             if index_inline_comment != -1:
                 line_current = line_current[:index_inline_comment]
