@@ -56,16 +56,6 @@ class _NestingStatus:
         return _NestingState.parenthesis in self._stack or _NestingState.brackets in self._stack \
             or _NestingState.braces in self._stack
 
-    def has_no_wrappers(self):
-        if not self._stack:
-            return True
-
-        for item in self._stack:
-            if item in [_NestingState.parenthesis, _NestingState.brackets, _NestingState.braces]:
-                return False
-
-        return True
-
     def increase_nesting(self, layer):
         self._stack.append(layer)
 
