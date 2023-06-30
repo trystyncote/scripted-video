@@ -22,6 +22,26 @@ def _combine_previous_lines(*lines):
     return combined.getvalue()
 
 
+def _evaluate_block_comments(line_current, block_comment_characters, index_block_comment_start, nesting_status):
+    if nesting_status.latest_nesting is not _NestingState.block_comment:
+        index_block_comment_start = line_current.find(block_comment_characters[0])
+        if index_block_comment_start != -1:
+            nesting_status.increase_nesting(_NestingState.block_comment)
+
+    if nesting_status.latest_nesting is _NestingState.block_comment:
+        index_block_comment_end = line_current.find(block_comment_characters[1], index_block_comment_start)
+        if index_block_comment_end != -1:
+            nesting_status.decrease_nesting()
+            length_block_end = len(block_comment_characters[1])
+            line_current = _clear_line(line_current, index_block_comment_start,
+                                       index_block_comment_end + length_block_end)
+        else:
+            line_current = _clear_line(line_current, index_block_comment_start, len(line_current))
+            index_block_comment_start = 0
+
+    return line_current, index_block_comment_start
+
+
 def _evaluate_wrappers(line_current, nesting_status, wrapper_type, char):
     index_nesting_start = line_current.find(char[0])
     if index_nesting_start != -1:
@@ -103,21 +123,9 @@ def script_parser(file: (Path | str), /, *,
 
     while script_pointer:
         if block_comment_characters:
-            if nesting_status.latest_nesting is not _NestingState.block_comment:
-                index_block_comment_start = line_current.find(block_comment_characters[0])
-                if index_block_comment_start != -1:
-                    nesting_status.increase_nesting(_NestingState.block_comment)
-
-            if nesting_status.latest_nesting is _NestingState.block_comment:
-                index_block_comment_end = line_current.find(block_comment_characters[1], index_block_comment_start)
-                if index_block_comment_end != -1:
-                    nesting_status.decrease_nesting()
-                    length_block_end = len(block_comment_characters[1])
-                    line_current = _clear_line(line_current, index_block_comment_start,
-                                               index_block_comment_end+length_block_end)
-                else:
-                    line_current = _clear_line(line_current, index_block_comment_start, len(line_current))
-                    index_block_comment_start = 0
+            line_current, index_block_comment_start = _evaluate_block_comments(line_current, block_comment_characters,
+                                                                               index_block_comment_start,
+                                                                               nesting_status)
 
         if nesting_status.latest_nesting is not _NestingState.block_comment:
             _evaluate_wrappers(line_current, nesting_status, _NestingState.parenthesis, ("(", ")"))
