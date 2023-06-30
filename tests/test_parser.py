@@ -10,7 +10,10 @@ import pytest
       "i;"]),
     (find_path_of_file("example_script_file_2.txt"),
      ["aAAaAA - bBBbBB { cCCcCC };", "dDDdDD;", "eEEeEE;", "// Commented out.", "fFFfFF;", "/* Commented out. */",
-      "gGGgGG { hHHhHH { iIIiII; }; };"])
+      "gGGgGG { hHHhHH { iIIiII; }; };"]),
+    (find_path_of_file("example_script_file_3.txt"),
+     ["aaaaA;", "-_-+-+-_-", "bbbbB;", "ccccC", "ddddD", "// Commented out.", "eeeeE;", "-_-+-+-_-",
+      "ffffF (( ggggG; ), hhhhH /* Commented out. */ );", "[iiiiI];", "-_-+-+-_-", "jjjjJ;", "k;"])
 ])
 def test_parser_default(file, list_of_expected):
     """ Tests the default behaviour of the `script_parser` function. """
@@ -23,7 +26,10 @@ def test_parser_default(file, list_of_expected):
      ["aAaA;", "bBbB;", "cCcC;", "dDdD", "eEeE;", "fFfF;", "gGgG; /*", "Commented out?", "*/", "hHhH", "i;"]),
     (find_path_of_file("example_script_file_2.txt"), "//",
      ["aAAaAA - bBBbBB { cCCcCC };", "dDDdDD;", "eEEeEE;", "fFFfFF;", "/* Commented out. */",
-      "gGGgGG { hHHhHH { iIIiII; }; };"])
+      "gGGgGG { hHHhHH { iIIiII; }; };"]),
+    (find_path_of_file("example_script_file_3.txt"), "//",
+     ["aaaaA;", "-_-+-+-_-", "bbbbB;", "ccccC", "ddddD", "eeeeE;", "-_-+-+-_-",
+      "ffffF (( ggggG; ), hhhhH /* Commented out. */ );", "[iiiiI];", "-_-+-+-_-", "jjjjJ;", "k;"])
 ])
 def test_parser_inline_comments(file, inline_char, list_of_expected):
     """ Tests the ability to specify a prefix to inline comments. """
@@ -36,7 +42,10 @@ def test_parser_inline_comments(file, inline_char, list_of_expected):
      ["aAaA;", "bBbB;", "cCcC; // Commented out?", "dDdD", "eEeE;", "fFfF;", "gGgG;", "hHhH", "i;"]),
     (find_path_of_file("example_script_file_2.txt"), ("/*", "*/"),
      ["aAAaAA - bBBbBB { cCCcCC };", "dDDdDD;", "eEEeEE;", "// Commented out.", "fFFfFF;",
-      "gGGgGG { hHHhHH { iIIiII; }; };"])
+      "gGGgGG { hHHhHH { iIIiII; }; };"]),
+    (find_path_of_file("example_script_file_3.txt"), ("/*", "*/"),
+     ["aaaaA;", "-_-+-+-_-", "bbbbB;", "ccccC", "ddddD", "// Commented out.", "eeeeE;", "-_-+-+-_-",
+      "ffffF (( ggggG; ), hhhhH );", "[iiiiI];", "-_-+-+-_-", "jjjjJ;", "k;"])
 ])
 def test_parser_block_comments(file, block_chars, list_of_expected):
     """ Tests the ability to specify a set of affixes to block comments. """
@@ -48,7 +57,10 @@ def test_parser_block_comments(file, block_chars, list_of_expected):
     (find_path_of_file("example_script_file_1.txt"), "//", ("/*", "*/"),
      ["aAaA;", "bBbB;", "cCcC;", "dDdD", "eEeE;", "fFfF;", "gGgG;", "hHhH", "i;"]),
     (find_path_of_file("example_script_file_2.txt"), "//", ("/*", "*/"),
-     ["aAAaAA - bBBbBB { cCCcCC };", "dDDdDD;", "eEEeEE;", "fFFfFF;", "gGGgGG { hHHhHH { iIIiII; }; };"])
+     ["aAAaAA - bBBbBB { cCCcCC };", "dDDdDD;", "eEEeEE;", "fFFfFF;", "gGGgGG { hHHhHH { iIIiII; }; };"]),
+    (find_path_of_file("example_script_file_3.txt"), "//", ("/*", "*/"),
+     ["aaaaA;", "-_-+-+-_-", "bbbbB;", "ccccC", "ddddD", "eeeeE;", "-_-+-+-_-", "ffffF (( ggggG; ), hhhhH );",
+      "[iiiiI];", "-_-+-+-_-", "jjjjJ;", "k;"])
 ])
 def test_parser_comments_both_types(file, inline_char, block_chars, list_of_expected):
     """ Tests the ability to specify a set of affixes to block comments. """
@@ -63,7 +75,10 @@ def test_parser_comments_both_types(file, inline_char, block_chars, list_of_expe
      ["aAaA", "bBbB", "cCcC", "dDdD eEeE", "fFfF", "gGgG", "Commented out? */ hHhH i"]),
     (find_path_of_file("example_script_file_2.txt"), ";",
      ["aAAaAA - bBBbBB { cCCcCC }", "dDDdDD", "eEEeEE", "// Commented out. fFFfFF",
-      "/* Commented out. */ gGGgGG { hHHhHH { iIIiII; }; }"])
+      "/* Commented out. */ gGGgGG { hHHhHH { iIIiII; }; }"]),
+    (find_path_of_file("example_script_file_3.txt"), ";",
+     ["aaaaA", "-_-+-+-_- bbbbB", "ccccC ddddD // Commented out. eeeeE",
+      "-_-+-+-_- ffffF (( ggggG; ), hhhhH /* Commented out. */ )", "[iiiiI]", "-_-+-+-_- jjjjJ", "k"])
 ])
 def test_parser_end_line(file, end_line_char, list_of_expected):
     """ Tests the specification of an end-line
@@ -76,7 +91,10 @@ def test_parser_end_line(file, end_line_char, list_of_expected):
     (find_path_of_file("example_script_file_1.txt"), ";", "//", ("/*", "*/"),
      ["aAaA", "bBbB", "cCcC", "dDdD eEeE", "fFfF", "gGgG", "hHhH i"]),
     (find_path_of_file("example_script_file_2.txt"), ";", "//", ("/*", "*/"),
-     ["aAAaAA - bBBbBB { cCCcCC }", "dDDdDD", "eEEeEE", "fFFfFF", "gGGgGG { hHHhHH { iIIiII; }; }"])
+     ["aAAaAA - bBBbBB { cCCcCC }", "dDDdDD", "eEEeEE", "fFFfFF", "gGGgGG { hHHhHH { iIIiII; }; }"]),
+    (find_path_of_file("example_script_file_3.txt"), ";", "//", ("/*", "*/"),
+     ["aaaaA", "-_-+-+-_- bbbbB", "ccccC ddddD eeeeE", "-_-+-+-_- ffffF (( ggggG; ), hhhhH )", "[iiiiI]",
+      "-_-+-+-_- jjjjJ", "k"])
 ])
 def test_parser_end_line_with_comments(file, end_line_char, inline_char, block_char, list_of_expected):
     """ Tests the compatibility of an end-line

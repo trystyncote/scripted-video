@@ -1,0 +1,23 @@
+aaaaA;
+
+-_-+-+-_-
+bbbbB;
+ccccC
+ddddD
+// Commented out.
+eeeeE;
+
+-_-+-+-_-
+ffffF ((
+        ggggG; ),
+    hhhhH
+    /*
+Commented out.
+    */
+);
+
+[iiiiI];
+
+-_-+-+-_-
+jjjjJ;
+k;
