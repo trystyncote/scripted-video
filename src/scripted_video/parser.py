@@ -74,6 +74,19 @@ class _NestingState(Enum):
 def script_parser(file: (Path | str), /, *,
                   block_comment_characters: tuple[str, str] | str | None = None, end_line_character: str = "\n",
                   inline_comment_character: str | None = None):
+    """
+    script_parser parses a text file and dissects its immediate syntax.
+
+    :param file: Required. The file to be parsed.
+    :param block_comment_characters: Optional. The character sequence(s)
+        signifying a block comment. Should be provided as a length-2 tuple with
+        two strings (beginning, end), or as a string (used for both sides).
+    :param end_line_character: Optional. The character(s) used to signify the
+        end of a line. Default is the new-line character.
+    :param inline_comment_character: Optional. The character(s) signifying an
+        inline comment.
+    :return: Yields each line in the order of the file.
+    """
     if type(block_comment_characters) == str:
         block_comment_characters = (block_comment_characters, block_comment_characters)
 
