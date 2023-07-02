@@ -55,17 +55,17 @@ class QualmGroup(RootPseudoError):
         ]
 
         for index, qualm in enumerate(self._qualms):
-            _series.append(f"{'+-+' if index == 0 else '+'}{write_border_mid(36, index+1)}")
+            _series.append(f"{'+-+' if index == 0 else '  +'}{write_border_mid(36, index+1)}")
             _series.append(
                 f"  | {write_header(qualm.type, qualm.__class__.__name__, qualm.line_number, qualm.file_name)}"
             )  # [3.12] Utilize multi-line behaviour of f-strings to change this line's styling.
             # Default extends too long, against PEP8.
-            _series.append(f"  | {write_message(qualm.msg)}")
+            _series.append(f"  | {qualm.msg}")
             if qualm.cause:
                 _series.append("  |")
                 _series.append(f"  | {write_cause_line(qualm.cause)}")
                 if qualm.pinpoint:
                     _series.append(f"  | {write_pinpoint(qualm.pinpoint, len(qualm.cause))}")
 
-        _series.append(f"  | {write_border_top(35)}")
+        _series.append(f"  {write_border_top(35)}")
         super().traceback(_series=_series)
