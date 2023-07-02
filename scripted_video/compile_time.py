@@ -5,6 +5,7 @@ from scripted_video.objects.ObjectDict import ObjectDict
 from scripted_video.qualms.group import QualmGroup
 
 import scripted_video.svst as svst
+from scripted_video.svst.visitor import SVST_NodeVisitor as NodeVisitor
 
 from scripted_video.variables.ScriptVariables import ScriptVariables
 
@@ -41,7 +42,7 @@ def dissect_syntax(command: str, syntax_tree):
 def navigate_syntax_tree(syntax_tree, object_information, script_variables):
     qualm_group = QualmGroup()
 
-    visitor = svst.NodeVisitor(object_information, script_variables, qualm_group)
+    visitor = NodeVisitor(object_information, script_variables, qualm_group)
     visitor.visit(syntax_tree)
 
     if qualm_group.has_qualms:
