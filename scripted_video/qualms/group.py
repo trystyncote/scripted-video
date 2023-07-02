@@ -1,7 +1,7 @@
 from scripted_video.qualms.force_exit import svForceExit
 from scripted_video.qualms._root_pseudo_error import PINPOINT_TUPLE, RootPseudoError
 from scripted_video.qualms._traceback_functions import write_border_mid, write_border_top, write_cause_line, \
-    write_header, write_message, write_pinpoint
+    write_header, write_pinpoint
 from scripted_video.qualms.crash import BaseCrash
 from scripted_video.qualms.issues import BaseIssue
 from scripted_video.qualms.qualms import BaseQualm
