@@ -48,7 +48,7 @@ class TemporaryDirectory:
 
 
 class Options:
-    __slots__ = ("verbose",)
+    __slots__ = ("debug", "verbose")
 
     @classmethod
     def from_argparse(cls, arg_parser: argparse.Namespace):

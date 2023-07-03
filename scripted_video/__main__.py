@@ -16,6 +16,7 @@ def main():
 
     parser.add_argument("script_file", help="the file that you would like to compile and generate into a video.")
     parser.add_argument("-v", "--verbose", help="increase output verbosity.", action="store_true")
+    parser.add_argument("-d", "--debug", help="adds debug outputs at critical points.", action="store_true")
 
     args = parser.parse_args()
     try:
@@ -28,7 +29,7 @@ def main():
     options = Options.from_argparse(args)
     del args  # prevention to calling two variables interchangeably.
     if options.verbose:
-        print(f">> Started generating the video for '{script_file.name}'.")
+        print(f"Started generating the video for '{script_file.name}'.")
 
     try:
         generate_script(script_file, options)

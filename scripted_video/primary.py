@@ -14,13 +14,12 @@ def receive_input():
         input_response = input("")
         if input_response == "":
             return None
-        print(f">> Searching for file '{input_response}'.")
+        print(f"Searching for file '{input_response}'.")
         try:
             file_path = find_path_of_file(input_response)
         except FileNotFoundError:
-            print("  >> Cannot find file. Try again.")
+            print("Cannot find file. Try again.")
         else:
-            print("  >> Found the file!")
             return file_path
 
 
@@ -29,8 +28,12 @@ def generate_script(script_file: Path, options: Options):
     variables.metadata.script_file = script_file
 
     object_information = cycle_over_script(script_file, variables)
-    if options.verbose:
-        print(">> Completed compiling the script.")
+    if options.verbose or options.debug:
+        print("Completed compiling the script.")
+        if options.debug:
+            print(":: All collected ImageObject instances.")
+            for object in object_information.values():
+                print(repr(object))
 
     frames = generate_frames(object_information, variables)
 
@@ -39,12 +42,13 @@ def generate_script(script_file: Path, options: Options):
         video_length = draw_frames(frames, tempdir.dir, object_information)
         stitch_video(tempdir.dir, variables.metadata.file_name, video_length, variables.metadata.frame_rate)
 
-    if options.verbose:
-        print(">> Completed stitching the video together.")
+    if options.verbose or options.debug:
+        print("Completed generating the video.")
 
 
 def primary():
     options = Options()
+    options.debug = False
     options.verbose = False
 
     while True:
@@ -54,10 +58,8 @@ def primary():
             break
         script = Path(script)
 
-        print(f">> Started generating the video for '{script.name}'")
+        print(f"Started generating the video for '{script.name}'")
         generate_script(script, options)
-
-    print("Goodbye :)")
 
 
 if __name__ == "__main__":
