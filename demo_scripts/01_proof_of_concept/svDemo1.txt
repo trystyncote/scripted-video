@@ -38,8 +38,18 @@ CREATE *obj3 {
     scale: 1;
     layer: 3;
 };
-MOVE OBJECT *obj3: 3s 16f, 60, 30, 0, 15f;
-MOVE OBJECT *obj3: 3s 32f, 30, 60, 0, 15f;
+MOVE *obj3 {
+    time: 3s 16f;
+    duration: 15f;
+    x: 60;
+    y: 30;
+};
+MOVE *obj3 {
+    time: 3s 32f;
+    duration: 15f;
+    x: 30;
+    y: 60;
+};
 DELETE OBJECT *obj3: 7s 15f;
 
 CREATE *obj4 {
@@ -60,7 +70,12 @@ CREATE *obj5 {
     scale: 1;
     layer: 5;
 };
-MOVE OBJECT *obj5: 9s, 100, 100, 0, 15f;
+MOVE *obj5 {
+    time: 9s;
+    duration: 15;
+    x: 100;
+    y: 100;
+};
 DELETE OBJECT *obj5: 11s;
 
 CREATE *obj6 {

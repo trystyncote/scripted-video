@@ -22,8 +22,8 @@ class Expected:
     ("SET abc = def AS ghi", svst.Declare, match_Declare, "name:abc;value:def;type:ghi"),
     ("CREATE *obj { x: 100; y: 100; }", svst.Create, match_Create,
      "o_name:*obj;p_name_A:x;p_value_A:100;p_name_B:y;p_value_B:100"),
-    ("MOVE OBJECT *obj: val1, val2, val3, val4, val5", svst.Move, match_Move,
-     "o_name:*obj;p_value_A:val1;p_value_B:val2;p_value_C:val3;p_value_D:val4;p_value_E:val5"),
+    ("MOVE *obj { duration: 15; x: 50; y: 50; }", svst.Move, match_Move,
+     "o_name:*obj;p_name_A:duration;p_value_A:15;p_name_B:x;p_value_B:50;p_name_C:y;p_value_C:50"),
     ("DELETE OBJECT *obj: val", svst.Delete, match_Delete, "o_name:*obj;p_value:val")
 ])
 def test_syntax_evaluate(command, cls, match_callable, expected_attr):

@@ -168,30 +168,19 @@ class Move(_SVST_Attribute_BodySubjects):
     MOVE *<object>[, *<object> ...] <function>(<parameters>, ...);
     """
     __slots__ = ()
-    _syntax = r"MOVE OBJECT (\*[\w\-_]+):[\s| ]*((?:[\w\s\$\-_\/.]*,[\s| ]){4}[\w\s\$\-_\/.]*)"
-
-    # _syntax = r"MOVE (\*[\w_]*[,(\s| )\*[\w_]*]*)[\s| ]([\w_]*[(](\${1}[\w_]*(?:,(?:\s| )\${1}[\w_]*)*)*[)](?:," \
-    #           r"(?:\s| )[\w_]*[(](\${1}[\w_]*(?:,(?:\s| )\${1}[\w_]*)*)*[)])*);"
+    _syntax = r"MOVE (\*[\w_]*[,(\s| )\*[\w_]*]*)[\s| ]{([\w\s_\-;:.$\/]*)}"
+    _sub_syntax = r"([\w_-]+)[\s|]*:[\s|]*([\w$\/\-_\. ]+)[\s|]*;"
 
     @classmethod
     def evaluate_syntax(cls, match_object: re_Match) -> Self:
-        """
-        The MOVE keyword will eventually be changed to call a movement function
-        on its object starting at its call time. This will not be the same as
-        current functionality. Ex.
-
-        MOVE *object %linear(new-x, new-y) over 30s;
-
-        (or something like that.)
-        """
         class_object = cls()
         class_object.subjects.append(Object(match_object.group(1)))
 
-        properties_expected = ["time", "x", "y", "scale", "duration"]
-        properties_literal = match_object.group(2).split(",")
-
-        for name, value in zip(properties_expected, properties_literal, strict=True):
-            class_object.body.append(Property(name, value.strip()))
+        property_string = match_object.group(2)
+        for property_pattern in re_finditer(cls._sub_syntax, property_string):
+            name = property_pattern.group(1)
+            value = property_pattern.group(2)
+            class_object.body.append(Property(name, value))
 
         return class_object
 
