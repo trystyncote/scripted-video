@@ -56,7 +56,8 @@ class Properties:
         self._variables_access = None
 
     def __repr__(self):
-        existing_attr = [slots_attr for slots_attr in self.__slots__ if hasattr(self, slots_attr)]
+        existing_attr = [slots_attr for slots_attr in self.__slots__
+                         if hasattr(self, slots_attr) and slots_attr != "_variables_access"]
         if not existing_attr:
             return f"{self.__class__.__name__}()"
         string = io.StringIO()

@@ -1,6 +1,7 @@
 from scripted_video.objects.instruction import RootInstruction
 from scripted_video.objects.properties import Properties
 
+import io
 from pathlib import Path
 import weakref
 
@@ -26,8 +27,15 @@ class ImageObject:
         return hash(self._object_name)
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(filename={self._filename!r}, object_name={self._object_name!r}, " \
-               f"properties={self._properties!r} )"
+        filename_repr = io.StringIO()
+        filename_repr.write(f"{self._filename.__class__.__name__}(...")
+        for i, n in enumerate(self._filename.parts[-3:]):
+            filename_repr.write(n)
+            if i != 2:
+                filename_repr.write("/")
+        filename_repr.write(")")
+        return f"{self.__class__.__name__}(filename={filename_repr.getvalue()}, object_name={self._object_name!r}, " \
+               f"properties={self._properties!r})"
 
     @property
     def adjustments(self):
