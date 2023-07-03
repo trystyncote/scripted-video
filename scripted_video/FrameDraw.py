@@ -70,8 +70,8 @@ def _evaluate_move_details(relevant_objects, object_information, frame_index):
         if objects[3] is True:
             for adjustment in object_information[objects[0]].adjustments:
                 time = adjustment.time
-                rate = adjustment.rate
-                if time <= frame_index < (time + rate):
+                duration = adjustment.duration
+                if time <= frame_index < (time + duration):
                     return True
 
 
@@ -92,8 +92,8 @@ def draw_frames(frames, directory, object_information: ObjectDict):
 
             for adjustment in objects.adjustments:
                 time = adjustment.time
-                rate = adjustment.rate
-                if time <= frame.index < (time + rate):
+                duration = adjustment.duration
+                if time <= frame.index < (time + duration):
                     objects.move_object(frame.index)
 
         frame.draw_frame(object_information, directory)

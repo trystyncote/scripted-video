@@ -187,7 +187,7 @@ class Move(_SVST_Attribute_BodySubjects):
         class_object = cls()
         class_object.subjects.append(Object(match_object.group(1)))
 
-        properties_expected = ["time", "x", "y", "scale", "rate"]
+        properties_expected = ["time", "x", "y", "scale", "duration"]
         properties_literal = match_object.group(2).split(",")
 
         for name, value in zip(properties_expected, properties_literal, strict=True):

@@ -41,9 +41,9 @@ class RootInstruction:
 
 
 class MoveInstruction(RootInstruction):
-    __slots__ = ("rate", "scale", "time", "x", "y")
+    __slots__ = ("duration", "scale", "time", "x", "y")
 
-    rate: TIME
+    duration: TIME
     scale: float
     time: TIME
     x: int
@@ -52,6 +52,7 @@ class MoveInstruction(RootInstruction):
     def __init__(self, bound_object: str, frame_rate: int):
         super().__init__(bound_object, frame_rate)
 
+        self.duration = 1
         self.scale = 0.0
         self.x = 0
         self.y = 0
@@ -59,7 +60,7 @@ class MoveInstruction(RootInstruction):
     def carry_out_instruction(self, frame_index: int):
         if not self.confirm_all_attributes_exists():
             raise AttributeError(f"{self.__class__.__name__}: Not all attributes exist.")
-        elif self.time < frame_index < (self.time + self.rate):
-            return (self.x / self.rate), (self.y / self.rate), (self.scale / self.rate)
+        elif self.time < frame_index < (self.time + self.duration):
+            return (self.x / self.duration), (self.y / self.duration), (self.scale / self.duration)
         else:
             return 0, 0, 0
