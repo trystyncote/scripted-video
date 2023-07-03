@@ -58,7 +58,7 @@ def match_Move(node, exp):
                 svst.Property(name="x", value=exp.p_value_B),
                 svst.Property(name="y", value=exp.p_value_C),
                 svst.Property(name="scale", value=exp.p_value_D),
-                svst.Property(name="rate", value=exp.p_value_E)
+                svst.Property(name="duration", value=exp.p_value_E)
             ],
             subjects=[svst.Object(name=exp.o_name)]
         ):
