@@ -1,6 +1,7 @@
 from scripted_video.objects._time import TIME, _manage_time
 
 from abc import abstractmethod
+import io
 
 
 class RootInstruction:
@@ -12,6 +13,21 @@ class RootInstruction:
     def __init__(self, bound_object: str, frame_rate: int):
         self._bound_object = bound_object
         self._frame_rate = frame_rate
+
+    def __repr__(self):
+        slots_attr = [s for s in self.__slots__ if hasattr(self, s) and s not in ("_bound_object", "_frame_rate")]
+        if not slots_attr:
+            return f"{self.__class__.__name__}()"
+        last = slots_attr[-1]
+
+        string = io.StringIO()
+        string.write(f"{self.__class__.__name__}(")
+        for attr in slots_attr:
+            string.write(f"{attr}={getattr(self, attr)}")
+            if attr != last:
+                string.write(", ")
+        string.write(")")
+        return string.getvalue()
 
     @property
     def bound_object(self):

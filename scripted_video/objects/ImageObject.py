@@ -34,8 +34,8 @@ class ImageObject:
             if i != 2:
                 filename_repr.write("/")
         filename_repr.write(")")
-        return f"{self.__class__.__name__}(filename={filename_repr.getvalue()}, object_name={self._object_name!r}, " \
-               f"properties={self._properties!r})"
+        return f"{self.__class__.__name__}(adjustments={self._adjustments}, filename={filename_repr.getvalue()}, "\
+               f"object_name={self._object_name!r}, properties={self._properties!r})"
 
     @property
     def adjustments(self):
