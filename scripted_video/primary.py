@@ -28,12 +28,12 @@ def generate_script(script_file: Path, options: Options):
     variables.metadata.script_file = script_file
 
     object_information = cycle_over_script(script_file, variables)
-    if options.verbose or options.debug:
+    if options.verbose:
         print("Completed compiling the script.")
-        if options.debug:
-            print(":: All collected ImageObject instances.")
-            for object in object_information.values():
-                print(repr(object))
+    elif options.debug:
+        print(":: All collected ImageObject instances.")
+        for object in object_information.values():
+            print(repr(object))
 
     frames = generate_frames(object_information, variables)
 
@@ -42,7 +42,7 @@ def generate_script(script_file: Path, options: Options):
         video_length = draw_frames(frames, tempdir.dir, object_information)
         stitch_video(tempdir.dir, variables.metadata.file_name, video_length, variables.metadata.frame_rate)
 
-    if options.verbose or options.debug:
+    if options.verbose:
         print("Completed generating the video.")
 
 
