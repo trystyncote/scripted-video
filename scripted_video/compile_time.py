@@ -1,4 +1,5 @@
 from scripted_video.parser import script_parser
+from scripted_video.utils import Options
 
 from scripted_video.objects.ObjectDict import ObjectDict
 
@@ -37,6 +38,8 @@ def dissect_syntax(command: str, syntax_tree):
             continue
         syntax_tree.body.append(respective_class.evaluate_syntax(match))
         return
+
+    syntax_tree.body.append(svst.UnknownSyntax(command))
 
 
 def navigate_syntax_tree(syntax_tree, object_information, script_variables, options):

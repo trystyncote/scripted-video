@@ -8,6 +8,29 @@ from re import Match as re_Match, finditer as re_finditer
 from typing import Self
 
 
+class UnknownSyntax(SVST_RootNode):
+    __slots__ = ("_contents",)
+
+    def __init__(self, contents: str):
+        self._contents = contents
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(_contents={self._contents!r})"
+
+    @property
+    def contents(self):
+        return self._contents
+
+    def convert_to_string(self, *, indent: int = 0, _previous_indent: int = 0) -> str:
+        gatekeep_indent(indent)
+        return f"{' ' * _previous_indent}{self.__class__.__name__}({self._contents!r})"
+
+    @classmethod
+    @abstractmethod
+    def evaluate_syntax(cls, match_object: re_Match) -> Self:
+        return NotImplemented
+
+
 class Doctype(SVST_RootNode):
     __slots__ = ("_doctype",)
     _syntax = r"@DOCTYPE [\s| ]*(scripted-video){1}"

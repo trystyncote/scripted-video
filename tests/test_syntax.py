@@ -38,3 +38,12 @@ def test_syntax_evaluate(command, cls, match_callable, expected_attr):
         assert False
     node = cls.evaluate_syntax(match)
     match_callable(node, expected)
+
+
+def test_syntax_evaluate_no_match():
+    command = "THIS-SHOULD-NOT-MATCH"
+
+    for query in svst.RootNode.syntax_list.values():
+        match = re.match(query, command)
+        if match is not None:
+            assert False
