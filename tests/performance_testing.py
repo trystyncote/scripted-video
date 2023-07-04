@@ -1,5 +1,5 @@
 from scripted_video.utils import find_path_of_file, Options
-from scripted_video.primary import generate_script
+from scripted_video.__main__ import generate_script
 
 import cProfile
 from pathlib import Path
@@ -11,6 +11,7 @@ def detect_performance():
     # https://github.com/mCodingLLC/VideosSampleCode/blob/master/videos/063_find_why_your_python_code_is_slow_using_this_essential_tool_dot___feat_dot__async_await_/needs_profiling.py
     script = Path(find_path_of_file("svDemo1.txt"))
     options = Options()
+    options.debug = False
     options.verbose = False
 
     with cProfile.Profile() as pr:
