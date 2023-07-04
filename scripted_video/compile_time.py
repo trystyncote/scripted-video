@@ -17,7 +17,7 @@ def create_syntax_tree_root(script_name: str) -> svst.TimelineModule:
     return svst.TimelineModule(script_name)
 
 
-def cycle_over_script(script_file: Path, variables: ScriptVariables):
+def cycle_over_script(script_file: Path, variables: ScriptVariables, options: Options):
     object_information = ObjectDict()
     syntax_tree = create_syntax_tree_root(str(script_file.name))
 
@@ -25,7 +25,7 @@ def cycle_over_script(script_file: Path, variables: ScriptVariables):
                               inline_comment_character="//"):
         dissect_syntax(line, syntax_tree)
 
-    navigate_syntax_tree(syntax_tree, object_information, variables)
+    navigate_syntax_tree(syntax_tree, object_information, variables, options)
 
     return object_information
 
@@ -39,7 +39,12 @@ def dissect_syntax(command: str, syntax_tree):
         return
 
 
-def navigate_syntax_tree(syntax_tree, object_information, script_variables):
+def navigate_syntax_tree(syntax_tree, object_information, script_variables, options):
+    if options.debug:
+        print(":: Generated Syntax Tree:")
+        print(syntax_tree.convert_to_string(indent=4))
+        print("")
+
     qualm_group = QualmGroup()
 
     visitor = NodeVisitor(object_information, script_variables, qualm_group)

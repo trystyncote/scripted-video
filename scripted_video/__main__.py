@@ -19,13 +19,14 @@ def generate_script(script_file: Path, options: Options):
     variables = ScriptVariables()
     variables.metadata.script_file = script_file
 
-    object_information = cycle_over_script(script_file, variables)
+    object_information = cycle_over_script(script_file, variables, options)
     if options.verbose:
         print("Completed compiling the script.")
     elif options.debug:
         print(":: All collected ImageObject instances.")
         for obj in object_information.values():
             print(repr(obj))
+        print("")
 
     frames = generate_frames(object_information, variables)
 
