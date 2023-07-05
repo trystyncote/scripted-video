@@ -39,7 +39,7 @@ class TypeBool(ParentType):
 
 class TypeFloat(ParentType):
     def validate(self, value: (int | float)) -> float:
-        if isinstance(value, float):
+        if isinstance(value, (int, float)):
             return float(value)
         else:
             raise AttributeError(f"{self.__class__.__name__}: Mismatched type.")
