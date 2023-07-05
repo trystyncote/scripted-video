@@ -91,8 +91,7 @@ class Declare(_SVST_Attribute_NameValue):
     DECLARE <type> <variable-name> = <value>;
     """
     __slots__ = ("_type",)
-    # _syntax = r"DECLARE ([\w_]+)[\s| ]{1}([\w_]+)[\s| ]*={1}[\s| ]*([\w_]+)"
-    _syntax = r"SET ([\w_]+)[\s| ]*=[\s| ]*([\w_]+)[\s| ]* AS ([\w_]+)"
+    _syntax = r"DECLARE ([\w_]+)[\s|]+([\w_]+)[\s|]*={1}[\s|]*([\w\s_!.,\"]+)"
 
     def __init__(self, name: str, value: str, type_: str):
         super().__init__(name, value)
@@ -118,9 +117,9 @@ class Declare(_SVST_Attribute_NameValue):
 
     @classmethod
     def evaluate_syntax(cls, match_object: re_Match) -> Self:
-        variable_name = match_object.group(1)
-        variable_value = match_object.group(2)
-        variable_type = match_object.group(3)
+        variable_type = match_object.group(1)
+        variable_name = match_object.group(2)
+        variable_value = match_object.group(3)
         return cls(variable_name, variable_value, variable_type)
 
 

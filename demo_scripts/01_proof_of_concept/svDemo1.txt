@@ -8,8 +8,8 @@ HEAD file_name = scripted_sampleVideo_final;
 Hello
 */
 
-SET abc = __current_address__ AS ADDRESS; /* Hello */
- 
+DECLARE ADDRESS abc = __current_address__;
+
 CREATE *obj1 {
     file-name: $abc/img1.png;
     start-time: 0s;
