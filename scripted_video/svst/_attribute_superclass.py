@@ -25,11 +25,10 @@ class _SVST_Attribute_Body(SVST_RootNode):
         if len(self._body) == 0:
             return f"{' ' * _previous_indent}{self.__class__.__name__}(body=[])"
 
-        indent_sequence = define_indent_sequence(indent, _previous_indent)
         return (
             f"{' ' * _previous_indent}{self.__class__.__name__}("
             + create_string_from_sequence(self._body, "body", indent, indent+_previous_indent)
-            + f"{indent_sequence})"
+            + ")"
         )
 
     @classmethod
@@ -56,11 +55,10 @@ class _SVST_Attribute_Subjects(SVST_RootNode):
         if len(self._subjects) == 0:
             return f"{' ' * _previous_indent}{self.__class__.__name__}(subjects=[])"
 
-        indent_sequence = define_indent_sequence(indent, _previous_indent)
         return (
             f"{' ' * _previous_indent}{self.__class__.__name__}("
             + create_string_from_sequence(self._subjects, "subjects", indent, indent+_previous_indent)
-            + f"{indent_sequence})"
+            + ")"
         )
 
     @classmethod
@@ -90,13 +88,12 @@ class _SVST_Attribute_BodySubjects(SVST_RootNode):
 
     def convert_to_string(self, *, indent: int = 0, _previous_indent: int = 0) -> str:
         gatekeep_indent(indent)
-        indent_sequence = define_indent_sequence(indent, _previous_indent)
         return (
             f"{' ' * _previous_indent}{self.__class__.__name__}("
             + create_string_from_sequence(self._body, "body", indent, indent+_previous_indent)
             + ", "
             + create_string_from_sequence(self._subjects, "subjects", indent, indent+_previous_indent)
-            + f"{indent_sequence})"
+            + ")"
         )
 
     @classmethod
@@ -152,8 +149,7 @@ class _SVST_Attribute_NameValue(SVST_RootNode):
         return (
             f"{indent_sequence[1:]}{self.__class__.__name__}("
             f"{indent_sequence}{' ' * indent}name={self._name!r}, "
-            f"{indent_sequence}{' ' * indent}value={self._value!r}"
-            f"{indent_sequence})"
+            f"{indent_sequence}{' ' * indent}value={self._value!r})"
         )
 
     @classmethod

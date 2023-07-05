@@ -111,8 +111,7 @@ class Declare(_SVST_Attribute_NameValue):
             f"{indent_sequence[1:]}{self.__class__.__name__}("
             f"{indent_sequence}{' ' * indent}name={self._name!r}, "
             f"{indent_sequence}{' ' * indent}value={self._value!r}, "
-            f"{indent_sequence}{' ' * indent}type={self._type!r}"
-            f"{indent_sequence})"
+            f"{indent_sequence}{' ' * indent}type={self._type!r})"
         )
 
     @classmethod
@@ -256,8 +255,7 @@ class TimelineModule(_SVST_Attribute_Body):
             f"{' ' * _previous_indent}{self.__class__.__name__}("
             + create_string_from_sequence(self._body, "body", indent, indent + _previous_indent)
             + ", "
-              f"{indent_sequence}{' ' * indent}script_name={self._script!r}"
-              f"{indent_sequence})"
+              f"{indent_sequence}{' ' * indent}script_name={self._script!r})"
         )
 
     @classmethod

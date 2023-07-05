@@ -6,6 +6,12 @@ def create_string_from_sequence(sequence: MutableSequence, name: str, indent: in
     indent_sequence = define_indent_sequence(indent, prev_indent)
     if len(sequence) == 0:
         return f"{indent_sequence}{name}=[]"
+    elif len(sequence) == 1:
+        return (
+            f"{indent_sequence}{name}=["
+            + sequence[0].convert_to_string(indent=indent, _previous_indent=indent+prev_indent).strip()
+            + "]"
+        )
 
     string = StringIO()
     string.write(f"{indent_sequence}{name}=[")
@@ -15,7 +21,7 @@ def create_string_from_sequence(sequence: MutableSequence, name: str, indent: in
         string.write(element.convert_to_string(indent=indent, _previous_indent=indent+prev_indent))
         if sequence[-1] is not element:
             string.write(", ")
-    string.write(f"{indent_sequence}]")
+    string.write("]")
     return string.getvalue()
 
 
