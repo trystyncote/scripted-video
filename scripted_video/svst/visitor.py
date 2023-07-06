@@ -7,7 +7,7 @@ original source.
 from .neutral_nodes import Object, Property
 from .root_node import SVST_RootNode
 
-from scripted_video.objects.ImageObject import ImageObject
+from scripted_video.objects.declarable_objects import ImageObject
 from scripted_video.objects.instruction import MoveInstruction
 
 from scripted_video.qualms.crash import DoctypeNotAtBeginning

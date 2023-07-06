@@ -1,4 +1,4 @@
-from scripted_video.objects.ImageObject import ImageObject
+from scripted_video.objects.declarable_objects import ImageObject
 
 
 class ObjectDict(dict):
