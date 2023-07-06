@@ -17,7 +17,23 @@ class Expected:
 
 
 @pytest.mark.parametrize("command,cls,match_callable,expected_attr", [
-    ("@DOCTYPE scripted-video", svst.Doctype, match_Doctype, "doc:scripted-video"),
+    ("@DOCTYPE scripted-video", svst.Doctype, match_Doctype, "doc:scripted-video")
+])
+def test_syntax_neutral_evaluate(command, cls, match_callable, expected_attr):
+    expected = Expected()
+    for attr in expected_attr.split(";"):
+        expected.set(*attr.split(":"))  # assume that the result will be of
+        # length 2.
+
+    query = cls.get_syntax()
+    match = re.match(query, command)
+    if match is None:
+        assert False
+    node = cls.evaluate_syntax(match)
+    match_callable(node, expected)
+
+
+@pytest.mark.parametrize("command,cls,match_callable,expected_attr", [
     ("HEAD window_width = 852", svst.Metadata, match_Metadata, "name:window_width;value:852"),
     ("DECLARE abc def = ghi", svst.Declare, match_Declare, "name:def;value:ghi;type:abc"),
     ("CREATE *obj { x: 100; y: 100; }", svst.Create, match_Create,
@@ -26,13 +42,13 @@ class Expected:
      "o_name:*obj;p_name_A:duration;p_value_A:15;p_name_B:x;p_value_B:50;p_name_C:y;p_value_C:50"),
     ("DELETE OBJECT *obj: val", svst.Delete, match_Delete, "o_name:*obj;p_value:val")
 ])
-def test_syntax_evaluate(command, cls, match_callable, expected_attr):
+def test_syntax_timeline_evaluate(command, cls, match_callable, expected_attr):
     expected = Expected()
     for attr in expected_attr.split(";"):
         expected.set(*attr.split(":"))  # assume that the result will be of
         # length 2.
 
-    query = svst.RootNode.syntax_list[cls]
+    query = svst.TimelineNode.syntax_list[cls]
     match = re.match(query, command)
     if match is None:
         assert False
@@ -43,7 +59,7 @@ def test_syntax_evaluate(command, cls, match_callable, expected_attr):
 def test_syntax_evaluate_no_match():
     command = "THIS-SHOULD-NOT-MATCH"
 
-    for query in svst.RootNode.syntax_list.values():
+    for query in svst.TimelineNode.syntax_list.values():
         match = re.match(query, command)
         if match is not None:
             assert False
