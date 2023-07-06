@@ -73,12 +73,6 @@ class Properties:
 
     def add_property(self, name, value):
         value = self.validate_property(name, value)
-        if name[0:4] == "move":
-            if not hasattr(self, name):
-                self.__setattr__(name, [value])
-            else:
-                getattr(self, name).append(value)
-            return
         self.__setattr__(name, value)
 
     def get_property(self, name):
