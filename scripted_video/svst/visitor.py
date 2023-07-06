@@ -4,7 +4,7 @@ module. This code acts very closely to the built-in module because of a very
 similar tree-like structure. This was a deliberate design choice. Credit to the
 original source.
 """
-from .syntax_nodes import Object, Property
+from .neutral_nodes import Object, Property
 from .root_node import SVST_RootNode
 
 from scripted_video.objects.ImageObject import ImageObject
