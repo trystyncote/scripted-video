@@ -52,8 +52,8 @@ class Properties:
     delete_time: TIME
     delay: TIME
 
-    def __init__(self):
-        self._variables_access = None
+    def __init__(self, variables_instance):
+        self._variables_access = variables_instance
 
     def __repr__(self):
         existing_attr = [slots_attr for slots_attr in self.__slots__
@@ -83,9 +83,6 @@ class Properties:
 
     def get_property(self, name):
         return self.__getattribute__(name)
-
-    def init_variables_instance(self, variables):
-        self._variables_access = variables
 
     def validate_property(self, name, value):
         value = _replace_by_variables(value, self._variables_access.constants)

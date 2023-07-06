@@ -52,8 +52,7 @@ class SVST_NodeVisitor:
         for subject in node.subjects:
             if not isinstance(subject, Object):
                 continue
-            new_object = ImageObject(subject.name)
-            new_object.init_variables_instance(self._variables)
+            new_object = ImageObject(subject.name, self._variables)
             self._objects[subject.name] = new_object
 
             for body_element in node.body:

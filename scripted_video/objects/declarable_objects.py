@@ -14,14 +14,14 @@ class ImageObject:
 
     _adjustments: list[RootInstruction]
 
-    def __init__(self, object_name: str):
+    def __init__(self, object_name: str, variables_instance):
         self._adjustments = []
         self._filename = None
         self._finalizer = weakref.finalize(self, self.close)
         self._loaded_image = None
         self._loaded_pixels = None
         self._object_name = object_name
-        self._properties = Properties()
+        self._properties = Properties(variables_instance)
 
     def __hash__(self):
         return hash(self._object_name)
@@ -82,11 +82,6 @@ class ImageObject:
         self._loaded_image.close()
         self._loaded_image = None
         self._loaded_pixels = None
-
-    def init_variables_instance(self, variables):
-        if self._properties._variables_access is not None:
-            return
-        self._properties.init_variables_instance(variables)
 
     def get_image_height(self):
         if self._loaded_image is None:
