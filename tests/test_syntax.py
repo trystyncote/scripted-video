@@ -25,8 +25,7 @@ def test_syntax_neutral_evaluate(command, cls, match_callable, expected_attr):
         expected.set(*attr.split(":"))  # assume that the result will be of
         # length 2.
 
-    query = cls.get_syntax()
-    match = re.match(query, command)
+    match = re.match(cls.syntax, command)
     if match is None:
         assert False
     node = cls.evaluate_syntax(match)

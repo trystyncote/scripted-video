@@ -3,6 +3,7 @@ from scripted_video.utils import Options
 
 from scripted_video.objects.ObjectDict import ObjectDict
 
+from scripted_video.qualms.crash import DoctypeNotAtBeginning
 from scripted_video.qualms.group import QualmGroup
 
 import scripted_video.svst as svst
@@ -32,10 +33,13 @@ def cycle_over_script(script_file: Path, variables: ScriptVariables, options: Op
 
 
 def dissect_syntax(command: str, syntax_tree):
-    match = re.match(svst.Doctype.get_syntax(), command)
-    if match:
-        syntax_tree.body.append(svst.Doctype.evaluate_syntax(match))
-        return
+    if not syntax_tree.body:
+        match = re.match(svst.Doctype.syntax, command)
+        if match:
+            syntax_tree.body.append(svst.Doctype.evaluate_syntax(match))
+            return
+        else:
+            DoctypeNotAtBeginning().raise_qualms()
 
     for respective_class, syntax_command in svst.TimelineNode.syntax_list.items():
         match = re.match(syntax_command, command)

@@ -9,8 +9,8 @@ from typing import Self
 
 class Doctype(SVST_RootNode):
     __slots__ = ("_doctype",)
-    _syntax = r"@DOCTYPE [\s| ]*(scripted-video){1}"
-    # _syntax = r"@DOCTYPE [\s| ]*(scripted-video){1}[\s| ]+((?:TIMELINE)|(?:MASTER[-]*SCRIPT)|(?:DESIGN)){1};"
+    syntax = r"@DOCTYPE [\s| ]*(scripted-video){1}"
+    # syntax = r"@DOCTYPE [\s| ]*(scripted-video){1}[\s| ]+((?:TIMELINE)|(?:MASTER[-]*SCRIPT)|(?:DESIGN)){1};"
 
     def __init__(self, doctype: str):
         self._doctype = doctype
@@ -31,11 +31,6 @@ class Doctype(SVST_RootNode):
         doctype = match_object.group(1)
         class_object = cls(doctype)
         return class_object
-
-    @classmethod
-    def get_syntax(cls):
-        # Temporary solution to syntax reading from a neutral node.
-        return cls._syntax
 
 
 class Object(_SVST_Attribute_Name):
