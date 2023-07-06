@@ -1,11 +1,12 @@
 from scripted_video.objects._time import _manage_time, TIME
 
 import io
+from pathlib import Path
 
 
 def _property_slots():
-    return "layer", "scale", "x", "y", "start_time", "delete_time", "delay"  # The latter three properties are
-    # eventually going to be defunct.
+    return "file_name", "layer", "scale", "x", "y", "start_time", "delete_time", "delay"  # The latter three properties
+    # are eventually going to be defunct.
 
 
 def _replace_by_variables(value, constants):
@@ -43,7 +44,7 @@ class Originals:
 class Properties:
     __slots__ = (*_property_slots(), "_original", "_variables_access")
 
-    file_name: str
+    file_name: Path
     layer: int
     scale: float
     x: int
@@ -65,7 +66,15 @@ class Properties:
         last_element = existing_attr[-1]
         for attr_name in existing_attr:
             attr_value = getattr(self, attr_name)
-            string.write(f"{attr_name}={attr_value}")
+            if attr_name == "file_name":
+                string.write(f"{attr_name}={attr_value.__class__.__name__}(...")
+                for i, n in enumerate(attr_value.parts[-3:]):
+                    string.write(n)
+                    if i != 2:
+                        string.write("/")
+                string.write(")")
+            else:
+                string.write(f"{attr_name}={attr_value}")
             if attr_name != last_element:
                 string.write(", ")
         string.write(")")

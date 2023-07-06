@@ -1,22 +1,19 @@
 from scripted_video.objects.instruction import RootInstruction
 from scripted_video.objects.properties import Properties
 
-import io
-from pathlib import Path
 import weakref
 
 from PIL import Image
 
 
 class ImageObject:
-    __slots__ = ("_adjustments", "_filename", "_finalizer", "_loaded_image", "_object_name", "_loaded_pixels",
-                 "_properties", "__weakref__")
+    __slots__ = ("_adjustments", "_finalizer", "_loaded_image", "_object_name", "_loaded_pixels", "_properties",
+                 "__weakref__")
 
     _adjustments: list[RootInstruction]
 
     def __init__(self, object_name: str, variables_instance):
         self._adjustments = []
-        self._filename = None
         self._finalizer = weakref.finalize(self, self.close)
         self._loaded_image = None
         self._loaded_pixels = None
@@ -27,15 +24,8 @@ class ImageObject:
         return hash(self._object_name)
 
     def __repr__(self):
-        filename_repr = io.StringIO()
-        filename_repr.write(f"{self._filename.__class__.__name__}(...")
-        for i, n in enumerate(self._filename.parts[-3:]):
-            filename_repr.write(n)
-            if i != 2:
-                filename_repr.write("/")
-        filename_repr.write(")")
-        return f"{self.__class__.__name__}(adjustments={self._adjustments}, filename={filename_repr.getvalue()}, "\
-               f"object_name={self._object_name!r}, properties={self._properties!r})"
+        return f"{self.__class__.__name__}(adjustments={self._adjustments}, object_name={self._object_name!r}, "  \
+               f"properties={self._properties!r})"
 
     @property
     def adjustments(self):
@@ -65,14 +55,7 @@ class ImageObject:
 
     def add_property(self, name, value):
         name = name.replace("-", "_")
-        if name == "file_name":
-            value = self._properties.validate_property(name, value)
-            if self._filename is None:
-                self._filename = Path(value) if isinstance(value, str) else value
-                return
-            else:
-                raise KeyError(f"({self.__class__.__name__}) - Duplicate property name \'{name}\'.")
-        elif hasattr(self._properties, name):
+        if hasattr(self._properties, name):
             raise KeyError(f"({self.__class__.__name__}) - Duplicate property name \'{name}\'.")
         self._properties.add_property(name, value)
 
@@ -119,9 +102,9 @@ class ImageObject:
         self._properties.scale = float(self._properties.scale)
 
     def open(self):
-        if self._filename is None:
+        if not hasattr(self._properties, "file_name"):
             raise ReferenceError("Attribute 'file-name' not defined before call to open image.")
-        self._loaded_image = Image.open(self._filename)
+        self._loaded_image = Image.open(self._properties.file_name)
         if hasattr(self._properties, "scale"):
             width, height = self._loaded_image.size
             width = int(width * self._properties.scale + 0.99)
