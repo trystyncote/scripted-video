@@ -25,7 +25,7 @@ def generate_script(script_file: Path, options: Options):
     elif options.debug:
         print(":: All collected ImageObject instances.")
         for obj in object_information.values():
-            print(repr(obj))
+            print(f"{' '*4}{obj!r}")
         print("")
 
     frames = generate_frames(object_information, variables)
