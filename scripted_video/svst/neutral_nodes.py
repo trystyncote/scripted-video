@@ -32,6 +32,11 @@ class Doctype(SVST_RootNode):
         class_object = cls(doctype)
         return class_object
 
+    @classmethod
+    def get_syntax(cls):
+        # Temporary solution to syntax reading from a neutral node.
+        return cls._syntax
+
 
 class Object(_SVST_Attribute_Name):
     """

@@ -3,11 +3,23 @@ from ._functions import create_string_from_sequence, define_indent_sequence, gat
 from .neutral_nodes import Object, Property
 
 from abc import abstractmethod
+from collections.abc import MutableMapping
 import re
 from typing import Self
 
 
-class Metadata(_SVST_Attribute_NameValue):
+class TimelineNode:
+    __slots__ = ()
+
+    syntax_list: MutableMapping = {}
+
+    def __init_subclass__(cls):
+        super().__init_subclass__()
+        if hasattr(cls, "_syntax") and getattr(cls, "_syntax") is not None:
+            TimelineNode.syntax_list[cls] = cls._syntax
+
+
+class Metadata(_SVST_Attribute_NameValue, TimelineNode):
     """
     The Metadata node refers to the HEAD keyword. The syntax looks
     approximately as follows:
@@ -29,7 +41,7 @@ class Metadata(_SVST_Attribute_NameValue):
         return cls(attribute_name, attribute_value)
 
 
-class Declare(_SVST_Attribute_NameValue):
+class Declare(_SVST_Attribute_NameValue, TimelineNode):
     """
     The Declare node refers to the SET keyword. The syntax looks
     approximately as follows:
@@ -68,7 +80,7 @@ class Declare(_SVST_Attribute_NameValue):
         return cls(variable_name, variable_value, variable_type)
 
 
-class Create(_SVST_Attribute_BodySubjects):
+class Create(_SVST_Attribute_BodySubjects, TimelineNode):
     """
     The Create node refers to the 'CREATE' keyword. The syntax looks
     approximately as follows:
@@ -95,7 +107,7 @@ class Create(_SVST_Attribute_BodySubjects):
         return class_object
 
 
-class Move(_SVST_Attribute_BodySubjects):
+class Move(_SVST_Attribute_BodySubjects, TimelineNode):
     """
     The Move node refers to the 'MOVE' keyword. The syntax looks approximately
     as follows:
@@ -122,7 +134,7 @@ class Move(_SVST_Attribute_BodySubjects):
         return class_object
 
 
-class Delete(_SVST_Attribute_BodySubjects):
+class Delete(_SVST_Attribute_BodySubjects, TimelineNode):
     """
     The Delete node refers to the 'DELETE' keyword. The syntax looks
     approximately as follows:

@@ -1,5 +1,4 @@
 from abc import abstractmethod
-from collections.abc import MutableMapping
 import re
 from typing import Self
 
@@ -7,13 +6,6 @@ from typing import Self
 class SVST_RootNode:
     __slots__ = ()  # Defining __slots__ prevents creating of __dict__. It's
     # naturally inherited by subclasses, which is not desired.
-
-    syntax_list: MutableMapping = {}
-
-    def __init_subclass__(cls):
-        super().__init_subclass__()
-        if hasattr(cls, "_syntax"):
-            SVST_RootNode.syntax_list[cls] = cls._syntax
 
     def __repr__(self):
         return f"{self.__class__.__name__}()"

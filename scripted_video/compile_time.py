@@ -32,7 +32,12 @@ def cycle_over_script(script_file: Path, variables: ScriptVariables, options: Op
 
 
 def dissect_syntax(command: str, syntax_tree):
-    for respective_class, syntax_command in svst.RootNode.syntax_list.items():
+    match = re.match(svst.Doctype.get_syntax(), command)
+    if match:
+        syntax_tree.body.append(svst.Doctype.evaluate_syntax(match))
+        return
+
+    for respective_class, syntax_command in svst.TimelineNode.syntax_list.items():
         match = re.match(syntax_command, command)
         if not match:
             continue
