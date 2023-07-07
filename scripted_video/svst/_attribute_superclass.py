@@ -144,6 +144,7 @@ _SVST_Attribute_Subjects = _factory_Attribute_Subjects_plural("_SVST_Attribute_S
 _SVST_Attribute_BodySubjects = _factory_Attribute_Subjects_plural("_SVST_Attribute_BodySubjects",
                                                                   inherited_classes=_SVST_Attribute_Body)
 _SVST_Attribute_Name = _factory_Attribute_Name("_SVST_Attribute_Name", inherited_classes=SVST_RootNode)
+_SVST_Attribute_Value = _factory_Attribute_Value("_SVST_Attribute_Value", inherited_classes=SVST_RootNode)
 _SVST_Attribute_NameValue = _factory_Attribute_Value("_SVST_Attribute_NameValue",
                                                      inherited_classes=_SVST_Attribute_Name)
 
@@ -223,6 +224,16 @@ class SVST_Attribute_BodySubjects(_SVST_Attribute_BodySubjects):
 class SVST_Attribute_Name(_SVST_Attribute_Name):
     def __init__(self, name: str):
         super().__init__(name)
+
+    @classmethod
+    @abstractmethod
+    def evaluate_syntax(cls, match_object: re.Match) -> Self:
+        return NotImplemented
+
+
+class SVST_Attribute_Value(_SVST_Attribute_Value):
+    def __init__(self, value: str):
+        super().__init__(value)
 
     @classmethod
     @abstractmethod
