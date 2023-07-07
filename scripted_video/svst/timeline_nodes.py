@@ -1,4 +1,4 @@
-from ._attribute_superclass import _SVST_Attribute_Body, _SVST_Attribute_BodySubjects, _SVST_Attribute_NameValue
+from ._attribute_superclass import SVST_Attribute_Body, SVST_Attribute_BodySubjects, SVST_Attribute_NameValue
 from ._functions import create_string_from_sequence, define_indent_sequence, gatekeep_indent
 from .neutral_nodes import Object, Property
 
@@ -19,7 +19,7 @@ class TimelineNode:
             TimelineNode.syntax_list[cls] = cls._syntax
 
 
-class Metadata(_SVST_Attribute_NameValue, TimelineNode):
+class Metadata(SVST_Attribute_NameValue, TimelineNode):
     """
     The Metadata node refers to the HEAD keyword. The syntax looks
     approximately as follows:
@@ -41,7 +41,7 @@ class Metadata(_SVST_Attribute_NameValue, TimelineNode):
         return cls(attribute_name, attribute_value)
 
 
-class Declare(_SVST_Attribute_NameValue, TimelineNode):
+class Declare(SVST_Attribute_NameValue, TimelineNode):
     """
     The Declare node refers to the SET keyword. The syntax looks
     approximately as follows:
@@ -80,7 +80,7 @@ class Declare(_SVST_Attribute_NameValue, TimelineNode):
         return cls(variable_name, variable_value, variable_type)
 
 
-class Create(_SVST_Attribute_BodySubjects, TimelineNode):
+class Create(SVST_Attribute_BodySubjects, TimelineNode):
     """
     The Create node refers to the 'CREATE' keyword. The syntax looks
     approximately as follows:
@@ -107,7 +107,7 @@ class Create(_SVST_Attribute_BodySubjects, TimelineNode):
         return class_object
 
 
-class Move(_SVST_Attribute_BodySubjects, TimelineNode):
+class Move(SVST_Attribute_BodySubjects, TimelineNode):
     """
     The Move node refers to the 'MOVE' keyword. The syntax looks approximately
     as follows:
@@ -134,7 +134,7 @@ class Move(_SVST_Attribute_BodySubjects, TimelineNode):
         return class_object
 
 
-class Delete(_SVST_Attribute_BodySubjects, TimelineNode):
+class Delete(SVST_Attribute_BodySubjects, TimelineNode):
     """
     The Delete node refers to the 'DELETE' keyword. The syntax looks
     approximately as follows:
@@ -155,7 +155,7 @@ class Delete(_SVST_Attribute_BodySubjects, TimelineNode):
         return class_object
 
 
-class TimelineModule(_SVST_Attribute_Body):
+class TimelineModule(SVST_Attribute_Body):
     """
     The TimelineModule node is the outermost member of the svst tree (similar
     to the 'Module' node of the built-in AST). It has a body attribute that is

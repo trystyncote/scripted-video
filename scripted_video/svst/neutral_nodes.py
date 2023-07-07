@@ -1,4 +1,4 @@
-from ._attribute_superclass import _SVST_Attribute_Name, _SVST_Attribute_NameValue
+from ._attribute_superclass import SVST_Attribute_Name, SVST_Attribute_NameValue
 from ._functions import gatekeep_indent
 from .root_node import SVST_RootNode
 
@@ -14,6 +14,7 @@ class Doctype(SVST_RootNode):
 
     def __init__(self, doctype: str):
         self._doctype = doctype
+        super().__init__()
 
     def __repr__(self):
         return f"{self.__class__.__name__}(_doctype={self._doctype})"
@@ -33,7 +34,7 @@ class Doctype(SVST_RootNode):
         return class_object
 
 
-class Object(_SVST_Attribute_Name):
+class Object(SVST_Attribute_Name):
     """
     The Object node refers to a reference to an object, via the approximate
     syntax [*<object>]. The name of the object is referenced as the 'name'.
@@ -47,7 +48,7 @@ class Object(_SVST_Attribute_Name):
         return NotImplemented
 
 
-class Property(_SVST_Attribute_NameValue):
+class Property(SVST_Attribute_NameValue):
     """
     The Property node refers to a call to a property and its value. The name of
     the property is referenced as the 'name', and its value as 'value'. Meant
@@ -66,6 +67,7 @@ class UnknownSyntax(SVST_RootNode):
 
     def __init__(self, contents: str):
         self._contents = contents
+        super().__init__()
 
     def __repr__(self):
         return f"{self.__class__.__name__}(_contents={self._contents!r})"

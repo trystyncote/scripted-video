@@ -144,11 +144,8 @@ _SVST_Attribute_Subjects = _factory_Attribute_Subjects_plural("_SVST_Attribute_S
 _SVST_Attribute_BodySubjects = _factory_Attribute_Subjects_plural("_SVST_Attribute_BodySubjects",
                                                                   inherited_classes=_SVST_Attribute_Body)
 _SVST_Attribute_Name = _factory_Attribute_Name("_SVST_Attribute_Name", inherited_classes=SVST_RootNode)
-_SVST_Attribute_Value = _factory_Attribute_Value("_SVST_Attribute_Value", inherited_classes=SVST_RootNode)
-_SVST_Attribute_NameValue = _factory_Attribute_Name("_SVST_Attribute_NameValue",
-                                                    inherited_classes=_SVST_Attribute_Value)
-# ...NameValue defined in this order to maintain functionality with the
-# order of parameters of the __init__ method (name -> value -> ...).
+_SVST_Attribute_NameValue = _factory_Attribute_Value("_SVST_Attribute_NameValue",
+                                                     inherited_classes=_SVST_Attribute_Name)
 
 
 def _redefined_combo_Attribute_BodySubjects():
@@ -191,3 +188,53 @@ def _redefined_combo_Attribute_NameValue():
 
 _SVST_Attribute_NameValue.__repr__, \
     _SVST_Attribute_NameValue.convert_to_string = _redefined_combo_Attribute_NameValue()
+
+
+class SVST_Attribute_Body(_SVST_Attribute_Body):
+    def __init__(self):
+        super().__init__()
+
+    @classmethod
+    @abstractmethod
+    def evaluate_syntax(cls, match_object: re.Match) -> Self:
+        return NotImplemented
+
+
+class SVST_Attribute_Subjects(_SVST_Attribute_Subjects):
+    def __init__(self):
+        super().__init__()
+
+    @classmethod
+    @abstractmethod
+    def evaluate_syntax(cls, match_object: re.Match) -> Self:
+        return NotImplemented
+
+
+class SVST_Attribute_BodySubjects(_SVST_Attribute_BodySubjects):
+    def __init__(self):
+        super().__init__()
+
+    @classmethod
+    @abstractmethod
+    def evaluate_syntax(cls, match_object: re.Match) -> Self:
+        return NotImplemented
+
+
+class SVST_Attribute_Name(_SVST_Attribute_Name):
+    def __init__(self, name: str):
+        super().__init__(name)
+
+    @classmethod
+    @abstractmethod
+    def evaluate_syntax(cls, match_object: re.Match) -> Self:
+        return NotImplemented
+
+
+class SVST_Attribute_NameValue(_SVST_Attribute_NameValue):
+    def __init__(self, name: str, value: str):
+        super().__init__(value, name)
+
+    @classmethod
+    @abstractmethod
+    def evaluate_syntax(cls, match_object: re.Match) -> Self:
+        return NotImplemented
