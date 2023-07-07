@@ -7,84 +7,154 @@ import re
 from typing import Self
 
 
-class _SVST_Attribute_Body(SVST_RootNode):
-    __slots__ = ("_body",)
+def _factory_Attribute_Body(class_name: str, /, *, inherited_classes: type[object] = object):
+    class FACTORY(inherited_classes):
+        __slots__ = ("_body",)
 
-    def __init__(self):
-        self._body = []
+        def __init__(self, *args, **kwargs):
+            self._body = []
+            super().__init__(*args, **kwargs)
 
-    def __repr__(self):
-        return f"{self.__class__.__name__}(_body={[node.__class__.__name__ for node in self._body]})"
+        def __repr__(self):
+            return f"{self.__class__.__name__}(_body={[node.__class__.__name__ for node in self._body]})"
 
-    @property
-    def body(self) -> MutableSequence:
-        return self._body
+        @property
+        def body(self) -> MutableSequence:
+            return self._body
 
-    def convert_to_string(self, *, indent: int = 0, _previous_indent: int = 0) -> str:
-        gatekeep_indent(indent)
-        if len(self._body) == 0:
-            return f"{' ' * _previous_indent}{self.__class__.__name__}(body=[])"
+        def convert_to_string(self, *, indent: int = 0, _previous_indent: int = 0) -> str:
+            gatekeep_indent(indent)
+            if len(self._body) == 0:
+                return f"{' ' * _previous_indent}{self.__class__.__name__}(body=[])"
 
-        return (
-            f"{' ' * _previous_indent}{self.__class__.__name__}("
-            + create_string_from_sequence(self._body, "body", indent, indent+_previous_indent)
-            + ")"
-        )
+            return (
+                f"{' ' * _previous_indent}{self.__class__.__name__}("
+                + create_string_from_sequence(self._body, "body", indent, indent + _previous_indent)
+                + ")"
+            )
 
-    @classmethod
-    @abstractmethod
-    def evaluate_syntax(cls, match_object: re.Match) -> Self:
-        return NotImplemented
+        @classmethod
+        @abstractmethod
+        def evaluate_syntax(cls, match_object: re.Match) -> Self:
+            return NotImplemented
 
-
-class _SVST_Attribute_Subjects(SVST_RootNode):
-    __slots__ = ("_subjects",)
-
-    def __init__(self):
-        self._subjects = []
-
-    def __repr__(self):
-        return f"{self.__class__.__name__}(_subjects={[node.__class__.__name__ for node in self._subjects]})"
-
-    @property
-    def subjects(self) -> MutableSequence:
-        return self._subjects
-
-    def convert_to_string(self, *, indent: int = 0, _previous_indent: int = 0) -> str:
-        gatekeep_indent(indent)
-        if len(self._subjects) == 0:
-            return f"{' ' * _previous_indent}{self.__class__.__name__}(subjects=[])"
-
-        return (
-            f"{' ' * _previous_indent}{self.__class__.__name__}("
-            + create_string_from_sequence(self._subjects, "subjects", indent, indent+_previous_indent)
-            + ")"
-        )
-
-    @classmethod
-    @abstractmethod
-    def evaluate_syntax(cls, match_object: re.Match) -> Self:
-        return NotImplemented
+    FACTORY.__name__ = class_name
+    FACTORY.__qualname__ = class_name
+    return FACTORY
 
 
-class _SVST_Attribute_BodySubjects(SVST_RootNode):
-    __slots__ = ("_body", "_subjects")
+def _factory_Attribute_Subjects_plural(class_name: str, /, *, inherited_classes: type[object] = object):
+    class FACTORY(inherited_classes):
+        __slots__ = ("_subjects",)
 
-    def __init__(self):
-        self._body = []
-        self._subjects = []
+        def __init__(self, *args, **kwargs):
+            self._subjects = []
+            super().__init__(*args, **kwargs)
 
-    def __repr__(self):
+        def __repr__(self):
+            return f"{self.__class__.__name__}(_subjects={[node.__class__.__name__ for node in self._subjects]})"
+
+        @property
+        def subjects(self) -> MutableSequence:
+            return self._subjects
+
+        def convert_to_string(self, *, indent: int = 0, _previous_indent: int = 0) -> str:
+            gatekeep_indent(indent)
+            if len(self._subjects) == 0:
+                return f"{' ' * _previous_indent}{self.__class__.__name__}(subjects=[])"
+
+            return (
+                f"{' ' * _previous_indent}{self.__class__.__name__}("
+                + create_string_from_sequence(self._subjects, "subjects", indent, indent + _previous_indent)
+                + ")"
+            )
+
+        @classmethod
+        @abstractmethod
+        def evaluate_syntax(cls, match_object: re.Match) -> Self:
+            return NotImplemented
+
+    FACTORY.__name__ = class_name
+    FACTORY.__qualname__ = class_name
+    return FACTORY
+
+
+def _factory_Attribute_Name(class_name: str, /, *, inherited_classes: type[object] = object):
+    class FACTORY(inherited_classes):
+        __slots__ = ("_name",)
+
+        def __init__(self, name: str, *args, **kwargs):
+            self._name = name
+            super().__init__(*args, **kwargs)
+
+        def __repr__(self):
+            return f"{self.__class__.__name__}(_name={self._name})"
+
+        @property
+        def name(self) -> str:
+            return self._name
+
+        def convert_to_string(self, *, indent: int = 0, _previous_indent: int = 0) -> str:
+            gatekeep_indent(indent)
+            return f"{' ' * _previous_indent}{self.__class__.__name__}(name={self._name!r})"
+
+        @classmethod
+        @abstractmethod
+        def evaluate_syntax(cls, match_object: re.Match) -> Self:
+            return NotImplemented
+
+    FACTORY.__name__ = class_name
+    FACTORY.__qualname__ = class_name
+    return FACTORY
+
+
+def _factory_Attribute_Value(class_name: str, /, *, inherited_classes: type[object] = object):
+    class FACTORY(inherited_classes):
+        __slots__ = ("_value",)
+
+        def __init__(self, value: str, *args, **kwargs):
+            self._value = value
+            super().__init__(*args, **kwargs)
+
+        def __repr__(self):
+            return f"{self.__class__.__name__}(_value={self._value})"
+
+        @property
+        def value(self) -> str:
+            return self._value
+
+        def convert_to_string(self, *, indent: int = 0, _previous_indent: int = 0) -> str:
+            gatekeep_indent(indent)
+            indent_sequence = define_indent_sequence(indent, _previous_indent)
+            return f"{indent_sequence[1:]}{self.__class__.__name__}(value={self._value!r})"
+
+        @classmethod
+        @abstractmethod
+        def evaluate_syntax(cls, match_object: re.Match) -> Self:
+            return NotImplemented
+
+    FACTORY.__name__ = class_name
+    FACTORY.__qualname__ = class_name
+    return FACTORY
+
+
+_SVST_Attribute_Body = _factory_Attribute_Body("_SVST_Attribute_Body", inherited_classes=SVST_RootNode)
+_SVST_Attribute_Subjects = _factory_Attribute_Subjects_plural("_SVST_Attribute_Subjects",
+                                                              inherited_classes=SVST_RootNode)
+_SVST_Attribute_BodySubjects = _factory_Attribute_Subjects_plural("_SVST_Attribute_BodySubjects",
+                                                                  inherited_classes=_SVST_Attribute_Body)
+_SVST_Attribute_Name = _factory_Attribute_Name("_SVST_Attribute_Name", inherited_classes=SVST_RootNode)
+_SVST_Attribute_Value = _factory_Attribute_Value("_SVST_Attribute_Value", inherited_classes=SVST_RootNode)
+_SVST_Attribute_NameValue = _factory_Attribute_Name("_SVST_Attribute_NameValue",
+                                                    inherited_classes=_SVST_Attribute_Value)
+# ...NameValue defined in this order to maintain functionality with the
+# order of parameters of the __init__ method (name -> value -> ...).
+
+
+def _redefined_combo_Attribute_BodySubjects():
+    def redefined_repr(self):
         return f"{self.__class__.__name__}(_body={[node.__class__.__name__ for node in self._body]}, " \
-               f"_subjects={[node.__class__.__name__ for node in self._subjects]})"
-
-    @property
-    def body(self) -> MutableSequence:
-        return self._body
-
-    @property
-    def subjects(self) -> MutableSequence:
-        return self._subjects
+                           f"_subjects={[node.__class__.__name__ for node in self._subjects]})"
 
     def convert_to_string(self, *, indent: int = 0, _previous_indent: int = 0) -> str:
         gatekeep_indent(indent)
@@ -96,52 +166,16 @@ class _SVST_Attribute_BodySubjects(SVST_RootNode):
             + ")"
         )
 
-    @classmethod
-    @abstractmethod
-    def evaluate_syntax(cls, match_object: re.Match) -> Self:
-        return NotImplemented
+    return redefined_repr, convert_to_string
 
 
-class _SVST_Attribute_Name(SVST_RootNode):
-    __slots__ = ("_name",)
-
-    def __init__(self, name: str):
-        self._name = name
-
-    def __repr__(self):
-        return f"{self.__class__.__name__}(_name={self._name})"
-
-    @property
-    def name(self) -> str:
-        return self._name
-
-    def convert_to_string(self, *, indent: int = 0, _previous_indent: int = 0) -> str:
-        gatekeep_indent(indent)
-        return f"{' ' * _previous_indent}{self.__class__.__name__}(name={self._name!r})"
-
-    @classmethod
-    @abstractmethod
-    def evaluate_syntax(cls, match_object: re.Match) -> Self:
-        return NotImplemented
+_SVST_Attribute_BodySubjects.__repr__, \
+    _SVST_Attribute_BodySubjects.convert_to_string = _redefined_combo_Attribute_BodySubjects()
 
 
-class _SVST_Attribute_NameValue(SVST_RootNode):
-    __slots__ = ("_name", "_value")
-
-    def __init__(self, name: str, value: str):
-        self._name = name
-        self._value = value
-
-    def __repr__(self):
+def _redefined_combo_Attribute_NameValue():
+    def redefined_repr(self):
         return f"{self.__class__.__name__}(_name={self._name}, _value={self._value})"
-
-    @property
-    def name(self) -> str:
-        return self._name
-
-    @property
-    def value(self) -> str:
-        return self._value
 
     def convert_to_string(self, *, indent: int = 0, _previous_indent: int = 0) -> str:
         gatekeep_indent(indent)
@@ -152,7 +186,8 @@ class _SVST_Attribute_NameValue(SVST_RootNode):
             f"{indent_sequence}{' ' * indent}value={self._value!r})"
         )
 
-    @classmethod
-    @abstractmethod
-    def evaluate_syntax(cls, match_object: re.Match) -> Self:
-        return NotImplemented
+    return redefined_repr, convert_to_string
+
+
+_SVST_Attribute_NameValue.__repr__, \
+    _SVST_Attribute_NameValue.convert_to_string = _redefined_combo_Attribute_NameValue()
