@@ -1,4 +1,5 @@
-from ._attribute_superclass import SVST_Attribute_Body, SVST_Attribute_BodySubjects, SVST_Attribute_NameValue
+from ._attribute_superclass import SVST_Attribute_Body, SVST_Attribute_BodySubjects, SVST_Attribute_NameValue, \
+    SVST_Attribute_Name_Value_WsAftKeyword_WsBefEqual_WsAftEqual
 from ._functions import create_string_from_sequence, define_indent_sequence, gatekeep_indent
 from .neutral_nodes import Object, Property
 
@@ -19,7 +20,7 @@ class TimelineNode:
             TimelineNode.syntax_list[cls] = cls._syntax
 
 
-class Metadata(SVST_Attribute_NameValue, TimelineNode):
+class Metadata(SVST_Attribute_Name_Value_WsAftKeyword_WsBefEqual_WsAftEqual, TimelineNode):
     """
     The Metadata node refers to the HEAD keyword. The syntax looks
     approximately as follows:
@@ -32,13 +33,17 @@ class Metadata(SVST_Attribute_NameValue, TimelineNode):
     """
     __slots__ = ()
     # _syntax = r"META ([\w_]+)[\s| ]*={1}[\s| ]*([\w_]+)"
-    _syntax = r"HEAD ([\w_]+)[\s| ]*={1}[\s| ]*([\w_]+)"
+    _syntax = r"HEAD ([\s|]*)([\w_]+)([\s| ]*)={1}([\s| ]*)([\w_]+)"
 
     @classmethod
     def evaluate_syntax(cls, match_object: re.Match) -> Self:
-        attribute_name = match_object.group(1)
-        attribute_value = match_object.group(2)
-        return cls(attribute_name, attribute_value)
+        whitespace_after_keyword = match_object.group(1)
+        attribute_name = match_object.group(2)
+        whitespace_before_equal = match_object.group(3)
+        whitespace_after_equal = match_object.group(4)
+        attribute_value = match_object.group(5)
+        return cls(attribute_name, attribute_value, whitespace_after_keyword, whitespace_after_equal,
+                   whitespace_before_equal)
 
 
 class Declare(SVST_Attribute_NameValue, TimelineNode):
