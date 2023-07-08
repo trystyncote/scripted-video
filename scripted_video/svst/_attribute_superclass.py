@@ -192,6 +192,8 @@ _SVST_Attribute_NameValue.__repr__, \
 
 
 class SVST_Attribute_Body(_SVST_Attribute_Body):
+    __slots__ = ()
+
     def __init__(self):
         super().__init__()
 
@@ -202,6 +204,8 @@ class SVST_Attribute_Body(_SVST_Attribute_Body):
 
 
 class SVST_Attribute_Subjects(_SVST_Attribute_Subjects):
+    __slots__ = ()
+
     def __init__(self):
         super().__init__()
 
@@ -212,6 +216,8 @@ class SVST_Attribute_Subjects(_SVST_Attribute_Subjects):
 
 
 class SVST_Attribute_BodySubjects(_SVST_Attribute_BodySubjects):
+    __slots__ = ()
+
     def __init__(self):
         super().__init__()
 
@@ -222,6 +228,8 @@ class SVST_Attribute_BodySubjects(_SVST_Attribute_BodySubjects):
 
 
 class SVST_Attribute_Name(_SVST_Attribute_Name):
+    __slots__ = ()
+
     def __init__(self, name: str):
         super().__init__(name)
 
@@ -232,6 +240,8 @@ class SVST_Attribute_Name(_SVST_Attribute_Name):
 
 
 class SVST_Attribute_Value(_SVST_Attribute_Value):
+    __slots__ = ()
+
     def __init__(self, value: str):
         super().__init__(value)
 
@@ -242,6 +252,8 @@ class SVST_Attribute_Value(_SVST_Attribute_Value):
 
 
 class SVST_Attribute_NameValue(_SVST_Attribute_NameValue):
+    __slots__ = ()
+
     def __init__(self, name: str, value: str):
         super().__init__(value, name)
 
