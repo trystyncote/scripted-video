@@ -16,7 +16,7 @@ class TimelineNode:
 
     def __init_subclass__(cls):
         super().__init_subclass__()
-        if hasattr(cls, "_syntax") and getattr(cls, "_syntax") is not None:
+        if hasattr(cls, "_syntax"):
             TimelineNode.syntax_list[cls] = cls._syntax
 
 
