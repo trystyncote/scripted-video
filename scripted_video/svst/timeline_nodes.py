@@ -1,7 +1,8 @@
-from ._attribute_superclass import SVST_Attribute_Body, SVST_Attribute_BodySubjects, SVST_Attribute_NameValue, \
-    SVST_Attribute_Name_Value_WsAftKeyword_WsBefEqual_WsAftEqual
+from ._attribute_superclass import SVST_Attribute_Body, SVST_Attribute_BodySubjects, SVST_Attribute_NameValue
+from ._dynamic_attributes import dynamic_attributes
 from ._functions import create_string_from_sequence, define_indent_sequence, gatekeep_indent
 from .neutral_nodes import Object, Property
+from .root_node import SVST_RootNode
 
 from abc import abstractmethod
 from collections.abc import MutableMapping
@@ -9,7 +10,7 @@ import re
 from typing import Self
 
 
-class TimelineNode:
+class TimelineNode(SVST_RootNode):
     __slots__ = ()
 
     syntax_list: MutableMapping = {}
@@ -20,7 +21,8 @@ class TimelineNode:
             TimelineNode.syntax_list[cls.__name__] = (cls, cls._syntax)
 
 
-class Metadata(SVST_Attribute_Name_Value_WsAftKeyword_WsBefEqual_WsAftEqual, TimelineNode):
+@dynamic_attributes
+class Metadata(TimelineNode):
     """
     The Metadata node refers to the HEAD keyword. The syntax looks
     approximately as follows:
@@ -31,7 +33,7 @@ class Metadata(SVST_Attribute_Name_Value_WsAftKeyword_WsBefEqual_WsAftEqual, Tim
 
     META <attribute> = <value>;
     """
-    __slots__ = ()
+    __attributes__ = ("name", "value", "ws_after_keyword", "ws_after_equal_sign", "ws_before_equal_sign")
     # _syntax = r"META ([\w_]+)[\s| ]*={1}[\s| ]*([\w_]+)"
     _syntax = r"HEAD ([\s|]*)([\w_]+)([\s| ]*)={1}([\s| ]*)([\w_]+)"
 
