@@ -1,4 +1,3 @@
-from abc import abstractmethod
 import re
 from typing import Self
 
@@ -19,11 +18,9 @@ class SVST_RootNode:
     def __str__(self) -> str:
         return self.convert_to_string()
 
-    @abstractmethod
     def convert_to_string(self, *, indent: int = 0, _previous_indent: int = 0) -> str:
         return NotImplemented
 
     @classmethod
-    @abstractmethod
     def evaluate_syntax(cls, match_object: re.Match) -> Self:
         return NotImplemented
