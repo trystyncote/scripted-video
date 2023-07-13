@@ -17,7 +17,7 @@ class TimelineNode:
     def __init_subclass__(cls):
         super().__init_subclass__()
         if hasattr(cls, "_syntax"):
-            TimelineNode.syntax_list[cls] = cls._syntax
+            TimelineNode.syntax_list[cls.__name__] = (cls, cls._syntax)
 
 
 class Metadata(SVST_Attribute_Name_Value_WsAftKeyword_WsBefEqual_WsAftEqual, TimelineNode):

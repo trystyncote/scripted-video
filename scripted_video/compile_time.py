@@ -41,7 +41,7 @@ def dissect_syntax(command: str, syntax_tree):
         else:
             DoctypeNotAtBeginning().raise_qualms()
 
-    for respective_class, syntax_command in svst.TimelineNode.syntax_list.items():
+    for _, (respective_class, syntax_command) in svst.TimelineNode.syntax_list.items():
         match = re.match(syntax_command, command)
         if not match:
             continue

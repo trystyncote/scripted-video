@@ -47,7 +47,7 @@ def test_syntax_timeline_evaluate(command, cls, match_callable, expected_attr):
         expected.set(*attr.split(":"))  # assume that the result will be of
         # length 2.
 
-    query = svst.TimelineNode.syntax_list[cls]
+    _, query = svst.TimelineNode.syntax_list[cls.__name__]
     match = re.match(query, command)
     if match is None:
         assert False
@@ -58,7 +58,7 @@ def test_syntax_timeline_evaluate(command, cls, match_callable, expected_attr):
 def test_syntax_evaluate_no_match():
     command = "THIS-SHOULD-NOT-MATCH"
 
-    for query in svst.TimelineNode.syntax_list.values():
+    for _, query in svst.TimelineNode.syntax_list.values():
         match = re.match(query, command)
         if match is not None:
             assert False
