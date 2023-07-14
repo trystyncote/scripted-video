@@ -258,6 +258,11 @@ def _write_body(cls):
 def dynamic_attributes(cls, /):
     if not hasattr(cls, "__attributes__"):
         raise _UndefinedAttributesError(f"Class \'{cls.__name__}\' does not define __attributes__.")
+    for field in cls.__attributes__:
+        try:
+            _attributes[field]
+        except KeyError:
+            raise _InvalidAttributesError(f"Class \'{cls.__name__}\' has an undefined attribute: \'{field}\'.")
 
     def wrapper():
         return _define_class(cls)
