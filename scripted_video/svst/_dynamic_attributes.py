@@ -52,7 +52,7 @@ class _AttributeSet:
     def parameter(self):
         if not self.is_parameter:
             return ""
-        return f"{self.name}: {self.annotation}{f' = {self.default}' if self.default is not _NO_DEFAULT else ''}"
+        return f"{self.name}: {self.annotation}{f' = {self.default!r}' if self.default is not _NO_DEFAULT else ''}"
 
     def property(self):
         property_object = (
@@ -86,9 +86,9 @@ _attributes = {
     "name": _AttributeSet("name", str),
     "value": _AttributeSet("value", str),
     "subjects": _ListAttributeSet("subjects", list, default_factory=list),
-    "ws_after_equal_sign": _AttributeSet("ws_after_equal_sign", str, default="\'\'"),
-    "ws_after_keyword": _AttributeSet("ws_after_keyword", str, default="\'\'"),
-    "ws_before_equal_sign": _AttributeSet("ws_before_equal_sign", str, default="\'\'"),
+    "ws_after_equal_sign": _AttributeSet("ws_after_equal_sign", str, default=""),
+    "ws_after_keyword": _AttributeSet("ws_after_keyword", str, default=""),
+    "ws_before_equal_sign": _AttributeSet("ws_before_equal_sign", str, default=""),
 }
 
 
