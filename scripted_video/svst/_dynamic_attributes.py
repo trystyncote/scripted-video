@@ -6,12 +6,11 @@ dependent on it. For now, this remains an alternative instead of the default.
 
 The reason that I do not use dataclasses instead of writing this myself, is
 that dataclasses doesn't suit my application. All applicable classes need to
-define a set of attributes that have a property, a __repr__ and __str__ method,
-a convert_to_string method, and have __slots__. Dataclass implementations do
-not work to this extent, so I'd rather have it written myself and prevent
-repeated code that way.
+define a set of attributes that have a __repr__ and __str__ method, a
+convert_to_string method, and have __slots__. Dataclass implementations do
+not necessarily work to the use case I need, so I'd rather have it written
+myself and prevent repeated code that way.
 """
-import inspect
 import io
 import sys
 
@@ -22,7 +21,15 @@ _ = define_indent_sequence(0, 0)  # Preventing 'unused import' flag. This
 # function is required for when the body of a class is evaluated.
 
 
+class _InaccessibleAttributeError(Exception):
+    pass
+
+
 class _InvalidAttributesError(Exception):
+    pass
+
+
+class _PredefinedSlotsError(Exception):
     pass
 
 
@@ -54,14 +61,6 @@ class _AttributeSet:
             return ""
         return f"{self.name}: {self.annotation}{f' = {self.default!r}' if self.default is not _NO_DEFAULT else ''}"
 
-    def property(self):
-        property_object = (
-            "@property",
-            f"def {self.name}(self):",
-            f"{4 * ' '}return self.{self.internal_name}"
-        )
-        return _join_lines(*property_object)
-
 
 class _ListAttributeSet(_AttributeSet):
     __slots__ = ("default_factory",)
@@ -92,52 +91,139 @@ _attributes = {
 }
 
 
-def _concatenate_original_body(original_body):
-    original_body = [o[4:] for o in original_body]
-    return ''.join(original_body)
+def _add_slots(cls):
+    # __slots__ cannot be set on a class that already has been created, so a
+    # new class needs to be created.
+
+    if "__slots__" in cls.__dict__:
+        raise _PredefinedSlotsError(f"Class \'{cls.__name__}\' already specifies __slots__.")
+
+    cls_dict = dict(cls.__dict__)  # Creates a copy of the dictionary to
+    # prevent altering the original.
+    fields = tuple(_attributes[a].internal_name for a in cls.__attributes__)
+    # inherited_slots
+    cls_dict["__slots__"] = fields
+
+    for field in cls.__attributes__:
+        cls_dict.pop(field, None)
+    cls_dict.pop("__dict__", None)
+
+    qualname = getattr(cls, "__qualname__", None)
+    cls = cls.__class__(cls.__name__, cls.__bases__, cls_dict)
+    if qualname is not None:
+        cls.__qualname__ = qualname
+
+    return cls
 
 
-def _create_dunder_init(cls) -> str:
-    lines = [_make_function_header("__init__", *(_attributes[attr] for attr in cls.__attributes__))]
+def _create_dunder_init(cls):
+    lines = []
     for name in cls.__attributes__:
         lines.append(_attributes[name].initialization())
-    return "\n".join(lines)
+    return _set_attributes(
+        cls,
+        "__init__",
+        _create_function(
+            "__init__",
+            ("self", *(_attributes[a].parameter() for a in cls.__attributes__)),
+            tuple(lines),
+            globals_=sys.modules[cls.__module__].__dict__
+        )
+    )
 
 
-def _create_dunder_repr(cls) -> str:
-    lines = ["def __repr__(self):"]
-    return_statement = io.StringIO()
-    return_statement.write(f"{4*' '}return f\"{{self.__class__.__name__}}(")
+def _create_dunder_getattribute(cls):
+    body = [f"{4*' '}try:", f"{8*' '}return object.__getattribute__(self, item)", f"{4*' '}except AttributeError:",
+            f"{8*' '}if item[0] != \"_\":", f"{12*' '}return object.__getattribute__(self, f\"_{{item}}\")",
+            f"{8*' '}raise"]
+    return _set_attributes(
+        cls,
+        "__getattribute__",
+        _create_function(
+            "__getattribute__",
+            ("self", "item"),
+            tuple(body),
+            globals_=sys.modules[cls.__module__].__dict__
+        )
+    )
+
+
+def _create_dunder_repr(cls):
+    body = io.StringIO()
+    body.write(f"{4*' '}return f\"{{self.__class__.__name__}}(")
     for field in cls.__attributes__:
         # TODO: Change behaviour to write differently for sequence objects.
-        return_statement.write(f"{_attributes[field].internal_name}={{self.{_attributes[field].internal_name}!r}}, ")
-    return_statement = return_statement.getvalue()[:-2] + ")\""
-    # return_statement.write(")\"")
-    lines.append(return_statement)
-    return _join_lines(*lines)
+        body.write(f"{_attributes[field].internal_name}={{self.{_attributes[field].internal_name}!r}}, ")
+    body = body.getvalue()[:-2] + ")\""
+    return _set_attributes(
+        cls,
+        "__repr__",
+        _create_function(
+            "__repr__",
+            ("self",),
+            (body,),
+            globals_=sys.modules[cls.__module__].__dict__
+        )
+    )
 
 
-def _create_dunder_slots(cls) -> str:
-    fields = []
-    for field in cls.__attributes__:
-        field_set = _attributes[field]
-        if hasattr(field_set, "internal_name"):
-            fields.append(field_set.internal_name)
-        else:
-            fields.append(field_set.name)
+def _create_dunder_setattr(cls):
+    body = [f"{4*' '}if getattr(self, key, None) is not None:",
+            f"{8*' '}from scripted_video.svst._dynamic_attributes import _InaccessibleAttributeError",
+            f"{8*' '}raise _InaccessibleAttributeError(f\"Attribute \\\'{{key}}\\\' of class "
+            f"\\\'{{self.__class__.__name__}}\\\' is considered immutable.\")",
+            f"{4*' '}object.__setattr__(self, key, value)"]
+    return _set_attributes(
+        cls,
+        "__setattr__",
+        _create_function(
+            "__setattr__",
+            ("self", "key", "value"),
+            tuple(body),
+            globals_=sys.modules[cls.__module__].__dict__
+        )
+    )
 
-    return f"__slots__ = {tuple(fields)!s}"
+
+def _create_dunder_str(cls):
+    return _set_attributes(
+        cls,
+        "__str__",
+        _create_function(
+            "__str__",
+            ("self",),
+            (f"{4*' '}return self.convert_to_string()",),
+            globals_=sys.modules[cls.__module__].__dict__
+        )
+    )
 
 
-def _create_dunder_str(cls) -> str:
-    return _join_lines("def __str__(self):", f"{4*' '}return self.convert_to_string()")
+def _create_function(name, args, body, *, local=None, globals_=None):
+    if local is None:
+        local = {}
+
+    args = ",".join(args)
+    body = "\n".join(f"{4*' '}{b}" for b in body)
+    header = f"def {name}({args}):"
+    local_vars = ", ".join(local.keys())
+    indent = 4 * ' '
+    txt = f"def __create_fn__({local_vars}):\n{indent}{header}\n" \
+          f"{body}\n{indent}return {name}"
+    # def __create_fn__(*local_vars*):
+    #     def *generated_function*(*args*):
+    #         ...
+    #     return *generated_function*
+
+    namespace = {}
+    exec(txt, globals_, namespace)
+    return namespace["__create_fn__"](**local)
 
 
-def _create_function_convert_to_string(cls) -> str:
+def _create_function_convert_to_string(cls):
     # Basically, this function writes a new function that uses a lot of
     # f-strings. This is particularly unreadable, so I'm including comment
     # representations of what the intended output is.
-    lines = ["def convert_to_string(self, *, indent: int = 0, _previous_indent: int = 0) -> str:"]
+    lines = []
     attributes = cls.__attributes__
 
     if len(attributes) == 0:
@@ -208,51 +294,32 @@ def _create_function_convert_to_string(cls) -> str:
         #         + ")"
         #     )
 
-    return _join_lines(*lines)
-
-
-def _create_function_properties(cls) -> str:
-    properties = []
-    for field in cls.__attributes__:
-        field_set = _attributes[field]
-        if hasattr(field_set, "internal_name"):
-            properties.append(field)
-
-    if not properties:
-        return ""
-
-    return '\n\n'.join(f"{_attributes[p].property()}" for p in properties)
+    return _set_attributes(
+        cls,
+        "convert_to_string",
+        _create_function(
+            "convert_to_string",
+            ("self", "*", "indent: int = 0", "_previous_indent: int = 0"),
+            tuple(lines),
+            globals_=sys.modules[cls.__module__].__dict__
+        )
+    )
 
 
 def _define_class(cls):
-    original_module = cls.__module__
-    name = cls.__name__
-    bases = cls.__bases__
-    namespace = type.__prepare__(name, bases)
-    body = _write_body(cls)
-    exec(body, sys.modules[cls.__module__].__dict__, namespace)
-    cls = type(name, bases, namespace)
-    cls.__module__ = original_module
+    functionalities = [_create_dunder_init, _create_dunder_repr, _create_dunder_str, _create_dunder_getattribute,
+                       _create_dunder_setattr, _create_function_convert_to_string]
+    for func in functionalities:
+        func(cls)
+    cls = _add_slots(cls)
     return cls
 
 
-def _join_lines(*lines):
-    return "\n".join(lines)
-
-
-def _make_function_header(function_name, *parameter_attribute):
-    return f"def {function_name}(self, {', '.join(attr.parameter() for attr in parameter_attribute).strip(', ')}):"
-
-
-def _write_body(cls):
-    functionalities = [_create_dunder_slots, _create_dunder_init, _create_dunder_repr, _create_dunder_str,
-                       _create_function_properties, _create_function_convert_to_string]
-    body = io.StringIO()
-    for func in functionalities:
-        body.write(func(cls))
-        body.write("\n\n")
-    body.write(_concatenate_original_body(inspect.getsourcelines(cls)[0][2:]))
-    return body.getvalue()
+def _set_attributes(cls, name, value):
+    if name in cls.__dict__:
+        return True
+    setattr(cls, name, value)
+    return False
 
 
 def dynamic_attributes(cls, /):
