@@ -143,14 +143,17 @@ def _add_slots(cls):
 
 def _create_dunder_init(cls):
     lines = []
+    parameters = []
     for name in cls.__attributes__:
         lines.append(_attributes[name].initialization())
+        if _attributes[name].is_parameter:
+            parameters.append(_attributes[name])
     return _set_attributes(
         cls,
         "__init__",
         _create_function(
             "__init__",
-            ("self", *(_attributes[a].parameter() for a in cls.__attributes__)),
+            ("self", *(a.parameter() for a in parameters)),
             tuple(lines),
             globals_=sys.modules[cls.__module__].__dict__
         )
