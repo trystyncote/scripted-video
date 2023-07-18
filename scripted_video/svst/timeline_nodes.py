@@ -68,7 +68,8 @@ class Declare(TimelineNode):
         return cls(variable_name, variable_value, variable_type)
 
 
-class Create(SVST_Attribute_BodySubjects, TimelineNode):
+@dynamic_attributes
+class Create(TimelineNode):
     """
     The Create node refers to the 'CREATE' keyword. The syntax looks
     approximately as follows:
@@ -77,7 +78,7 @@ class Create(SVST_Attribute_BodySubjects, TimelineNode):
         <property>: <value>; ...
     };
     """
-    __slots__ = ()
+    __attributes__ = (Attribute.BODY, Attribute.SUBJECTS)
     _syntax = r"CREATE (\*[\w_-]*)[\s|]*{([\w\s_\-;:.$\/]*)}"
     _sub_syntax = r"([\w_-]+)[\s|]*:[\s|]*([\w$\/\-_\. ]+)[\s|]*;"
 
