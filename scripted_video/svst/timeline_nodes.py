@@ -1,6 +1,4 @@
-from ._attribute_superclass import SVST_Attribute_Body, SVST_Attribute_BodySubjects, SVST_Attribute_NameValue
-from ._dynamic_attributes import Attribute, dynamic_attributes, WhitespaceAttribute
-from ._functions import create_string_from_sequence, define_indent_sequence, gatekeep_indent
+from ._dynamic_attributes import Attribute, dynamic_attributes, SpecificAttribute, WhitespaceAttribute
 from .neutral_nodes import Object, Property
 from .root_node import SVST_RootNode
 
@@ -146,38 +144,12 @@ class Delete(TimelineNode):
         return class_object
 
 
-class TimelineModule(SVST_Attribute_Body):
+@dynamic_attributes
+class TimelineModule(SVST_RootNode):
     """
     The TimelineModule node is the outermost member of the svst tree (similar
     to the 'Module' node of the built-in AST). It has a body attribute that is
     meant to carry all of the blocks in the given script. The script's name
     (without suffix) is referred to as the 'script_name' attribute.
     """
-    __slots__ = ("_script",)
-
-    def __init__(self, script_name: str):
-        super().__init__()
-        self._script = script_name
-
-    def __repr__(self):
-        return f"{self.__class__.__name__}(_body={[node.__class__.__name__ for node in self._body]}, " \
-               f"_script={self._script!r})"
-
-    @property
-    def script_name(self) -> str:
-        return self._script
-
-    def convert_to_string(self, *, indent: int = 0, _previous_indent: int = 0) -> str:
-        gatekeep_indent(indent)
-        indent_sequence = define_indent_sequence(indent, _previous_indent)
-        return (
-            f"{' ' * _previous_indent}{self.__class__.__name__}("
-            + create_string_from_sequence(self._body, "body", indent, indent + _previous_indent)
-            + ", "
-              f"{indent_sequence}{' ' * indent}script_name={self._script!r})"
-        )
-
-    @classmethod
-    @abstractmethod
-    def evaluate_syntax(cls, match_object: re.Match) -> Self:
-        return NotImplemented
+    __attributes__ = (SpecificAttribute.SCRIPT, Attribute.BODY)
