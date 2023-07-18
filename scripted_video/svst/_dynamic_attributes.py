@@ -11,6 +11,7 @@ convert_to_string method, and have __slots__. Dataclass implementations do
 not necessarily work to the use case I need, so I'd rather have it written
 myself and prevent repeated code that way.
 """
+import enum
 import io
 import sys
 
@@ -35,6 +36,19 @@ class _PredefinedSlotsError(Exception):
 
 class _UndefinedAttributesError(Exception):
     pass
+
+
+class Attribute(enum.Enum):
+    BODY = enum.auto()
+    NAME = enum.auto()
+    VALUE = enum.auto()
+    SUBJECTS = enum.auto()
+
+
+class WhitespaceAttribute(enum.Enum):
+    AFTER_EQUAL_SIGN = enum.auto()
+    AFTER_KEYWORD = enum.auto()
+    BEFORE_EQUAL_SIGN = enum.auto()
 
 
 _NO_DEFAULT = object()
@@ -81,13 +95,13 @@ class _ListAttributeSet(_AttributeSet):
 
 
 _attributes = {
-    "body": _ListAttributeSet("body", list, default_factory=list),
-    "name": _AttributeSet("name", str),
-    "value": _AttributeSet("value", str),
-    "subjects": _ListAttributeSet("subjects", list, default_factory=list),
-    "ws_after_equal_sign": _AttributeSet("ws_after_equal_sign", str, default=""),
-    "ws_after_keyword": _AttributeSet("ws_after_keyword", str, default=""),
-    "ws_before_equal_sign": _AttributeSet("ws_before_equal_sign", str, default=""),
+    Attribute.BODY: _ListAttributeSet("body", list, default_factory=list),
+    Attribute.NAME: _AttributeSet("name", str),
+    Attribute.VALUE: _AttributeSet("value", str),
+    Attribute.SUBJECTS: _ListAttributeSet("subjects", list, default_factory=list),
+    WhitespaceAttribute.AFTER_EQUAL_SIGN: _AttributeSet("ws_after_equal_sign", str, default=""),
+    WhitespaceAttribute.AFTER_KEYWORD: _AttributeSet("ws_after_keyword", str, default=""),
+    WhitespaceAttribute.BEFORE_EQUAL_SIGN: _AttributeSet("ws_before_equal_sign", str, default=""),
 }
 
 

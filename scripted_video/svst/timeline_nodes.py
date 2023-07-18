@@ -1,5 +1,5 @@
 from ._attribute_superclass import SVST_Attribute_Body, SVST_Attribute_BodySubjects, SVST_Attribute_NameValue
-from ._dynamic_attributes import dynamic_attributes
+from ._dynamic_attributes import Attribute, dynamic_attributes, WhitespaceAttribute
 from ._functions import create_string_from_sequence, define_indent_sequence, gatekeep_indent
 from .neutral_nodes import Object, Property
 from .root_node import SVST_RootNode
@@ -33,7 +33,8 @@ class Metadata(TimelineNode):
 
     META <attribute> = <value>;
     """
-    __attributes__ = ("name", "value", "ws_after_keyword", "ws_after_equal_sign", "ws_before_equal_sign")
+    __attributes__ = (Attribute.NAME, Attribute.VALUE, WhitespaceAttribute.AFTER_KEYWORD,
+                      WhitespaceAttribute.AFTER_EQUAL_SIGN, WhitespaceAttribute.BEFORE_EQUAL_SIGN)
     # _syntax = r"META ([\w_]+)[\s| ]*={1}[\s| ]*([\w_]+)"
     _syntax = r"HEAD ([\s|]*)([\w_]+)([\s| ]*)={1}([\s| ]*)([\w_]+)"
 
