@@ -49,36 +49,16 @@ class Metadata(TimelineNode):
                    whitespace_before_equal)
 
 
-class Declare(SVST_Attribute_NameValue, TimelineNode):
+@dynamic_attributes
+class Declare(TimelineNode):
     """
     The Declare node refers to the SET keyword. The syntax looks
     approximately as follows:
 
     DECLARE <type> <variable-name> = <value>;
     """
-    __slots__ = ("_type",)
+    __attributes__ = (Attribute.NAME, Attribute.VALUE, Attribute.TYPE)
     _syntax = r"DECLARE ([\w_]+)[\s|]+([\w_]+)[\s|]*={1}[\s|]*([\w\s_!.,\"]+)"
-
-    def __init__(self, name: str, value: str, type_: str):
-        super().__init__(name, value)
-        self._type = type_
-
-    def __repr__(self):
-        return f"{self.__class__.__name__}(_name={self._name}, _value={self._value}, _type={self._type})"
-
-    @property
-    def type(self) -> str:
-        return self._type
-
-    def convert_to_string(self, *, indent: int = 0, _previous_indent: int = 0) -> str:
-        gatekeep_indent(indent)
-        indent_sequence = define_indent_sequence(indent, _previous_indent)
-        return (
-            f"{indent_sequence[1:]}{self.__class__.__name__}("
-            f"{indent_sequence}{' ' * indent}name={self._name!r}, "
-            f"{indent_sequence}{' ' * indent}value={self._value!r}, "
-            f"{indent_sequence}{' ' * indent}type={self._type!r})"
-        )
 
     @classmethod
     def evaluate_syntax(cls, match_object: re.Match) -> Self:
