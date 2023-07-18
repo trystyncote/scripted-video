@@ -124,7 +124,8 @@ class Move(TimelineNode):
         return class_object
 
 
-class Delete(SVST_Attribute_BodySubjects, TimelineNode):
+@dynamic_attributes
+class Delete(TimelineNode):
     """
     The Delete node refers to the 'DELETE' keyword. The syntax looks
     approximately as follows:
@@ -133,7 +134,7 @@ class Delete(SVST_Attribute_BodySubjects, TimelineNode):
 
     Deprecated functionality and will eventually be deleted.
     """
-    __slots__ = ()
+    __attributes__ = (Attribute.BODY, Attribute.SUBJECTS)
     _syntax = r"DELETE OBJECT (\*[\w\-_]+):[\s| ]*([\w\s\$\-_\/.]*)"
 
     @classmethod
