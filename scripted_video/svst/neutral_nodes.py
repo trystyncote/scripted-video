@@ -1,4 +1,5 @@
 from ._attribute_superclass import SVST_Attribute_Name, SVST_Attribute_NameValue
+from ._dynamic_attributes import dynamic_attributes, SpecificAttribute
 from ._functions import gatekeep_indent
 from .root_node import SVST_RootNode
 
@@ -7,25 +8,11 @@ import re
 from typing import Self
 
 
+@dynamic_attributes
 class Doctype(SVST_RootNode):
-    __slots__ = ("_doctype",)
+    __attributes__ = (SpecificAttribute.DOCTYPE,)
     syntax = r"@DOCTYPE [\s| ]*(scripted-video){1}"
     # syntax = r"@DOCTYPE [\s| ]*(scripted-video){1}[\s| ]+((?:TIMELINE)|(?:MASTER[-]*SCRIPT)|(?:DESIGN)){1};"
-
-    def __init__(self, doctype: str):
-        self._doctype = doctype
-        super().__init__()
-
-    def __repr__(self):
-        return f"{self.__class__.__name__}(_doctype={self._doctype})"
-
-    @property
-    def doctype(self) -> str:
-        return self._doctype
-
-    def convert_to_string(self, *, indent: int = 0, _previous_indent: int = 0) -> str:
-        gatekeep_indent(indent)
-        return f"{' ' * _previous_indent}{self.__class__.__name__}({self._doctype!r})"
 
     @classmethod
     def evaluate_syntax(cls, match_object: re.Match) -> Self:
