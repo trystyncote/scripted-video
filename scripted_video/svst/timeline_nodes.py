@@ -2,7 +2,6 @@ from ._dynamic_attributes import Attribute, dynamic_attributes, SpecificAttribut
 from .neutral_nodes import Object, Property
 from .root_node import SVST_RootNode
 
-from abc import abstractmethod
 from collections.abc import MutableMapping
 import re
 from typing import Self

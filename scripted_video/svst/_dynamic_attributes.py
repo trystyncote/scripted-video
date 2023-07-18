@@ -15,12 +15,6 @@ import enum
 import io
 import sys
 
-from ._functions import define_indent_sequence
-
-
-_ = define_indent_sequence(0, 0)  # Preventing 'unused import' flag. This
-# function is required for when the body of a class is evaluated.
-
 
 class _InaccessibleAttributeError(Exception):
     pass
