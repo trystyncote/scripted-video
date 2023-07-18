@@ -21,18 +21,15 @@ class Doctype(SVST_RootNode):
         return class_object
 
 
-class Object(SVST_Attribute_Name):
+@dynamic_attributes
+class Object(SVST_RootNode):
     """
     The Object node refers to a reference to an object, via the approximate
     syntax [*<object>]. The name of the object is referenced as the 'name'.
     Meant to be referred as a subject of another node.
     """
-    __slots__ = ()
+    __attributes__ = (Attribute.NAME,)
 
-    @classmethod
-    @abstractmethod
-    def evaluate_syntax(cls, match_object: re.Match) -> Self:
-        return NotImplemented
 
 
 class Property(SVST_Attribute_NameValue):
