@@ -1,9 +1,6 @@
-from ._attribute_superclass import SVST_Attribute_Name, SVST_Attribute_NameValue
-from ._dynamic_attributes import dynamic_attributes, SpecificAttribute
-from ._functions import gatekeep_indent
+from ._dynamic_attributes import Attribute, dynamic_attributes, SpecificAttribute
 from .root_node import SVST_RootNode
 
-from abc import abstractmethod
 import re
 from typing import Self
 
@@ -41,26 +38,6 @@ class Property(SVST_RootNode):
     __attributes__ = (Attribute.NAME, Attribute.VALUE)
 
 
-
+@dynamic_attributes
 class UnknownSyntax(SVST_RootNode):
-    __slots__ = ("_contents",)
-
-    def __init__(self, contents: str):
-        self._contents = contents
-        super().__init__()
-
-    def __repr__(self):
-        return f"{self.__class__.__name__}(_contents={self._contents!r})"
-
-    @property
-    def contents(self):
-        return self._contents
-
-    def convert_to_string(self, *, indent: int = 0, _previous_indent: int = 0) -> str:
-        gatekeep_indent(indent)
-        return f"{' ' * _previous_indent}{self.__class__.__name__}({self._contents!r})"
-
-    @classmethod
-    @abstractmethod
-    def evaluate_syntax(cls, match_object: re.Match) -> Self:
-        return NotImplemented
+    __attributes__ = (SpecificAttribute.CONTENTS,)
