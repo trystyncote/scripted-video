@@ -20,7 +20,7 @@ class NeutralNode(SVST_RootNode):
 @dynamic_attributes
 class Doctype(NeutralNode):
     __attributes__ = (SpecificAttribute.DOCTYPE,)
-    syntax = r"@DOCTYPE [\s| ]*(scripted-video){1}"
+    _syntax = r"@DOCTYPE [\s| ]*(scripted-video){1}"
     # syntax = r"@DOCTYPE [\s| ]*(scripted-video){1}[\s| ]+((?:TIMELINE)|(?:MASTER[-]*SCRIPT)|(?:DESIGN)){1};"
 
     @classmethod
