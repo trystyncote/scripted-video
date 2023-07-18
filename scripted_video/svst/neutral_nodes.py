@@ -31,19 +31,15 @@ class Object(SVST_RootNode):
     __attributes__ = (Attribute.NAME,)
 
 
-
-class Property(SVST_Attribute_NameValue):
+@dynamic_attributes
+class Property(SVST_RootNode):
     """
     The Property node refers to a call to a property and its value. The name of
     the property is referenced as the 'name', and its value as 'value'. Meant
     to be referred as a member of the body of another node.
     """
-    __slots__ = ()
+    __attributes__ = (Attribute.NAME, Attribute.VALUE)
 
-    @classmethod
-    @abstractmethod
-    def evaluate_syntax(cls, match_object: re.Match) -> Self:
-        return NotImplemented
 
 
 class UnknownSyntax(SVST_RootNode):
