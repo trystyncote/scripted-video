@@ -1,18 +1,12 @@
-from ._attribute_superclass import SVST_Attribute_Value
-
-from abc import abstractmethod
-import re
-from typing import Self
+from ._dynamic_attributes import Attribute, dynamic_attributes
+from .root_node import SVST_RootNode
 
 
-class SimpleWhitespace(SVST_Attribute_Value):
+@dynamic_attributes
+class SimpleWhitespace(SVST_RootNode):
+    __attributes__ = (Attribute.VALUE,)
     __slots__ = ()  # preventing creation of __dict__.
 
     @property
     def empty(self):
         return bool(self._value)
-
-    @classmethod
-    @abstractmethod
-    def evaluate_syntax(cls, match_object: re.Match) -> Self:
-        return NotImplemented
