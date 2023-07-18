@@ -240,19 +240,6 @@ _SVST_Attribute_Name = _factory_Attribute_Name("_SVST_Attribute_Name", inherited
 _SVST_Attribute_Value = _factory_Attribute_Value("_SVST_Attribute_Value", inherited_classes=SVST_RootNode)
 _SVST_Attribute_NameValue = _factory_Attribute_Value("_SVST_Attribute_NameValue",
                                                      inherited_classes=_SVST_Attribute_Name)
-_SVST_Attribute_Name_Value_WsAfterEqual = _factory_Attribute_WhitespaceAfterEqualSign(
-    "_SVST_Attribute_Name_Value_WsAfterEqual",
-    inherited_classes=_SVST_Attribute_NameValue
-)
-_SVST_Attribute_Name_Value_WsAfterEqual_WsBeforeEqual = _factory_Attribute_WhitespaceBeforeEqualSign(
-    "_SVST_Attribute_Name_Value_WsAfterEqual_WsBeforeEqual",
-    inherited_classes=_SVST_Attribute_Name_Value_WsAfterEqual
-)
-# _SVST_Attribute_Name_Value_WsAfterEqual_WsBeforeEqual_WsAfterKeyword
-_SVST_Attribute_Name_Value_WsAfterEqual_WsBeforeEqual_WsAfterKeyword = _factory_Attribute_WhitespaceAfterKeyword(
-    "_SVST_Attribute_Name_Value_WsAfterEqual_WsBeforeEqual_WsAfterKeyword",
-    inherited_classes=_SVST_Attribute_Name_Value_WsAfterEqual_WsBeforeEqual
-)
 
 
 def _redefined_combo_Attribute_BodySubjects():
@@ -295,33 +282,6 @@ def _redefined_combo_Attribute_NameValue():
 
 _SVST_Attribute_NameValue.__repr__, \
     _SVST_Attribute_NameValue.convert_to_string = _redefined_combo_Attribute_NameValue()
-
-
-def _redefined_combo_Attribute_Name_Value_WsAftEqual_WsBefEqual_WsAftKeyword():
-    def redefined_repr(self):
-        return f"{self.__class__.__name__}(_name={self._name}, _value={self._value}, " \
-               f"whitespace_after_keyword={self.whitespace_after_keyword}, " \
-               f"whitespace_before_equal_sign={self.whitespace_before_equal_sign}, " \
-               f"whitespace_after_equal_sign={self.whitespace_after_equal_sign})"
-
-    def convert_to_string(self, *, indent: int = 0, _previous_indent: int = 0) -> str:
-        gatekeep_indent(indent)
-        indent_sequence = define_indent_sequence(indent, _previous_indent)
-        return (
-            f"{indent_sequence[1:]}{self.__class__.__name__}("
-            f"{indent_sequence}{' ' * indent}name={self._name!r}, "
-            f"{indent_sequence}{' ' * indent}value={self._value!r}, "
-            f"{indent_sequence}{' ' * indent}whitespace_after_keyword={self.whitespace_after_keyword!r}, "
-            f"{indent_sequence}{' ' * indent}whitespace_before_equal_sign={self.whitespace_before_equal_sign!r}, "
-            f"{indent_sequence}{' ' * indent}whitespace_after_equal_sign={self.whitespace_after_equal_sign!r})"
-        )
-
-    return redefined_repr, convert_to_string
-
-
-_SVST_Attribute_Name_Value_WsAfterEqual_WsBeforeEqual_WsAfterKeyword.__repr__, \
-    _SVST_Attribute_Name_Value_WsAfterEqual_WsBeforeEqual_WsAfterKeyword.convert_to_string = \
-    _redefined_combo_Attribute_Name_Value_WsAftEqual_WsBefEqual_WsAftKeyword()
 
 
 class SVST_Attribute_Body(_SVST_Attribute_Body):
@@ -389,21 +349,6 @@ class SVST_Attribute_NameValue(_SVST_Attribute_NameValue):
 
     def __init__(self, name: str, value: str):
         super().__init__(value, name)
-
-    @classmethod
-    @abstractmethod
-    def evaluate_syntax(cls, match_object: re.Match) -> Self:
-        return NotImplemented
-
-
-class SVST_Attribute_Name_Value_WsAftKeyword_WsBefEqual_WsAftEqual(
-    _SVST_Attribute_Name_Value_WsAfterEqual_WsBeforeEqual_WsAfterKeyword
-):
-    __slots__ = ()
-
-    def __init__(self, name: str, value: str, ws_after_keyword: str = "", ws_before_equal: str = "",
-                 ws_after_equal: str = ""):
-        super().__init__(ws_after_keyword, ws_before_equal, ws_after_equal, value, name)
 
     @classmethod
     @abstractmethod
