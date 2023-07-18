@@ -43,6 +43,13 @@ class Attribute(enum.Enum):
     NAME = enum.auto()
     VALUE = enum.auto()
     SUBJECTS = enum.auto()
+    TYPE = enum.auto()
+
+
+class SpecificAttribute(enum.Enum):
+    DOCTYPE = enum.auto()
+    CONTENTS = enum.auto()
+    SCRIPT = enum.auto()
 
 
 class WhitespaceAttribute(enum.Enum):
@@ -96,9 +103,13 @@ class _ListAttributeSet(_AttributeSet):
 
 _attributes = {
     Attribute.BODY: _ListAttributeSet("body", list, default_factory=list),
+    SpecificAttribute.CONTENTS: _AttributeSet("contents", str),
+    SpecificAttribute.DOCTYPE: _AttributeSet("doctype", str),
     Attribute.NAME: _AttributeSet("name", str),
     Attribute.VALUE: _AttributeSet("value", str),
+    SpecificAttribute.SCRIPT: _AttributeSet("script", str),
     Attribute.SUBJECTS: _ListAttributeSet("subjects", list, default_factory=list),
+    Attribute.TYPE: _AttributeSet("type", str),
     WhitespaceAttribute.AFTER_EQUAL_SIGN: _AttributeSet("ws_after_equal_sign", str, default=""),
     WhitespaceAttribute.AFTER_KEYWORD: _AttributeSet("ws_after_keyword", str, default=""),
     WhitespaceAttribute.BEFORE_EQUAL_SIGN: _AttributeSet("ws_before_equal_sign", str, default=""),
