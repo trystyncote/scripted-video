@@ -96,7 +96,8 @@ class Create(TimelineNode):
         return class_object
 
 
-class Move(SVST_Attribute_BodySubjects, TimelineNode):
+@dynamic_attributes
+class Move(TimelineNode):
     """
     The Move node refers to the 'MOVE' keyword. The syntax looks approximately
     as follows:
@@ -105,7 +106,7 @@ class Move(SVST_Attribute_BodySubjects, TimelineNode):
         <property>: <value>; ...
     };
     """
-    __slots__ = ()
+    __attributes__ = (Attribute.BODY, Attribute.SUBJECTS)
     _syntax = r"MOVE (\*[\w_]*[,(\s| )\*[\w_]*]*)[\s| ]{([\w\s_\-;:.$\/]*)}"
     _sub_syntax = r"([\w_-]+)[\s|]*:[\s|]*([\w$\/\-_\. ]+)[\s|]*;"
 
