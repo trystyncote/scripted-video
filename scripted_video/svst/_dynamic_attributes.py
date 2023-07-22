@@ -12,7 +12,6 @@ not necessarily work to the use case I need, so I'd rather have it written
 myself and prevent repeated code that way.
 """
 import enum
-import inspect
 import io
 import sys
 

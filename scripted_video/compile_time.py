@@ -52,7 +52,8 @@ def dissect_syntax(command: str, syntax_tree):
 def navigate_syntax_tree(syntax_tree, object_information, script_variables, options):
     if options.debug:
         print(":: Generated Syntax Tree:")
-        print(syntax_tree.__str__(indent=2))
+        # print(syntax_tree.__str__(indent=2))
+        svst.dump(syntax_tree, indent=2)
         print("")
 
     qualm_group = QualmGroup()
