@@ -142,6 +142,8 @@ def _create_dunder_init(cls):
         lines.append(_attributes[name].initialization())
         if _attributes[name].is_parameter:
             parameters.append(_attributes[name])
+    if len(cls.__attributes__) == 0:
+        lines.append(f"{4*' '}pass")
     return _set_attributes(
         cls,
         "__init__",
@@ -176,7 +178,10 @@ def _create_dunder_repr(cls):
     for field in cls.__attributes__:
         # TODO: Change behaviour to write differently for sequence objects.
         body.write(f"{_attributes[field].internal_name}={{self.{_attributes[field].internal_name}!r}}, ")
-    body = body.getvalue()[:-2] + ")\""
+    if len(cls.__attributes__) == 0:
+        body = body.getvalue() + ")\""
+    else:
+        body = body.getvalue()[:-2] + ")\""
     return _set_attributes(
         cls,
         "__repr__",
