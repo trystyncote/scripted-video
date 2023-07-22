@@ -12,6 +12,7 @@ not necessarily work to the use case I need, so I'd rather have it written
 myself and prevent repeated code that way.
 """
 import enum
+import inspect
 import io
 import sys
 
@@ -212,14 +213,67 @@ def _create_dunder_setattr(cls):
     )
 
 
-def _create_dunder_str(cls):
+def _str_attribute_return(attributes):
+    new_lines = [
+        f"{4*' '}return (",
+        f"{8*' '}f\'{{indent_sequence}}{{self.__class__.__name__}}(\'"
+    ]
+    for attribute in attributes:
+        attr = _attributes[attribute]
+        if isinstance(attr, _ListAttributeSet):
+            new_lines.append(f"{8*' '}+ f\'{{indent_sequence}}{{indent_jump}}{attr.name}=[\'")
+            new_lines.append(f"{8*' '}+ \'\'.join(node.__str__(indent=indent, "
+                             "_previous_indent=_previous_indent + (2 * indent)) + \', \'")
+            new_lines.append(f"{18*' '}if hasattr(node, \'__called_dynamic__\') else f\'{{indent_sequence}}"
+                             f"{{2 * indent_jump}}{{node!r}}\'")
+            new_lines.append(f"{18*' '}for node in self.{attr.internal_name})[:-2]")
+            new_lines.append(f"{8*' '}+ \']\'")
+        else:
+            new_lines.append(f"{8*' '}+ f\'{{indent_sequence}}{{indent_jump}}{attr.name}="
+                             f"{{self.{attr.internal_name}}}\'")
+        new_lines.append(f"{8*' '}+ \', \'")
+    new_lines.pop(-1)
+    new_lines.append(f"{8*' '}+ \')\'")
+    new_lines.append(f"{4*' '})")
+    return new_lines
+
+
+def _create_dunder_str(cls, x=False):
+    lines = [
+        f"{4*' '}indent_sequence = \'\'",
+        f"{4*' '}if indent > 0:",
+        f"{8*' '}indent_sequence = f\'\\n{{\" \"*_previous_indent}}\'"
+    ]
+    new_lines = []
+
+    if len(cls.__attributes__) == 0:
+        lines.append(f"{4*' '}return f\'{{indent_sequence}}{{self.__class__.__name__}}()\'")
+
+    elif len(cls.__attributes__) == 1:
+        attr = _attributes[cls.__attributes__[0]]
+        if isinstance(attr, _ListAttributeSet):
+            lines.append(f"{4*' '}indent_jump = \' \' * indent")
+            new_lines = _str_attribute_return(cls.__attributes__)
+        else:
+            lines.append(f"{4*' '}return f\'{{indent_sequence}}{{self.__class__.__name__}}("
+                         f"{attr.name}={{self.{attr.internal_name}!r}})\'")
+
+    else:
+        lines.append(f"{4*' '}indent_jump = \' \' * indent")
+        new_lines = _str_attribute_return(cls.__attributes__)
+
+    for line in new_lines:
+        lines.append(line)
+
+    if x:
+        return "\n".join(lines)
     return _set_attributes(
         cls,
         "__str__",
         _create_function(
             "__str__",
-            ("self",),
-            (f"{4*' '}return self.convert_to_string()",),
+            ("self", "*", "indent: int = 0", "_previous_indent: int = 0"),
+            tuple(lines),
             globals_=sys.modules[cls.__module__].__dict__
         )
     )
@@ -246,99 +300,13 @@ def _create_function(name, args, body, *, local=None, globals_=None):
     return namespace["__create_fn__"](**local)
 
 
-def _create_function_convert_to_string(cls):
-    # Basically, this function writes a new function that uses a lot of
-    # f-strings. This is particularly unreadable, so I'm including comment
-    # representations of what the intended output is.
-    lines = []
-    attributes = cls.__attributes__
-
-    if len(attributes) == 0:
-        lines.append(f"{4*' '}return f\'{{\" \" * _previous_indent}}{{self.__class__.__name__}}()\'")
-        # def convert_to_string(self, *, indent: int = 0, _previous_indent: int = 0) -> str:
-        #     return f'{" " * _previous_indent}{self.__class__.__name__}()'
-
-    elif len(attributes) == 1:
-        attr = _attributes[attributes[0]]
-        if type(attr.annotation) == list:
-            new_lines = [
-                f"{4 * ' '}if len(self.{attr.internal_name}) == 0:",
-                f"{8 * ' '}return f\'{{\" \" * _previous_indent}}{{self.__class__.__name__}}"
-                f"({attr.name}={{self.{attr.internal_name}}})\'",
-                f"{4 * ' '}return (",
-                f"{8 * ' '}f\'{{\" \" * _previous_indent}}{{self.__class__.__name__}}(\'",
-                f"{8 * ' '}+ create_string_from_sequence(self.{attr.internal_name}, \'{attr.name}\', "
-                f"indent, indent + _previous_indent)",
-                f"{8 * ' '}+ \')\'",
-                f"{4 * ' '})"
-            ]
-            # def convert_to_string(self, *, indent: int = 0, _previous_indent: int = 0) -> str:
-            #     if len(self.<sequence>) == 0:
-            #         return f"{' ' * _previous_indent}{self.__class__.__name__}(<sequence>={self.<sequence>})"
-            #     return (
-            #         f"{' ' * _previous_indent}{self.__class__.__name__}("
-            #         + create_string_from_sequence(self.<sequence>, "<sequence>", indent, indent + _previous_indent)
-            #         + ")"
-            #     )
-        else:
-            new_lines = [
-                f"{4 * ' '}return f\'{{\" \" * _previous_indent}}{{self.__class__.__name__}}({attr.name}="
-                f"{{self.{attr.internal_name}!r}})\'"
-            ]
-            # def convert_to_string(self, *, indent: int = 0, _previous_indent: int = 0) -> str:
-            #     return f'{" " * _previous_indent}{self.__class__.__name__}(<name>={self.<name>})'
-
-        for new_line in new_lines:
-            lines.append(new_line)
-
-    else:
-        lines.append(f"{4*' '}indent_sequence = define_indent_sequence(indent, _previous_indent)")
-        lines.append(f"{4*' '}return (")
-        lines.append(f"{8*' '}f\"{{\' \' * _previous_indent}}{{self.__class__.__name__}}(\"")
-        for a in attributes:
-            attr = _attributes[a]
-            if type(attr.annotation) == list:
-                lines.append(f"{8*' '}+ (create_string_from_sequence(self.{attr.internal_name}, \"{attr.name}\", "
-                             f"indent, indent + _previous_indent)")
-                lines.append(f"{11*' '}if len(self.{attr.internal_name} != 0 else f\'{{\" \" * _previous_indent}}"
-                             f"{attr.name}=[]\'))")
-            else:
-                lines.append(f"{8*' '}+ f\'{{indent_sequence}}{{\" \" * indent}}{attr.name}"
-                             f"={{self.{attr.internal_name}!r}}\'")
-
-            lines.append(f"{8*' '}+ \', \'")
-
-        lines.pop(-1)
-        lines.append(f"{8*' '}+ \')\'")
-        lines.append(f"{4*' '})")
-        # def convert_to_string(self, *, indent: int = 0, _previous_indent: int = 0) -> str:
-        #     return (
-        #         f"{' ' * _previous_indent}{self.__class__.__name__}("
-        #         + (create_string_from_sequence(self.<sequence>, "<sequence>", indent, indent + _previous_indent)
-        #            if len(self.<sequence> != 0 else f"{' ' * _previous_indent}<sequence>=[]"))  # for sequence objects
-        #         + ", "
-        #         + f"{' ' * _previous_indent}<name>={self.<name>}"  # for non-sequence objects
-        #         + ")"
-        #     )
-
-    return _set_attributes(
-        cls,
-        "convert_to_string",
-        _create_function(
-            "convert_to_string",
-            ("self", "*", "indent: int = 0", "_previous_indent: int = 0"),
-            tuple(lines),
-            globals_=sys.modules[cls.__module__].__dict__
-        )
-    )
-
-
 def _define_class(cls):
     functionalities = [_create_dunder_init, _create_dunder_repr, _create_dunder_str, _create_dunder_getattribute,
-                       _create_dunder_setattr, _create_function_convert_to_string]
+                       _create_dunder_setattr, ]
     for func in functionalities:
         func(cls)
     cls = _add_slots(cls)
+    cls.__called_dynamic__ = True
     return cls
 
 
@@ -362,3 +330,104 @@ def dynamic_attributes(cls, /):
         return _define_class(cls)
 
     return wrapper()
+
+
+# ... ... ...
+
+
+def main():
+    @dynamic_attributes
+    class A:
+        __attributes__ = (Attribute.NAME, Attribute.VALUE, Attribute.BODY)
+
+    @dynamic_attributes
+    class B:
+        __attributes__ = (Attribute.NAME,)
+
+    @dynamic_attributes
+    class C:
+        __attributes__ = (Attribute.BODY, SpecificAttribute.CONTENTS)
+
+    @dynamic_attributes
+    class D:
+        __attributes__ = ()
+
+    # class Root_:
+    #     def __str__(self, *, indent: int = 0, _previous_indent: int = 0):
+    #         return NotImplemented
+    #
+    # class A_(Root_):
+    #     __attributes__ = (Attribute.BODY, Attribute.NAME, Attribute.VALUE,)
+    #
+    #     def __init__(self, n, v):
+    #         self.body = []
+    #         self.name = n
+    #         self.value = v
+    #
+    #     def __str__(self, *, indent: int = 0, _previous_indent: int = 0):
+    #         indent_sequence = ''
+    #         if indent > 0:
+    #             indent_sequence = f'\n{" " * _previous_indent}'
+    #         indent_jump = ' '*indent
+    #         return (
+    #                 f'{indent_sequence}{self.__class__.__name__}('
+    #                 + f'{indent_sequence}{indent_jump}body=['
+    #                 + ''.join(node.__str__(indent=indent, _previous_indent=_previous_indent + (2 * indent))
+    #                           if hasattr(node, '__called_dynamic__') else f'{indent_sequence}{2 * indent_jump}{node!r}'
+    #                           for node in self.body)
+    #                 + ']'
+    #                 + ', '
+    #                 + f'{indent_sequence}{indent_jump}name={self.name}'
+    #                 + ', '
+    #                 + f'{indent_sequence}{indent_jump}value={self.value}'
+    #         )
+    #         # indent_sequence = ""
+    #         # if indent > 0:
+    #         #     indent_sequence = f"\n{' ' * _previous_indent}"
+    #         # indent_jump = ' ' * indent
+    #         # return (
+    #         #     f"{indent_sequence}{self.__class__.__name__}("
+    #         #     + f"{indent_sequence}{indent_jump}body=["
+    #         #     + ''.join(node.__str__(indent=indent, _previous_indent=_previous_indent + (2 * indent))
+    #         #               if hasattr(node, '__called_dynamic__') else f"{indent_sequence}{2 * indent_jump}{node!r}"
+    #         #               for node in self.body)
+    #         #     + ", "
+    #         #     + f"{indent_sequence}{indent_jump}name={self.name}"
+    #         #     + ", "
+    #         #     + f"{indent_sequence}{indent_jump}value={self.value}"
+    #         #     + "])"
+    #         # )
+    #
+    # class B_(Root_):
+    #     __called_dynamic__ = True
+    #
+    #     def __init__(self, val):
+    #         self.value = val
+    #
+    #     def __str__(self, *, indent: int = 0, _previous_indent: int = 0):
+    #         indent_sequence = ""
+    #         if indent > 0:
+    #             indent_sequence = f"\n{' ' * _previous_indent}"
+    #         return f"{indent_sequence}{self.__class__.__name__}(value={self.value})"
+    #
+    #     # def convert_to_string(self, *, indent: int = 0, _previous_indent: int = 0):
+
+    a = A("NMAE", "VLAUE")
+    b1 = B("ele1")
+    b2 = B("ele2")
+    b3 = B("ele3")
+    c = C("CNONTENTS")
+    c.body.append(b3)
+    a.body.append(b1)
+    a.body.append(b2)
+    a.body.append(c)
+    print(a.__str__(indent=4))
+    # print(_create_dunder_str(A, True))
+
+    # d = D()
+    # print(_create_dunder_str(D, True))
+    # print(d.__str__(indent=4))
+
+
+if __name__ == "__main__":
+    main()
