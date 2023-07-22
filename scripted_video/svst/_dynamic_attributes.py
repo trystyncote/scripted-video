@@ -229,7 +229,7 @@ def _str_attribute_return(attributes):
             new_lines.append(f"{8*' '}+ \']\'")
         else:
             new_lines.append(f"{8*' '}+ f\'{{indent_sequence}}{{indent_jump}}{attr.name}="
-                             f"{{self.{attr.internal_name}}}\'")
+                             f"{{self.{attr.internal_name}!r}}\'")
         new_lines.append(f"{8*' '}+ \', \'")
     new_lines.pop(-1)
     new_lines.append(f"{8*' '}+ \')\'")
