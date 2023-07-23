@@ -1,9 +1,9 @@
 @DOCTYPE scripted-video;
 
-HEAD window_width = 852;
-HEAD window_height = 480;
-HEAD frame_rate = 30;
-HEAD file_name = scripted_sampleVideo_final;
+META window_width = 852;
+META window_height = 480;
+META frame_rate = 30;
+META file_name = scripted_sampleVideo_final;
 /*
 Hello
 */

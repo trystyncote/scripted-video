@@ -24,16 +24,11 @@ class Metadata(TimelineNode):
     The Metadata node refers to the HEAD keyword. The syntax looks
     approximately as follows:
 
-    HEAD <attribute> = <value>;
-
-    Previous syntax will soon be deprecated, and converted into:
-
     META <attribute> = <value>;
     """
     __attributes__ = (Attribute.NAME, Attribute.VALUE, WhitespaceAttribute.AFTER_KEYWORD,
                       WhitespaceAttribute.AFTER_EQUAL_SIGN, WhitespaceAttribute.BEFORE_EQUAL_SIGN)
-    # _syntax = r"META ([\w_]+)[\s| ]*={1}[\s| ]*([\w_]+)"
-    _syntax = r"HEAD ([\s|]*)([\w_]+)([\s| ]*)={1}([\s| ]*)([\w_]+)"
+    _syntax = r"META ([\s|]*)([\w_]+)([\s| ]*)={1}([\s| ]*)([\w_]+)"
 
     @classmethod
     def evaluate_syntax(cls, match_object: re.Match) -> Self:
