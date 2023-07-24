@@ -14,6 +14,7 @@ myself and prevent repeated code that way.
 import enum
 import io
 import sys
+from typing import Protocol
 
 
 class _InaccessibleAttributeError(Exception):
@@ -316,7 +317,23 @@ def _set_attributes(cls, name, value):
     return False
 
 
-def dynamic_attributes(cls, /):
+class _HasDunderAttributes(Protocol):
+    __attributes__ = ...
+
+
+class _RewrittenStructure(Protocol):
+    def __init__(self, *args): ...
+
+    def __repr__(self): ...
+
+    def __str__(self, *, indent: int = 0, _previous_indent: int = 0): ...
+
+    def __getattribute__(self, item): ...
+
+    def __setattr__(self, key, value): ...
+
+
+def dynamic_attributes(cls: _HasDunderAttributes, /) -> _RewrittenStructure:
     if not hasattr(cls, "__attributes__"):
         raise _UndefinedAttributesError(f"Class \'{cls.__name__}\' does not define __attributes__.")
     for field in cls.__attributes__:
