@@ -12,6 +12,7 @@ not necessarily work to the use case I need, so I'd rather have it written
 myself and prevent repeated code that way.
 """
 import enum
+import inspect
 import io
 import sys
 from typing import Protocol
@@ -62,7 +63,7 @@ class _AttributeSet:
     def __init__(self, name, annotation, *, default=_NO_DEFAULT):
         self.name = name
         self.internal_name = f"_{name}"
-        self.annotation = annotation.__name__
+        self.annotation = annotation
         self.default = default
 
     @property
@@ -71,11 +72,6 @@ class _AttributeSet:
 
     def initialization(self):
         return f"{4 * ' '}self.{self.internal_name} = {self.name}"
-
-    def parameter(self):
-        if not self.is_parameter:
-            return ""
-        return f"{self.name}: {self.annotation}{f' = {self.default!r}' if self.default is not _NO_DEFAULT else ''}"
 
 
 class _ListAttributeSet(_AttributeSet):
@@ -93,7 +89,7 @@ class _ListAttributeSet(_AttributeSet):
         return False
 
     def initialization(self):
-        return f"{4*' '}self.{self.internal_name} = {self.default_factory}"
+        return f"{4 * ' '}self.{self.internal_name} = {self.default_factory}"
 
 
 _attributes = {
@@ -138,19 +134,23 @@ def _add_slots(cls):
 
 def _create_dunder_init(cls):
     lines = []
-    parameters = []
+    parameters = [inspect.Parameter("self", inspect.Parameter.POSITIONAL_OR_KEYWORD)]
     for name in cls.__attributes__:
         lines.append(_attributes[name].initialization())
         if _attributes[name].is_parameter:
-            parameters.append(_attributes[name])
+            parameters.append(inspect.Parameter(_attributes[name].name, inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                                                annotation=_attributes[name].annotation,
+                                                default=(_attributes[name].default
+                                                         if _attributes[name].default is not _NO_DEFAULT
+                                                         else inspect.Parameter.empty)))
     if len(cls.__attributes__) == 0:
-        lines.append(f"{4*' '}pass")
+        lines.append(f"{4 * ' '}pass")
     return _set_attributes(
         cls,
         "__init__",
         _create_function(
             "__init__",
-            ("self", *(a.parameter() for a in parameters)),
+            inspect.Signature(parameters),
             tuple(lines),
             globals_=sys.modules[cls.__module__].__dict__
         )
@@ -158,15 +158,17 @@ def _create_dunder_init(cls):
 
 
 def _create_dunder_getattribute(cls):
-    body = [f"{4*' '}try:", f"{8*' '}return object.__getattribute__(self, item)", f"{4*' '}except AttributeError:",
-            f"{8*' '}if item[0] != \"_\":", f"{12*' '}return object.__getattribute__(self, f\"_{{item}}\")",
-            f"{8*' '}raise"]
+    body = [f"{4 * ' '}try:", f"{8 * ' '}return object.__getattribute__(self, item)",
+            f"{4 * ' '}except AttributeError:",
+            f"{8 * ' '}if item[0] != \"_\":", f"{12 * ' '}return object.__getattribute__(self, f\"_{{item}}\")",
+            f"{8 * ' '}raise"]
     return _set_attributes(
         cls,
         "__getattribute__",
         _create_function(
             "__getattribute__",
-            ("self", "item"),
+            inspect.Signature([inspect.Parameter("self", inspect.Parameter.POSITIONAL_OR_KEYWORD),
+                               inspect.Parameter("item", inspect.Parameter.POSITIONAL_OR_KEYWORD)]),
             tuple(body),
             globals_=sys.modules[cls.__module__].__dict__
         )
@@ -175,7 +177,7 @@ def _create_dunder_getattribute(cls):
 
 def _create_dunder_repr(cls):
     body = io.StringIO()
-    body.write(f"{4*' '}return f\"{{self.__class__.__name__}}(")
+    body.write(f"{4 * ' '}return f\"{{self.__class__.__name__}}(")
     for field in cls.__attributes__:
         # TODO: Change behaviour to write differently for sequence objects.
         body.write(f"{_attributes[field].internal_name}={{self.{_attributes[field].internal_name}!r}}, ")
@@ -188,7 +190,7 @@ def _create_dunder_repr(cls):
         "__repr__",
         _create_function(
             "__repr__",
-            ("self",),
+            inspect.Signature([inspect.Parameter("self", inspect.Parameter.POSITIONAL_OR_KEYWORD)]),
             (body,),
             globals_=sys.modules[cls.__module__].__dict__
         )
@@ -196,17 +198,19 @@ def _create_dunder_repr(cls):
 
 
 def _create_dunder_setattr(cls):
-    body = [f"{4*' '}if getattr(self, key, None) is not None:",
-            f"{8*' '}from scripted_video.svst._dynamic_attributes import _InaccessibleAttributeError",
-            f"{8*' '}raise _InaccessibleAttributeError(f\"Attribute \\\'{{key}}\\\' of class "
+    body = [f"{4 * ' '}if getattr(self, key, None) is not None:",
+            f"{8 * ' '}from scripted_video.svst._dynamic_attributes import _InaccessibleAttributeError",
+            f"{8 * ' '}raise _InaccessibleAttributeError(f\"Attribute \\\'{{key}}\\\' of class "
             f"\\\'{{self.__class__.__name__}}\\\' is considered immutable.\")",
-            f"{4*' '}object.__setattr__(self, key, value)"]
+            f"{4 * ' '}object.__setattr__(self, key, value)"]
     return _set_attributes(
         cls,
         "__setattr__",
         _create_function(
             "__setattr__",
-            ("self", "key", "value"),
+            inspect.Signature([inspect.Parameter("self", inspect.Parameter.POSITIONAL_OR_KEYWORD),
+                               inspect.Parameter("key", inspect.Parameter.POSITIONAL_OR_KEYWORD),
+                               inspect.Parameter("value", inspect.Parameter.POSITIONAL_OR_KEYWORD)]),
             tuple(body),
             globals_=sys.modules[cls.__module__].__dict__
         )
@@ -215,64 +219,65 @@ def _create_dunder_setattr(cls):
 
 def _str_attribute_return(attributes):
     new_lines = [
-        f"{4*' '}return (",
-        f"{8*' '}f\'{{indent_sequence}}{{self.__class__.__name__}}(\'"
+        f"{4 * ' '}return (",
+        f"{8 * ' '}f\'{{indent_sequence}}{{self.__class__.__name__}}(\'"
     ]
     for attribute in attributes:
         attr = _attributes[attribute]
         if isinstance(attr, _ListAttributeSet):
-            new_lines.append(f"{8*' '}+ f\'{{indent_sequence}}{{indent_jump}}{attr.name}=[\'")
-            new_lines.append(f"{8*' '}+ \'\'.join(node.__str__(indent=indent, "
+            new_lines.append(f"{8 * ' '}+ f\'{{indent_sequence}}{{indent_jump}}{attr.name}=[\'")
+            new_lines.append(f"{8 * ' '}+ \'\'.join(node.__str__(indent=indent, "
                              "_previous_indent=_previous_indent + (2 * indent)) + \', \'")
-            new_lines.append(f"{18*' '}if hasattr(node, \'__called_dynamic__\') else f\'{{indent_sequence}}"
+            new_lines.append(f"{18 * ' '}if hasattr(node, \'__called_dynamic__\') else f\'{{indent_sequence}}"
                              f"{{2 * indent_jump}}{{node!r}}\'")
-            new_lines.append(f"{18*' '}for node in self.{attr.internal_name})[:-2]")
-            new_lines.append(f"{8*' '}+ \']\'")
+            new_lines.append(f"{18 * ' '}for node in self.{attr.internal_name})[:-2]")
+            new_lines.append(f"{8 * ' '}+ \']\'")
         else:
-            new_lines.append(f"{8*' '}+ f\'{{indent_sequence}}{{indent_jump}}{attr.name}="
+            new_lines.append(f"{8 * ' '}+ f\'{{indent_sequence}}{{indent_jump}}{attr.name}="
                              f"{{self.{attr.internal_name}!r}}\'")
-        new_lines.append(f"{8*' '}+ \', \'")
+        new_lines.append(f"{8 * ' '}+ \', \'")
     new_lines.pop(-1)
-    new_lines.append(f"{8*' '}+ \')\'")
-    new_lines.append(f"{4*' '})")
+    new_lines.append(f"{8 * ' '}+ \')\'")
+    new_lines.append(f"{4 * ' '})")
     return new_lines
 
 
-def _create_dunder_str(cls, x=False):
+def _create_dunder_str(cls):
     lines = [
-        f"{4*' '}indent_sequence = \'\'",
-        f"{4*' '}if indent > 0:",
-        f"{8*' '}indent_sequence = f\'\\n{{\" \"*_previous_indent}}\'"
+        f"{4 * ' '}indent_sequence = \'\'",
+        f"{4 * ' '}if indent > 0:",
+        f"{8 * ' '}indent_sequence = f\'\\n{{\" \"*_previous_indent}}\'"
     ]
     new_lines = []
 
     if len(cls.__attributes__) == 0:
-        lines.append(f"{4*' '}return f\'{{indent_sequence}}{{self.__class__.__name__}}()\'")
+        lines.append(f"{4 * ' '}return f\'{{indent_sequence}}{{self.__class__.__name__}}()\'")
 
     elif len(cls.__attributes__) == 1:
         attr = _attributes[cls.__attributes__[0]]
         if isinstance(attr, _ListAttributeSet):
-            lines.append(f"{4*' '}indent_jump = \' \' * indent")
+            lines.append(f"{4 * ' '}indent_jump = \' \' * indent")
             new_lines = _str_attribute_return(cls.__attributes__)
         else:
-            lines.append(f"{4*' '}return f\'{{indent_sequence}}{{self.__class__.__name__}}("
+            lines.append(f"{4 * ' '}return f\'{{indent_sequence}}{{self.__class__.__name__}}("
                          f"{attr.name}={{self.{attr.internal_name}!r}})\'")
 
     else:
-        lines.append(f"{4*' '}indent_jump = \' \' * indent")
+        lines.append(f"{4 * ' '}indent_jump = \' \' * indent")
         new_lines = _str_attribute_return(cls.__attributes__)
 
     for line in new_lines:
         lines.append(line)
 
-    if x:
-        return "\n".join(lines)
     return _set_attributes(
         cls,
         "__str__",
         _create_function(
             "__str__",
-            ("self", "*", "indent: int = 0", "_previous_indent: int = 0"),
+            inspect.Signature([inspect.Parameter("self", inspect.Parameter.POSITIONAL_OR_KEYWORD),
+                               inspect.Parameter("indent", inspect.Parameter.KEYWORD_ONLY, annotation=int, default=0),
+                               inspect.Parameter("_previous_indent", inspect.Parameter.KEYWORD_ONLY,
+                                                 annotation=int, default=0)]),
             tuple(lines),
             globals_=sys.modules[cls.__module__].__dict__
         )
@@ -283,9 +288,9 @@ def _create_function(name, args, body, *, local=None, globals_=None):
     if local is None:
         local = {}
 
-    args = ",".join(args)
-    body = "\n".join(f"{4*' '}{b}" for b in body)
-    header = f"def {name}({args}):"
+    args = str(args)
+    body = "\n".join(f"{4 * ' '}{b}" for b in body)
+    header = f"def {name}{args}:"
     local_vars = ", ".join(local.keys())
     indent = 4 * ' '
     txt = f"def __create_fn__({local_vars}):\n{indent}{header}\n" \
