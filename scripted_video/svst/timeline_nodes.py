@@ -37,8 +37,8 @@ class Metadata(TimelineNode):
         whitespace_before_equal = match_object.group(3)
         whitespace_after_equal = match_object.group(4)
         attribute_value = match_object.group(5)
-        return cls(attribute_name, attribute_value, whitespace_after_keyword, whitespace_after_equal,
-                   whitespace_before_equal)
+        return Metadata(attribute_name, attribute_value, whitespace_after_keyword, whitespace_after_equal,
+                        whitespace_before_equal)
 
 
 @dynamic_attributes
@@ -57,7 +57,7 @@ class Declare(TimelineNode):
         variable_type = match_object.group(1)
         variable_name = match_object.group(2)
         variable_value = match_object.group(3)
-        return cls(variable_name, variable_value, variable_type)
+        return Declare(variable_name, variable_value, variable_type)
 
 
 @dynamic_attributes

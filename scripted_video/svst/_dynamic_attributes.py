@@ -15,7 +15,6 @@ import enum
 import inspect
 import io
 import sys
-from typing import Protocol
 
 
 class _InaccessibleAttributeError(Exception):
@@ -322,23 +321,13 @@ def _set_attributes(cls, name, value):
     return False
 
 
-class _HasDunderAttributes(Protocol):
-    __attributes__ = ...
+def dynamic_attributes(cls=None, /):
+    def wrapper():
+        return _define_class(cls)
 
+    if cls is None:  # @dynamic_attributes()
+        return wrapper
 
-class _RewrittenStructure(Protocol):
-    def __init__(self, *args): ...
-
-    def __repr__(self): ...
-
-    def __str__(self, *, indent: int = 0, _previous_indent: int = 0): ...
-
-    def __getattribute__(self, item): ...
-
-    def __setattr__(self, key, value): ...
-
-
-def dynamic_attributes(cls: _HasDunderAttributes, /) -> _RewrittenStructure:
     if not hasattr(cls, "__attributes__"):
         raise _UndefinedAttributesError(f"Class \'{cls.__name__}\' does not define __attributes__.")
     for field in cls.__attributes__:
@@ -347,7 +336,4 @@ def dynamic_attributes(cls: _HasDunderAttributes, /) -> _RewrittenStructure:
         except KeyError:
             raise _InvalidAttributesError(f"Class \'{cls.__name__}\' has an undefined attribute: \'{field}\'.")
 
-    def wrapper():
-        return _define_class(cls)
-
-    return wrapper()
+    return wrapper()  # @dynamic_attributes
