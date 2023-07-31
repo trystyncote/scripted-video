@@ -167,7 +167,7 @@ def script_parser(file: (Path | str), /, *,
         inline comment.
     :return: Yields each line in the order of the file.
     """
-    if type(block_comment_characters) == str:
+    if type(block_comment_characters) is str:
         block_comment_characters = (block_comment_characters, block_comment_characters)
 
     at_end_of_line = False

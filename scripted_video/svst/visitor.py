@@ -21,7 +21,7 @@ def _iter_fields(node):
     for attr in dir(node):
         if attr.startswith("__") and attr.endswith("__"):
             continue
-        if type(attr) == Callable:
+        if type(attr) is Callable:
             continue
         yield getattr(node, attr)
 
