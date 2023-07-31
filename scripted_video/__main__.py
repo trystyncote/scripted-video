@@ -45,6 +45,9 @@ def main():
     parser.add_argument("script_file", help="the file that you would like to compile and generate into a video.")
     parser.add_argument("-v", "--verbose", help="increase output verbosity.", action="store_true")
     parser.add_argument("-d", "--debug", help="adds debug outputs at critical points.", action="store_true")
+    parser.add_argument("--reveal-syntax-tree", action="store_true",
+                        help="creates a text file with the printout of the script's syntax tree. used for debugging "
+                             "purposes.")
 
     args = parser.parse_args()
     try:
