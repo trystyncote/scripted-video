@@ -1,0 +1,89 @@
+/*
+NOTE: This file currently crashes scripted-video.
+This is published because
+*/
+
+@DOCTYPE scripted-video TIMELINE;
+META window_width = 800;
+META window_height = 600;
+META frame_rate = 24;
+META file_name = demo2_final;
+
+META save_location = Download;
+// ^^^- Testing a specific save location.
+
+DECLARE ADDRESS addr = !current-address;
+// These two sprite variables (sprt_x, sprt_y)
+// assume the dimensions of the sprite to be
+// 480 by 360.
+DECLARE INT sprt_x = 160;  // (800 - 480) / 2
+DECLARE INT sprt_y = 240;  // 600 - 360
+
+IMPORT svDemo2_DESIGN.txt;
+IMPORT invert_image FROM svDemo2_LIBRARY.txt;
+
+START TIMELINE;
+
+    >> 0s
+SHOW *bg;
+
+    >> +1f
+MOVE *bg {
+    duration: !remaining;
+    x: 10 * 24 * 3;
+    y: 10 * 24 * 2;
+};
+
+    >> 0.5s
+SHOW *sprite-happy;
+
+    >> + 1s  // 1.5s
+CALL invert_image(*sprite-happy, "horizontal");
+
+    >> + 2s  // 2.5s
+HIDE *sprite-happy;
+SHOW *sprite-upset;
+
+    >> + 1s  // 3.5s
+CALL invert_image(*sprite-upset, "vertical");
+MOVE *sprite-upset {
+    // Changes 'y' coordinate to hide on the top
+    // of frame.
+    y: 0;
+};
+
+    >> + 1s  // 4.5s
+HIDE *sprite-upset;
+SHOW *sprite-angry;
+
+    >> +1s  // 5.5s
+CALL invert_image(*sprite-angry, "horizontal");
+
+    >> +1s  // 6.5s
+HIDE *sprite-angry;
+
+    >> +0.5s  // 7s
+SHOW *proj1, *proj2, *proj3;
+
+    >> +1f  // 7s 1f
+MOVE *proj1 {
+    duration: 1s 23f;
+    x: 600;
+    y: 0;
+    timing: linear-ease;
+};
+MOVE *proj2 {
+    duration: 1s 23f;
+    x: 600;
+    y: 0;
+    timing: linear-ease-in;
+};
+MOVE *proj3 {
+    duration: 2s - 1f;
+    x: 600;
+    y: 0;
+    timing: linear-ease-out;
+};
+
+    >> 10s
+END TIMELINE;

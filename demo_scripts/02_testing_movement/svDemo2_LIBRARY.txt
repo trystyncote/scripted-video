@@ -1,0 +1,17 @@
+@DOCTYPE scripted-video LIBRARY;
+
+DEFINE invert_image($$obj, $$direction) {
+    FORCE $$direction.type is STRING;
+    FORCE $$direction == "horizontal".anycase OR $$direction == "vertical".anycase;
+    FORCE $$obj.type is ImageObject;
+
+    IF $$direction == "horizontal".anycase {
+        MOVE $$obj {
+            transform: scaleX(-1);
+        };
+    } ELSE IF $$direction == "vertical".anycase {
+        MOVE $$obj {
+            transform: scaleY(-1);
+        };
+    };
+};

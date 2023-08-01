@@ -1,0 +1,64 @@
+@DOCTYPE scripted-video DESIGN;
+
+*bg {
+    file-name: $addr/bg.png;
+    fit: repeat;
+    layer: 1;
+    scale: 1;
+    x: 0;
+    y: 0;
+};
+
+
+
+#sprite {
+    scale: 1;
+    x: $sprt_x;
+    y: $sprt_y;
+};
+
+*sprite-happy {
+    grade: sprite;
+    file-name: $addr/character_happy.png;
+    layer: 2;
+};
+
+*sprite-upset {
+    grade: sprite;
+    file-name: $addr/character_upset.png;
+    layer: 3;
+};
+
+*sprite-angry {
+    grade: sprite;
+    file-name: $addr/character_angry.png;
+    layer: 2;
+};
+
+
+
+#projectile {
+    // This grade assume the dimensions of the
+    // projectile to be 50 by 50.
+    file-name: $addr/projectile.png;
+    scale: 1;
+    x: 100;
+};
+
+*proj1 {
+    grade: projectile;
+    layer: 2;
+    y: 100;
+};
+
+*proj2 {
+    grade: projectile;
+    layer: 3;
+    y: 250;
+};
+
+*proj3 {
+    grade: projectile;
+    layer: 4;
+    y: 400;
+};
