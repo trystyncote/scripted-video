@@ -1,6 +1,7 @@
-from ._dynamic_attributes import Attribute, dynamic_attributes, SpecificAttribute, WhitespaceAttribute
-from .neutral_nodes import Object, Property
-from .root_node import SVST_RootNode
+from scripted_video.svst._dynamic_attributes import Attribute, dynamic_attributes, SpecificAttribute, \
+    WhitespaceAttribute
+from scripted_video.svst.neutral_nodes import Object, Property
+from scripted_video.svst.root_node import SVST_RootNode
 
 from collections.abc import MutableMapping
 import re

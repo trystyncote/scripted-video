@@ -1,5 +1,5 @@
-from ._dynamic_attributes import Attribute, dynamic_attributes
-from .root_node import SVST_RootNode
+from scripted_video.svst._dynamic_attributes import Attribute, dynamic_attributes
+from scripted_video.svst.root_node import SVST_RootNode
 
 
 @dynamic_attributes

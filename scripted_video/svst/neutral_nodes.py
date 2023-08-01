@@ -1,5 +1,5 @@
-from ._dynamic_attributes import Attribute, dynamic_attributes, SpecificAttribute
-from .root_node import SVST_RootNode
+from scripted_video.svst._dynamic_attributes import Attribute, dynamic_attributes, SpecificAttribute
+from scripted_video.svst.root_node import SVST_RootNode
 
 from collections.abc import MutableMapping
 import re
