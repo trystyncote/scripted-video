@@ -36,8 +36,8 @@ def test_qualms_group_add_crash(capture_stdout):
 
 @pytest.mark.parametrize("added_qualms,expected_sequence", [
     ((qualms.BaseIssue(), qualms.BaseQualm()),
-     (f"+{'-'*37}", "| :group: QualmGroup", f"+-+{'-'*16} 1 {'-'*16}", "  | :issue: BaseIssue", "  | ",
-      f"  +{'-'*16} 2 {'-'*16}", "  | :qualm: BaseQualm", "  | ", f"  +{'-'*35}"))
+     (f"+{'-'*37}", "| :group: QualmGroup", f"+-+{'-'*16} 1 {'-'*16}", "  | :issue: BaseIssue", "  |   ",
+      f"  +{'-'*16} 2 {'-'*16}", "  | :qualm: BaseQualm", "  |   ", f"  +{'-'*35}"))
 ])
 def test_qualms_group_traceback(added_qualms, expected_sequence, capture_stdout):
     expected = io.StringIO()
