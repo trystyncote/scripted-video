@@ -11,6 +11,7 @@ from scripted_video.objects.declarable_objects import ImageObject
 from scripted_video.objects.instruction import MoveInstruction
 
 from scripted_video.qualms.crash import DoctypeNotAtBeginning
+from scripted_video.qualms.qualms import UnrecognizedSyntax
 
 from pathlib import Path
 from typing import Callable
@@ -146,5 +147,10 @@ class SVST_NodeVisitor:
 
     def visit_TimelineModule(self, node, /):
         DoctypeNotAtBeginning.check(node, self._qualms)
+
+        return self.generic_visit(node)
+
+    def visit_UnknownSyntax(self, node, /):
+        UnrecognizedSyntax.check(node, self._qualms)
 
         return self.generic_visit(node)

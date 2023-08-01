@@ -23,7 +23,12 @@ class QualmGroup(RootPseudoError):
 
     @property
     def has_qualms(self):
-        return bool(self._qualms)
+        if not self._qualms:
+            return False
+        for qualm in self._qualms:
+            if isinstance(qualm, (BaseQualm, BaseCrash)):
+                return True
+        return False
 
     def add_qualm(self, added_exception: ANY_QUALM_OBJ):
         self._qualms.append(added_exception)
@@ -60,7 +65,7 @@ class QualmGroup(RootPseudoError):
                 f"  | {write_header(qualm.type, qualm.__class__.__name__, qualm.line_number, qualm.file_name)}"
             )  # [3.12] Utilize multi-line behaviour of f-strings to change this line's styling.
             # Default extends too long, against PEP8.
-            _series.append(f"  | {qualm.msg}")
+            _series.append(f"  |   {qualm.msg}")
             if qualm.cause:
                 _series.append("  |")
                 _series.append(f"  | {write_cause_line(qualm.cause)}")
