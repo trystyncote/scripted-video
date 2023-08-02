@@ -12,6 +12,26 @@ class svParserError(SyntaxError):
     pass
 
 
+class CommandLine:
+    __slots__ = ("_lines",)
+
+    def __init__(self, *lines: str):
+        """
+        CommandLine is a wrapper around a tuple of strings. It is returned from
+        script_parser to contain plenty of metadata about the script.
+
+        :argument lines: A tuple of each line passed in by positional argument.
+        """
+        self._lines: tuple[str, ...] = lines
+
+    def __iter__(self):
+        return self._lines
+
+    @property
+    def lines(self):
+        return self._lines
+
+
 def _read_script(file_name: (Path | str)):
     with open(file_name, "r", encoding="utf-8") as file_pointer:
         for line in file_pointer:
@@ -213,10 +233,10 @@ def script_parser(file: (Path | str), /, *,
         line_current = line_current.strip()
         if at_end_of_line:
             if line_previous:
-                yield _combine_previous_lines(*line_previous, line_current).strip()
+                yield CommandLine(_combine_previous_lines(*line_previous, line_current).strip())
                 line_previous = []
             elif line_current:
-                yield line_current
+                yield CommandLine(line_current)
         else:
             line_previous.append(line_current)
 
@@ -224,7 +244,7 @@ def script_parser(file: (Path | str), /, *,
             line_current = next(script_pointer)
         except StopIteration:
             if line_previous:
-                yield _combine_previous_lines(*line_previous).strip()
+                yield CommandLine(_combine_previous_lines(*line_previous).strip())
             return
 
         at_end_of_line = False
