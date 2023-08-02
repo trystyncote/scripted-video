@@ -31,8 +31,7 @@ class Doctype(NeutralNode):
     @classmethod
     def evaluate_syntax(cls, match_object: re.Match) -> Self:
         doctype = match_object.group(1)
-        class_object = cls(doctype)
-        return class_object
+        return Doctype(doctype)
 
 
 @dynamic_attributes
