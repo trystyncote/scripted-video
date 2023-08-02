@@ -1,6 +1,9 @@
 from enum import auto as enum_auto, Enum
 from io import StringIO
-from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class svParserError(SyntaxError):

@@ -1,9 +1,14 @@
-from scripted_video.variables.ScriptVariables import ScriptVariables
+from __future__ import annotations
 
-from scripted_video.objects.ObjectDict import ObjectDict
 from scripted_video.objects.frames import Frame
 
 from operator import itemgetter
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from scripted_video.variables.ScriptVariables import ScriptVariables
+
+    from scripted_video.objects.ObjectDict import ObjectDict
 
 from moviepy.editor import ImageClip
 from moviepy.video.compositing.concatenate import concatenate_videoclips

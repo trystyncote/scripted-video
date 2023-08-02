@@ -1,9 +1,14 @@
+from __future__ import annotations
+
 from scripted_video.svst._dynamic_attributes import Attribute, dynamic_attributes, SpecificAttribute
 from scripted_video.svst.root_node import SVST_RootNode
 
-from collections.abc import MutableMapping
-import re
-from typing import Self
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import MutableMapping
+    import re
+    from typing import Self
 
 
 class NeutralNode(SVST_RootNode):

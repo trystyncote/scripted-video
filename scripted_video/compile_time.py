@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 from scripted_video.parser import script_parser
-from scripted_video.utils import Options
 
 from scripted_video.objects.ObjectDict import ObjectDict
 
@@ -8,10 +9,14 @@ from scripted_video.qualms.group import QualmGroup
 import scripted_video.svst as svst
 from scripted_video.svst.visitor import SVST_NodeVisitor as NodeVisitor
 
-from scripted_video.variables.ScriptVariables import ScriptVariables
-
 from pathlib import Path
 import re
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from scripted_video.utils import Options
+
+    from scripted_video.variables.ScriptVariables import ScriptVariables
 
 
 def create_syntax_tree_root(script_name: str) -> svst.TimelineModule:
