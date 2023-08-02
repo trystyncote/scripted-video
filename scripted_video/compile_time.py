@@ -27,9 +27,9 @@ def cycle_over_script(script_file: Path, variables: ScriptVariables, options: Op
     object_information = ObjectDict()
     syntax_tree = create_syntax_tree_root(str(script_file.name))
 
-    for line in script_parser(script_file, block_comment_characters=("/*", "*/"), end_line_character=";",
-                              inline_comment_character="//"):
-        dissect_syntax(line, syntax_tree)
+    for command_line in script_parser(script_file, block_comment_characters=("/*", "*/"), end_line_character=";",
+                                      inline_comment_character="//"):
+        dissect_syntax(command_line.lines[0], syntax_tree)
 
     navigate_syntax_tree(syntax_tree, object_information, variables, options)
 
