@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from pathlib import Path
+else:
+    Path = str
 
 
 class svParserError(SyntaxError):
