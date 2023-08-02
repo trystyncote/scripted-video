@@ -47,6 +47,14 @@ class SpecificAttribute(enum.Enum):
     SCRIPT = enum.auto()
 
 
+class UniversalAttribute(enum.Enum):
+    ALL = enum.auto()
+    COLUMN_NO = enum.auto()
+    END_COLUMN_NO = enum.auto()
+    END_LINE_NO = enum.auto()
+    LINE_NO = enum.auto()
+
+
 class WhitespaceAttribute(enum.Enum):
     AFTER_EQUAL_SIGN = enum.auto()
     AFTER_KEYWORD = enum.auto()
@@ -305,6 +313,14 @@ def _create_function(name, args, body, *, local=None, globals_=None):
 
 
 def _define_class(cls):
+    if UniversalAttribute.ALL in cls.__attributes__:
+        cls_attributes = list(cls.__attributes__)
+        addition_attributes = [UniversalAttribute.COLUMN_NO, UniversalAttribute.END_COLUMN_NO,
+                               UniversalAttribute.END_LINE_NO, UniversalAttribute.LINE_NO]
+        for attribute in addition_attributes:
+            cls_attributes.append(attribute)
+        cls.__attributes__ = tuple(cls_attributes)
+
     functionalities = [_create_dunder_init, _create_dunder_repr, _create_dunder_str, _create_dunder_getattribute,
                        _create_dunder_setattr, ]
     for func in functionalities:
