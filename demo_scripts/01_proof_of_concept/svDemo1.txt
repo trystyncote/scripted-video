@@ -1,4 +1,4 @@
-@DOCTYPE scripted-video;
+@DOCTYPE scripted-video TIMELINE;
 
 META window_width = 852;
 META window_height = 480;

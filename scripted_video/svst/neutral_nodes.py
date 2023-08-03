@@ -24,14 +24,15 @@ class NeutralNode(SVST_RootNode):
 
 @dynamic_attributes
 class Doctype(NeutralNode):
-    __attributes__ = (SpecificAttribute.DOCTYPE,)
-    _syntax = r"@DOCTYPE [\s| ]*(scripted-video){1}"
+    __attributes__ = (SpecificAttribute.DOCTYPE, Attribute.TYPE)
+    _syntax = r"@DOCTYPE [\s| ]*(scripted[-_]video){1}[\s| ]+((?:TIMELINE)|(?:[\w_]+)){1}"
     # syntax = r"@DOCTYPE [\s| ]*(scripted-video){1}[\s| ]+((?:TIMELINE)|(?:MASTER[-]*SCRIPT)|(?:DESIGN)){1};"
 
     @classmethod
     def evaluate_syntax(cls, match_object: re.Match) -> Self:
         doctype = match_object.group(1)
-        return Doctype(doctype)
+        type_ = match_object.group(2)
+        return Doctype(doctype, type_)
 
 
 @dynamic_attributes
