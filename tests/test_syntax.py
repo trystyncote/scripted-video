@@ -17,7 +17,7 @@ class Expected:
 
 
 @pytest.mark.parametrize("command,cls,match_callable,expected_attr", [
-    ("@DOCTYPE scripted-video", svst.Doctype, match_Doctype, "doc:scripted-video"),
+    ("@DOCTYPE scripted-video SPECIFIC_TYPE", svst.Doctype, match_Doctype, "doc:scripted-video;type:SPECIFIC_TYPE"),
     ("META window_width = 852", svst.Metadata, match_Metadata, "name:window_width;value:852"),
     ("DECLARE abc def = ghi", svst.Declare, match_Declare, "name:def;value:ghi;type:abc"),
     ("CREATE *obj { x: 100; y: 100; }", svst.Create, match_Create,

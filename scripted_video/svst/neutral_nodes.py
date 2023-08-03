@@ -3,6 +3,7 @@ from __future__ import annotations
 from scripted_video.svst._dynamic_attributes import Attribute, dynamic_attributes, SpecificAttribute
 from scripted_video.svst.root_node import SVST_RootNode
 
+import enum
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -22,11 +23,22 @@ class NeutralNode(SVST_RootNode):
             NeutralNode.syntax_list[cls.__name__] = (cls, cls._syntax)
 
 
+class DoctypeIdentity(enum.Enum):
+    NONE = enum.auto()
+    TIMELINE = enum.auto()
+
+
 @dynamic_attributes
 class Doctype(NeutralNode):
     __attributes__ = (SpecificAttribute.DOCTYPE, Attribute.TYPE)
     _syntax = r"@DOCTYPE [\s| ]*(scripted[-_]video){1}[\s| ]+((?:TIMELINE)|(?:[\w_]+)){1}"
     # syntax = r"@DOCTYPE [\s| ]*(scripted-video){1}[\s| ]+((?:TIMELINE)|(?:MASTER[-]*SCRIPT)|(?:DESIGN)){1};"
+
+    def classify_type(self):
+        if self._type.upper() == "TIMELINE":
+            return DoctypeIdentity.TIMELINE
+        else:
+            return DoctypeIdentity.NONE
 
     @classmethod
     def evaluate_syntax(cls, match_object: re.Match) -> Self:
@@ -53,6 +65,19 @@ class Property(NeutralNode):
     to be referred as a member of the body of another node.
     """
     __attributes__ = (Attribute.NAME, Attribute.VALUE)
+    structure = "%:%;"
+
+
+@dynamic_attributes
+class UnknownModule(SVST_RootNode):
+    __attributes__ = (SpecificAttribute.SCRIPT, Attribute.BODY)
+    reference = NeutralNode
+
+    def transfer(self, new_module_identity):
+        new_module = new_module_identity(self._script)
+        for body_element in self._body:
+            new_module.body.append(body_element)
+        return new_module
 
 
 @dynamic_attributes

@@ -7,6 +7,7 @@ from scripted_video.objects.ObjectDict import ObjectDict
 from scripted_video.qualms.group import QualmGroup
 
 import scripted_video.svst as svst
+from scripted_video.svst.neutral_nodes import DoctypeIdentity
 from scripted_video.svst.visitor import SVST_NodeVisitor as NodeVisitor
 
 from pathlib import Path
@@ -19,8 +20,13 @@ if TYPE_CHECKING:
     from scripted_video.variables.ScriptVariables import ScriptVariables
 
 
-def create_syntax_tree_root(script_name: str) -> svst.TimelineModule:
-    return svst.TimelineModule(script_name)
+def _convert_doctype_identity(doctype_identity):
+    if doctype_identity is DoctypeIdentity.TIMELINE:
+        return svst.TimelineModule
+
+
+def create_syntax_tree_root(script_name: str):
+    return svst.UnknownModule(script_name)
 
 
 def cycle_over_script(script_file: Path, variables: ScriptVariables, options: Options):
@@ -29,7 +35,7 @@ def cycle_over_script(script_file: Path, variables: ScriptVariables, options: Op
 
     for command_line in script_parser(script_file, block_comment_characters=("/*", "*/"), end_line_character=";",
                                       inline_comment_character="//"):
-        dissect_syntax(command_line.lines[0], syntax_tree)
+        syntax_tree = dissect_syntax(command_line.lines[0], syntax_tree)
 
     navigate_syntax_tree(syntax_tree, object_information, variables, options)
 
@@ -37,21 +43,23 @@ def cycle_over_script(script_file: Path, variables: ScriptVariables, options: Op
 
 
 def dissect_syntax(command: str, syntax_tree):
-    for _, (respective_class, syntax_command) in svst.NeutralNode.syntax_list.items():
+    for _, (respective_class, syntax_command) in syntax_tree.reference.syntax_list.items():
         match = re.match(syntax_command, command)
         if not match:
             continue
         syntax_tree.body.append(respective_class.evaluate_syntax(match))
-        return
-
-    for _, (respective_class, syntax_command) in svst.TimelineNode.syntax_list.items():
-        match = re.match(syntax_command, command)
-        if not match:
-            continue
-        syntax_tree.body.append(respective_class.evaluate_syntax(match))
-        return
+        if type(syntax_tree) is svst.UnknownModule and any(type(ele) is svst.Doctype for ele in syntax_tree.body):
+            doctype_identity = DoctypeIdentity.NONE
+            for element in syntax_tree.body:
+                if type(element) is svst.Doctype:
+                    doctype_identity = element.classify_type()
+                    break
+            new_module_identity = _convert_doctype_identity(doctype_identity)
+            return syntax_tree.transfer(new_module_identity)
+        return syntax_tree
 
     syntax_tree.body.append(svst.UnknownSyntax(command))
+    return syntax_tree
 
 
 def navigate_syntax_tree(syntax_tree, object_information, script_variables, options):

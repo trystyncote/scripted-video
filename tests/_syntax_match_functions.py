@@ -36,7 +36,10 @@ def match_Delete(node, exp):
 
 def match_Doctype(node, exp):
     match node:
-        case svst.Doctype(doctype=exp.doc):
+        case svst.Doctype(
+            doctype=exp.doc,
+            type=exp.type
+        ):
             assert True
         case _:
             assert False

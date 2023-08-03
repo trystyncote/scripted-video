@@ -153,3 +153,4 @@ class TimelineModule(SVST_RootNode):
     (without suffix) is referred to as the 'script_name' attribute.
     """
     __attributes__ = (SpecificAttribute.SCRIPT, Attribute.BODY)
+    reference = TimelineNode
