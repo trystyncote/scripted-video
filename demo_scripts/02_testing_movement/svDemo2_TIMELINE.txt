@@ -1,6 +1,7 @@
 /*
 NOTE: This file currently crashes scripted-video.
-This is published because
+This is published because it's going to be worked
+towards over time.
 */
 
 @DOCTYPE scripted-video TIMELINE;
