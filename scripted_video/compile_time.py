@@ -73,5 +73,5 @@ def navigate_syntax_tree(syntax_tree, object_information, script_variables, opti
 
     if options.reveal_syntax_tree or options.debug:
         metadata = script_variables.metadata
-        with open(metadata.script_file.parent / f"{Path(metadata.file_name).stem}__svst.txt", "x") as file_pointer:
+        with open(metadata.script_file.parent / f"{Path(metadata.file_name).stem}__svst.txt", "w") as file_pointer:
             file_pointer.write(svst.dump(syntax_tree, indent=4))

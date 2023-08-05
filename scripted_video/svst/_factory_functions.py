@@ -18,55 +18,6 @@ def _create_string_from_sequence(sequence, name, indent, prev_indent):
     if len(sequence) == 0:
         return f"{indent_sequence}{name}=[]"
 
-    '''
-    for each element in sequence
-        call its .convert_to_string method if it exists
-        else calls its repr
-        if the element is not the last
-            then print a comma ,
-        else
-            print a closing bracket
-    '''
-    '''
-    return (
-        f"{indent_sequence}{' ' * indent}{self.__class__.__name__}("
-        + f"{indent_sequence}{name}=["
-        + ''.join(node.convert_to_string(indent=indent, _previous_indent=prev_indent + (2 * indent)) + ", "
-                  if hasattr(node, "__has_cts_method__") else f"{indent_sequence}{' '*(2*indent)}{node!r}"
-                  for node in sequence)[:-2]
-        + "])"
-    )
-    
-    ''.join(
-        element.convert_to_string(indent=indent, _previous_indent=(2*indent)+prev_indent) + ", "
-        if hasattr(element, '__has_cts_method__') else f"{indent_sequence}{(2*indent)*' '}{element!r}"
-        for element in sequence)[:-2]
-    )
-    + \'\'.join(node.__str__(indent=indent, _previous_indent=_previous_indent + (2 * indent)) + \', \'")
-    if hasattr(node, \'__called_dynamic__\') else f\'{{indent_sequence}}"
-     "{{2 * indent_jump}}{{node!r}}\'")
-     for node in self.{attr.internal_name})[:-2]")
-     + \']\'")
-    '''
-    '''
-    elif len(sequence) == 1:
-        return (
-            f"{indent_sequence}{name}=["
-            + sequence[0].convert_to_string(indent=indent, _previous_indent=indent+prev_indent).strip()
-            + "]"
-        )
-
-    string = StringIO()
-    string.write(f"{indent_sequence}{name}=[")
-    for element in sequence:
-        if indent > 0:
-            string.write("\n")
-        string.write(element.convert_to_string(indent=indent, _previous_indent=indent+prev_indent))
-        if sequence[-1] is not element:
-            string.write(", ")
-    string.write("]")
-    return string.getvalue()
-    '''
     return (
         f"{indent_sequence}{' ' * indent}{name}=["
         + ', '.join(node.convert_to_string(indent=indent, _previous_indent=(2*indent)+prev_indent)
