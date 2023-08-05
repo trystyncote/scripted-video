@@ -35,7 +35,7 @@ class Doctype(NeutralNode):
     # syntax = r"@DOCTYPE [\s| ]*(scripted-video){1}[\s| ]+((?:TIMELINE)|(?:MASTER[-]*SCRIPT)|(?:DESIGN)){1};"
 
     def classify_type(self):
-        if self._type.upper() == "TIMELINE":
+        if self.type.upper() == "TIMELINE":
             return DoctypeIdentity.TIMELINE
         else:
             return DoctypeIdentity.NONE
@@ -74,8 +74,8 @@ class UnknownModule(SVST_RootNode):
     reference = NeutralNode
 
     def transfer(self, new_module_identity):
-        new_module = new_module_identity(self._script)
-        for body_element in self._body:
+        new_module = new_module_identity(self.script)
+        for body_element in self.body:
             new_module.body.append(body_element)
         return new_module
 

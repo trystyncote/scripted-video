@@ -1,20 +1,19 @@
 """
 The _dynamic_attributes module defines a decorator for code generation. This is
-a substitution for _attribute_superclass that doesn't depend on inheritance.
-_attribute_superclass is not set for complete deletion until no node is
-dependent on it. For now, this remains an alternative instead of the default.
+a substitution for a former module, _attribute_superclass that doesn't depend
+on inheritance.
 
-The reason that I do not use dataclasses instead of writing this myself, is
-that dataclasses doesn't suit my application. All applicable classes need to
-define a set of attributes that have a __repr__ and __str__ method, a
-convert_to_string method, and have __slots__. Dataclass implementations do
-not necessarily work to the use case I need, so I'd rather have it written
-myself and prevent repeated code that way.
+The reason that I do not use dataclasses directly is because of the fact that
+the attributes must be implemented the same throughout all of the nodes. To
+prevent breaking the implementation, it must be done in a synchronous manner.
+To best accomplish this, they need a shared implementation. This module defines
+that behaviour.
 """
+import scripted_video.svst._factory_functions as factory_functions
+
+from dataclasses import dataclass, field, MISSING
 import enum
-import inspect
-import io
-import sys
+from typing import Any
 
 
 class _InaccessibleAttributeError(Exception):
@@ -65,269 +64,72 @@ _NO_DEFAULT = object()
 
 
 class _AttributeSet:
-    __slots__ = ("annotation", "default", "internal_name", "name")
+    __slots__ = ("alias", "annotation", "default", "default_factory", "init", "internal_name", "name")
 
-    def __init__(self, name, annotation, *, default=_NO_DEFAULT):
+    def __init__(self, name, annotation, *, alias=None, default: Any = MISSING, default_factory: Any = MISSING,
+                 init=True):
         self.name = name
-        self.internal_name = f"_{name}"
+        if alias is None:
+            self.alias = name
+        else:
+            self.alias = alias
         self.annotation = annotation
         self.default = default
-
-    @property
-    def is_parameter(self):
-        return True
-
-    def initialization(self):
-        return f"{4 * ' '}self.{self.internal_name} = {self.name}"
-
-
-class _ListAttributeSet(_AttributeSet):
-    __slots__ = ("default_factory",)
-
-    def __init__(self, name, annotation, *, default=_NO_DEFAULT, default_factory=None):
-        super().__init__(name, annotation, default=default)
-        self.default_factory = None
-        if default_factory is not None:
-            self.default = None
-            self.default_factory = default_factory()
-
-    @property
-    def is_parameter(self):
-        return False
-
-    def initialization(self):
-        return f"{4 * ' '}self.{self.internal_name} = {self.default_factory}"
+        self.default_factory = default_factory
+        self.init = init
 
 
 _attributes = {
-    Attribute.BODY: _ListAttributeSet("body", list, default_factory=list),
+    Attribute.BODY: _AttributeSet("body", list, default_factory=list, init=False),
     SpecificAttribute.CONTENTS: _AttributeSet("contents", str),
     SpecificAttribute.DOCTYPE: _AttributeSet("doctype", str),
     Attribute.NAME: _AttributeSet("name", str),
     Attribute.VALUE: _AttributeSet("value", str),
     SpecificAttribute.SCRIPT: _AttributeSet("script", str),
-    Attribute.SUBJECTS: _ListAttributeSet("subjects", list, default_factory=list),
+    Attribute.SUBJECTS: _AttributeSet("subjects", list, default_factory=list, init=False),
     Attribute.TYPE: _AttributeSet("type", str),
-    WhitespaceAttribute.AFTER_EQUAL_SIGN: _AttributeSet("ws_after_equal_sign", str, default=""),
-    WhitespaceAttribute.AFTER_KEYWORD: _AttributeSet("ws_after_keyword", str, default=""),
-    WhitespaceAttribute.BEFORE_EQUAL_SIGN: _AttributeSet("ws_before_equal_sign", str, default=""),
+    WhitespaceAttribute.AFTER_EQUAL_SIGN: _AttributeSet("ws_after_equal_sign", str, alias="ws_ae", default=""),
+    WhitespaceAttribute.AFTER_KEYWORD: _AttributeSet("ws_after_keyword", str, alias="ws_ak", default=""),
+    WhitespaceAttribute.BEFORE_EQUAL_SIGN: _AttributeSet("ws_before_equal_sign", str, alias="ws_be", default=""),
 }
 
 
-def _add_slots(cls):
-    # __slots__ cannot be set on a class that already has been created, so a
-    # new class needs to be created.
-
-    if "__slots__" in cls.__dict__:
-        raise _PredefinedSlotsError(f"Class \'{cls.__name__}\' already specifies __slots__.")
-
-    cls_dict = dict(cls.__dict__)  # Creates a copy of the dictionary to
-    # prevent altering the original.
-    fields = tuple(_attributes[a].internal_name for a in cls.__attributes__)
-    # inherited_slots
-    cls_dict["__slots__"] = fields
-
-    for field in cls.__attributes__:
-        cls_dict.pop(field, None)
-    cls_dict.pop("__dict__", None)
-
-    qualname = getattr(cls, "__qualname__", None)
-    cls = cls.__class__(cls.__name__, cls.__bases__, cls_dict)
-    if qualname is not None:
-        cls.__qualname__ = qualname
-
-    return cls
-
-
-def _create_dunder_init(cls):
-    lines = []
-    parameters = [inspect.Parameter("self", inspect.Parameter.POSITIONAL_OR_KEYWORD)]
-    for name in cls.__attributes__:
-        lines.append(_attributes[name].initialization())
-        if _attributes[name].is_parameter:
-            parameters.append(inspect.Parameter(_attributes[name].name, inspect.Parameter.POSITIONAL_OR_KEYWORD,
-                                                annotation=_attributes[name].annotation,
-                                                default=(_attributes[name].default
-                                                         if _attributes[name].default is not _NO_DEFAULT
-                                                         else inspect.Parameter.empty)))
-    if len(cls.__attributes__) == 0:
-        lines.append(f"{4 * ' '}pass")
-    return _set_attributes(
-        cls,
-        "__init__",
-        _create_function(
-            "__init__",
-            inspect.Signature(parameters),
-            tuple(lines),
-            globals_=sys.modules[cls.__module__].__dict__
-        )
-    )
-
-
-def _create_dunder_getattribute(cls):
-    body = [f"{4 * ' '}try:", f"{8 * ' '}return object.__getattribute__(self, item)",
-            f"{4 * ' '}except AttributeError:",
-            f"{8 * ' '}if item[0] != \"_\":", f"{12 * ' '}return object.__getattribute__(self, f\"_{{item}}\")",
-            f"{8 * ' '}raise"]
-    return _set_attributes(
-        cls,
-        "__getattribute__",
-        _create_function(
-            "__getattribute__",
-            inspect.Signature([inspect.Parameter("self", inspect.Parameter.POSITIONAL_OR_KEYWORD),
-                               inspect.Parameter("item", inspect.Parameter.POSITIONAL_OR_KEYWORD)]),
-            tuple(body),
-            globals_=sys.modules[cls.__module__].__dict__
-        )
-    )
-
-
-def _create_dunder_repr(cls):
-    body = io.StringIO()
-    body.write(f"{4 * ' '}return f\"{{self.__class__.__name__}}(")
-    for field in cls.__attributes__:
-        # TODO: Change behaviour to write differently for sequence objects.
-        body.write(f"{_attributes[field].internal_name}={{self.{_attributes[field].internal_name}!r}}, ")
-    if len(cls.__attributes__) == 0:
-        body = body.getvalue() + ")\""
+def _create_fn_cts(cls):
+    factory_signature = _get_factory_signature(cls)
+    try:
+        cls.convert_to_string = vars(factory_functions)[factory_signature]()
+    except KeyError:
+        cls.__has_cts_method__ = False
     else:
-        body = body.getvalue()[:-2] + ")\""
-    return _set_attributes(
-        cls,
-        "__repr__",
-        _create_function(
-            "__repr__",
-            inspect.Signature([inspect.Parameter("self", inspect.Parameter.POSITIONAL_OR_KEYWORD)]),
-            (body,),
-            globals_=sys.modules[cls.__module__].__dict__
-        )
-    )
-
-
-def _create_dunder_setattr(cls):
-    body = [f"{4 * ' '}if getattr(self, key, None) is not None:",
-            f"{8 * ' '}from scripted_video.svst._dynamic_attributes import _InaccessibleAttributeError",
-            f"{8 * ' '}raise _InaccessibleAttributeError(f\"Attribute \\\'{{key}}\\\' of class "
-            f"\\\'{{self.__class__.__name__}}\\\' is considered immutable.\")",
-            f"{4 * ' '}object.__setattr__(self, key, value)"]
-    return _set_attributes(
-        cls,
-        "__setattr__",
-        _create_function(
-            "__setattr__",
-            inspect.Signature([inspect.Parameter("self", inspect.Parameter.POSITIONAL_OR_KEYWORD),
-                               inspect.Parameter("key", inspect.Parameter.POSITIONAL_OR_KEYWORD),
-                               inspect.Parameter("value", inspect.Parameter.POSITIONAL_OR_KEYWORD)]),
-            tuple(body),
-            globals_=sys.modules[cls.__module__].__dict__
-        )
-    )
-
-
-def _str_attribute_return(attributes):
-    new_lines = [
-        f"{4 * ' '}return (",
-        f"{8 * ' '}f\'{{indent_sequence}}{{self.__class__.__name__}}(\'"
-    ]
-    for attribute in attributes:
-        attr = _attributes[attribute]
-        if isinstance(attr, _ListAttributeSet):
-            new_lines.append(f"{8 * ' '}+ f\'{{indent_sequence}}{{indent_jump}}{attr.name}=[\'")
-            new_lines.append(f"{8 * ' '}+ \'\'.join(node.__str__(indent=indent, "
-                             "_previous_indent=_previous_indent + (2 * indent)) + \', \'")
-            new_lines.append(f"{18 * ' '}if hasattr(node, \'__called_dynamic__\') else f\'{{indent_sequence}}"
-                             f"{{2 * indent_jump}}{{node!r}}\'")
-            new_lines.append(f"{18 * ' '}for node in self.{attr.internal_name})[:-2]")
-            new_lines.append(f"{8 * ' '}+ \']\'")
-        else:
-            new_lines.append(f"{8 * ' '}+ f\'{{indent_sequence}}{{indent_jump}}{attr.name}="
-                             f"{{self.{attr.internal_name}!r}}\'")
-        new_lines.append(f"{8 * ' '}+ \', \'")
-    new_lines.pop(-1)
-    new_lines.append(f"{8 * ' '}+ \')\'")
-    new_lines.append(f"{4 * ' '})")
-    return new_lines
-
-
-def _create_dunder_str(cls):
-    lines = [
-        f"{4 * ' '}indent_sequence = \'\'",
-        f"{4 * ' '}if indent > 0:",
-        f"{8 * ' '}indent_sequence = f\'\\n{{\" \"*_previous_indent}}\'"
-    ]
-    new_lines = []
-
-    if len(cls.__attributes__) == 0:
-        lines.append(f"{4 * ' '}return f\'{{indent_sequence}}{{self.__class__.__name__}}()\'")
-
-    elif len(cls.__attributes__) == 1:
-        attr = _attributes[cls.__attributes__[0]]
-        if isinstance(attr, _ListAttributeSet):
-            lines.append(f"{4 * ' '}indent_jump = \' \' * indent")
-            new_lines = _str_attribute_return(cls.__attributes__)
-        else:
-            lines.append(f"{4 * ' '}return f\'{{indent_sequence}}{{self.__class__.__name__}}("
-                         f"{attr.name}={{self.{attr.internal_name}!r}})\'")
-
-    else:
-        lines.append(f"{4 * ' '}indent_jump = \' \' * indent")
-        new_lines = _str_attribute_return(cls.__attributes__)
-
-    for line in new_lines:
-        lines.append(line)
-
-    return _set_attributes(
-        cls,
-        "__str__",
-        _create_function(
-            "__str__",
-            inspect.Signature([inspect.Parameter("self", inspect.Parameter.POSITIONAL_OR_KEYWORD),
-                               inspect.Parameter("indent", inspect.Parameter.KEYWORD_ONLY, annotation=int, default=0),
-                               inspect.Parameter("_previous_indent", inspect.Parameter.KEYWORD_ONLY,
-                                                 annotation=int, default=0)]),
-            tuple(lines),
-            globals_=sys.modules[cls.__module__].__dict__
-        )
-    )
-
-
-def _create_function(name, args, body, *, local=None, globals_=None):
-    if local is None:
-        local = {}
-
-    args = str(args)
-    body = "\n".join(f"{4 * ' '}{b}" for b in body)
-    header = f"def {name}{args}:"
-    local_vars = ", ".join(local.keys())
-    indent = 4 * ' '
-    txt = f"def __create_fn__({local_vars}):\n{indent}{header}\n" \
-          f"{body}\n{indent}return {name}"
-    # def __create_fn__(*local_vars*):
-    #     def *generated_function*(*args*):
-    #         ...
-    #     return *generated_function*
-
-    namespace = {}
-    exec(txt, globals_, namespace)
-    return namespace["__create_fn__"](**local)
+        cls.__has_cts_method__ = True
 
 
 def _define_class(cls):
-    if UniversalAttribute.ALL in cls.__attributes__:
-        cls_attributes = list(cls.__attributes__)
-        addition_attributes = [UniversalAttribute.COLUMN_NO, UniversalAttribute.END_COLUMN_NO,
-                               UniversalAttribute.END_LINE_NO, UniversalAttribute.LINE_NO]
-        for attribute in addition_attributes:
-            cls_attributes.append(attribute)
-        cls.__attributes__ = tuple(cls_attributes)
+    for attr in cls.__attributes__:
+        attribute = _attributes[attr]
+        cls.__annotations__[attribute.name] = attribute.annotation
+        _set_attribute_by_field(cls, attribute)
 
-    functionalities = [_create_dunder_init, _create_dunder_repr, _create_dunder_str, _create_dunder_getattribute,
-                       _create_dunder_setattr, ]
-    for func in functionalities:
-        func(cls)
-    cls = _add_slots(cls)
-    cls.__called_dynamic__ = True
+    cls = dataclass(eq=False, frozen=True, slots=True)(cls)
+    _create_fn_cts(cls)
     return cls
+
+
+def _get_factory_signature(cls):
+    factory_signature = "factory_StringPrintout__"
+    for attr in cls.__attributes__:
+        attribute = _attributes[attr]
+        factory_signature += f"{attribute.alias}_"
+    return factory_signature[:-1]
+
+
+def _set_attribute_by_field(cls, attribute):
+    if attribute.default is not MISSING:
+        setattr(cls, attribute.name, field(default=attribute.default, init=attribute.init))
+    elif attribute.default_factory is not MISSING:
+        setattr(cls, attribute.name, field(default_factory=attribute.default_factory, init=attribute.init))
+    else:
+        setattr(cls, attribute.name, field(init=attribute.init))
 
 
 def _set_attributes(cls, name, value):
@@ -346,9 +148,9 @@ def dynamic_attributes(cls=None, /):
 
     if not hasattr(cls, "__attributes__"):
         raise _UndefinedAttributesError(f"Class \'{cls.__name__}\' does not define __attributes__.")
-    for field in cls.__attributes__:
+    for attr in cls.__attributes__:
         try:
-            _attributes[field]
+            _attributes[attr]
         except KeyError:
             raise _InvalidAttributesError(f"Class \'{cls.__name__}\' has an undefined attribute: \'{field}\'.")
 
