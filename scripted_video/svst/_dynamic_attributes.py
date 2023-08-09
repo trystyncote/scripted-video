@@ -60,9 +60,6 @@ class WhitespaceAttribute(enum.Enum):
     BEFORE_EQUAL_SIGN = enum.auto()
 
 
-_NO_DEFAULT = object()
-
-
 class _AttributeSet:
     __slots__ = ("alias", "annotation", "default", "default_factory", "init", "internal_name", "name")
 
