@@ -1,9 +1,14 @@
-import argparse
+from __future__ import annotations
+
 import os
 from pathlib import Path
 import random
 import shutil
 import string
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import argparse
 
 
 def _recurse_search_child_directory(desired_file_name: str, current_directory: Path):
